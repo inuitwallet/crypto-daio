@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Block {{ block.height }}</title>
+</head>
+<body>
+<h3>{{ block.hash }}</h3>
+<div>
+    {% for tx in transactions %}
+    {{ tx.input }}
+    {% for output in tx.outputs %}
+    {{ output.value }}
+    {% endfor %}
+    {% endfor %}
+</div>
+</body>
+</html>

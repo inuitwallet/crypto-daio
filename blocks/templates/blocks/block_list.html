@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blocks</title>
+</head>
+<body>
+{% with block=object_list[17] %}
+<h3>{{ block.hash }}</h3>
+<div>
+    {% for tx in block.transactions %}
+    {
+</div>
+{% endfor %}
+</body>
+</html>
