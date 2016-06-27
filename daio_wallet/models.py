@@ -21,8 +21,6 @@ class ClientToken(models.Model):
     """
     Simple Auth token
     """
-    token = models.CharField(
-        max_length=255,
+    token = models.UUIDField(
         default=uuid.uuid4,
-        editable=False
     )
