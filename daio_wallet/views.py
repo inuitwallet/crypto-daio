@@ -1,13 +1,10 @@
 import hashlib
-import json
-
-from blocks.models import WatchAddress
+from decimal import Decimal
+from blocks.models import WatchAddress, TxOutput, TxInput
 from daio_wallet.bip32utils import BIP32Key
 from daio_wallet.mnemonic import Mnemonic
 from django.core.exceptions import ObjectDoesNotExist
-from django.http import HttpResponse
-from django.http.response import HttpResponseNotAllowed, JsonResponse
-from django.shortcuts import render
+from django.http.response import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Wallet, ClientToken
 from .forms import AddForm
@@ -19,12 +16,12 @@ BIP32_HARDEN = 0x80000000  # choose from hardened set of child keys
 
 def verify(request):
     """
-    check the auth header for verifcation
+    check the auth header for verification
     :param request:
     :return:
     """
     try:
-        ClientToken.objects.get(token=request.META['HTTP_AUTHENTICATION'])
+        ClientToken.objects.get(token=request.META.get('HTTP_AUTHENTICATION'))
     except ObjectDoesNotExist:
         return False
     return True
@@ -34,7 +31,7 @@ def new(request):
     """
     Generate a new mnemonic pair and extended pub key.
     :param request:
-    :return: json containing id, export_mnemonic and extpub key
+    :return: json containing id, export_mnemonic and ext_pub key
     """
     # verify the auth header
     if not verify(request):
@@ -209,5 +206,48 @@ def watch(request):
         {
             'success': True,
             'message': 'Watch created for {}'.format(address)
+        }
+    )
+
+
+def balance(request):
+    """
+    Endpoint to check balance of an address
+    :param request:
+    :return:
+    """
+    # verify the auth header
+    if not verify(request):
+        return JsonResponse(
+            {
+                'success': False,
+                'error': 'invalid token'
+            }
+        )
+    # Error if not POST
+    if request.method != 'POST':
+        return JsonResponse(
+            {
+                'success': False,
+                'error': 'must be a POST request'
+            }
+        )
+
+    value = Decimal(0.0)
+    # get the outputs for the address
+    outputs = TxOutput.objects.filter(addresses_address=request.POST['address'])
+    for output in outputs:
+        # for each output, gather the inputs
+        inputs = TxInput.objects.filter(tx_id=output.transaction.tx_id)
+        if inputs:
+            # if inputs exist using the output transaction, the value has been spent
+            continue
+        # if unspent. add it to the value
+        value += Decimal(output.value)
+
+    return JsonResponse(
+        {
+            'success': True,
+            'value': value
         }
     )
