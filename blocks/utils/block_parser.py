@@ -5,6 +5,7 @@ from datetime import datetime as dt
 
 import requests
 from blocks.models import Block, Transaction, TxInput, TxOutput, Address, WatchAddress
+from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils import timezone
 from rpc import send_rpc
@@ -144,7 +145,7 @@ def start_parse():
     )
     daemon_height = rpc['result'] if not rpc['error'] else 0
 
-    db_height = 0
+    db_height = settings.LAST_GOOD_BLOCK
     logger.info('parsing blockchain from {} to {}'.format(db_height, daemon_height))
     time.sleep(3)
     while db_height < daemon_height:
