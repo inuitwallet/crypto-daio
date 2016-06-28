@@ -143,6 +143,7 @@ def add(request):
         )
 
 
+@csrf_exempt
 def watch(request):
     """
     Add an address to the watch list
@@ -210,6 +211,7 @@ def watch(request):
     )
 
 
+@csrf_exempt
 def balance(request):
     """
     Endpoint to check balance of an address
