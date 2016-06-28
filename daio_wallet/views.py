@@ -237,7 +237,7 @@ def balance(request):
 
     value = Decimal(0.0)
     # get the outputs for the address
-    outputs = TxOutput.objects.filter(addresses_address=request.POST['address'])
+    outputs = TxOutput.objects.filter(addresses__address=request.POST['address'])
     for output in outputs:
         # for each output, gather the inputs
         inputs = TxInput.objects.filter(tx_id=output.transaction.tx_id)
