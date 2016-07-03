@@ -5,4 +5,3 @@ ecdsa
 pbkdf2
 requests[security]
 psycopg2
-python-bitcoinrpc
