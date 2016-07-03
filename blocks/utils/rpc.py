@@ -3,7 +3,7 @@ import time
 import requests
 import json
 from django.conf import settings
-from requests.packages.urllib3.exceptions import ConnectionError
+from requests.exceptions import ConnectionError
 
 
 def send_rpc(data):
