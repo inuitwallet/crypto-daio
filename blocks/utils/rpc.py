@@ -28,5 +28,5 @@ def send_rpc(data):
         return result.json()
     except ValueError:
         return {'error': True, 'message': result.text}
-    except ConnectionError:
-        return {'error': True, 'message': 'no connection with daemon'}
+    except:
+        return {'error': True, 'message': 'no connection with daemon'} 
