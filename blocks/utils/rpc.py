@@ -19,14 +19,19 @@ def send_rpc(data):
         settings.RPC_PORT,
     )
     headers = {'Content-Type': 'applications/json'}
-    result = requests.post(
-        url=rpc_url,
-        headers=headers,
-        data=json.dumps(data),
-    )
     try:
-        return result.json()
-    except ValueError:
-        return {'error': True, 'message': result.text}
-    except:
-        return {'error': True, 'message': 'no connection with daemon'} 
+        result = requests.post(
+            url=rpc_url,
+            headers=headers,
+            data=json.dumps(data),
+        )
+
+        try:
+            return result.json()
+        except ValueError:
+            return {'error': True, 'message': result.text}
+
+    except ConnectionError:
+        return {'error': True, 'message': 'no connection with daemon'}
+
+
