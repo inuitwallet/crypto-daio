@@ -21,7 +21,7 @@ def notify(request, block_hash):
     if len(block_hash) < 60:
         return HttpResponse('Nope')
     block = Block.objects.get_or_create(hash=block_hash)
-    if not block[1]:
+    if block[1]:
         rpc = send_rpc(
             {
                 'method': 'getblock',
