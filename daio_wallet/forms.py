@@ -82,7 +82,7 @@ class BalanceForm(forms.Form):
 
 class SendForm(forms.Form):
     # The wallet id
-    id = forms.IntegerField(
+    wallet_id = forms.IntegerField(
         required=True,
     )
     # the matching mnemonic
@@ -111,13 +111,15 @@ class SendForm(forms.Form):
         decimal_places=8,
     )
     # the amount of fees
-    fees = forms.DecimalField(
+    fee = forms.DecimalField(
         required=True,
         max_digits=22,
         decimal_places=8,
     )
     # optional callback
-    callback = forms.URLField()
+    callback = forms.URLField(
+        required=False,
+    )
 
     def clean_to_address(self):
         address = self.cleaned_data['to_address']

@@ -1,5 +1,6 @@
 import hashlib
 from decimal import Decimal
+from blocks import pynubitools
 from blocks.models import WatchAddress, TxOutput, TxInput
 from daio_wallet.bip32utils import BIP32Key
 from daio_wallet.mnemonic import Mnemonic
@@ -7,7 +8,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Wallet, ClientToken
-from .forms import AddForm, SendForm, WatchForm, BalanceForm
+from .forms import SendForm, WatchForm, BalanceForm
 from .utils import AddressCheck
 
 mnemonic = Mnemonic('english')
@@ -43,6 +44,22 @@ def validate_mnemonic(key, check_hash):
     if extpub_key_hash != check_hash:
         return False
     return True
+
+
+def get_balance(address):
+    """
+    Scan outputs for the given address and return the unspent balance
+    :param address:
+    :return:
+    """
+    value = Decimal(0.0)
+    # get the outputs for the address
+    outputs = TxOutput.objects.filter(addresses__address=address)
+    for output in outputs:
+        if output.is_unspent():
+            # if unspent. add it to the value
+            value += Decimal(output.value)
+    return value
 
 
 def new(request):
@@ -169,22 +186,11 @@ def balance(request):
     form = BalanceForm(request.POST)
 
     if form.is_valid():
-        value = Decimal(0.0)
-        # get the outputs for the address
-        outputs = TxOutput.objects.filter(addresses__address=request.POST['address'])
-        for output in outputs:
-            # for each output, gather the inputs
-            inputs = TxInput.objects.filter(tx_id=output.transaction.tx_id)
-            if inputs:
-                # if inputs exist using the output transaction, the value has been spent
-                continue
-            # if unspent. add it to the value
-            value += Decimal(output.value)
-
+        value = get_balance(request.POST['address'])
         return JsonResponse(
             {
                 'success': True,
-                'value': value
+                'balance': value
             }
         )
     # if the form has errors return them
@@ -222,16 +228,103 @@ def send(request):
 
     form = SendForm(request.POST)
     if form.is_valid():
-        pass
-        # validate the mnemonic
-        # calculate the from address based on HD level
-        # scan the blockchain for a tx that matches the necessary outputs to use as ins
-        # build the tx
-        # submit the tx to the blockchain
+        # Get the wallet
+        wallet = Wallet.objects.get(pk=request.POST['wallet_id'])
+        # generate the base key with the supplied and saved details
+        key = BIP32Key.fromEntropy(
+            mnemonic.to_seed(
+                wallet.mnemonic,
+                request.POST['mnemonic']
+            )
+        )
+        # validate that the key is correct by checking against the hash
+        if not validate_mnemonic(key, request.POST['extpub_key_hash']):
+            return JsonResponse(
+                {
+                    'success': False,
+                    'error': 'checksum failed. check id'
+                }
+            )
+        # generate the child key at the requested level
+        child_key = key.ChildKey(int(request.POST['level']) + BIP32_HARDEN)
+        # generate the address from the child key
+        address = child_key.Address()
+        # generate the change address from the next key in sequence
+        change_key = key.ChildKey(int(request.POST['level']) + 1 + BIP32_HARDEN)
+        change_address = change_key.Address()
+        # check the balance of the address to make sure it can send the requested funds
+        balance = get_balance(address)
+        # The total Tx amount is (amount + fee)
+        tx_amount = (Decimal(request.POST['amount']) + Decimal(request.POST['fee']))
+
+        #if balance < tx_amount:
+        #    return JsonResponse(
+        #        {
+        #            'success': False,
+        #            'error': 'insufficient balance'
+        #        }
+        #    )
+
+        balance = 12345
+        # get the unspent outputs
+        outputs = TxOutput.objects.filter(addresses__address=address)
+        output_value = Decimal(0.0)
+        inputs = []
+        for output in outputs:
+            # ignore spent outputs
+            if not output.is_unspent():
+                continue
+            # calculate the cumulative output value
+            output_value += Decimal(output.value)
+            # add the output to the list of potential inputs
+            inputs.append(output)
+            # see if we have enough funds to complete the Tx
+            if output_value >= tx_amount:
+                break
+
+        # build the tx_inputs
+        tx_inputs = []
+        for inp in inputs:
+            tx_inputs.append(
+                {
+                    'outpoint': {
+                        'hash': inp.transaction.tx_id,
+                        'index': inp.n
+                    },
+                    'script': pynubitools.mk_pubkey_script(address),
+                    'sequence': 4294967295,  # not using lock_time
+                }
+            )
+        # build the tx_outputs
+        # first is the tx amount
+        # second is the change address (address_balance - amount - fee)
+        tx_outputs = [
+            {
+                'script': pynubitools.mk_pubkey_script(request.POST['to_address']),
+                'value': int(request.POST['amount'])
+            },
+            {
+                'script': pynubitools.mk_pubkey_script(change_address),
+                'value': int(balance) - int(tx_amount)
+            }
+        ]
+        tx = pynubitools.mktx(
+                tx_inputs,
+                tx_outputs
+            ),
+        #tx = pynubitools.sign(
+        #
+        #    0,
+        #    child_key.PrivateKey()
+        #)
+        return JsonResponse(
+            {
+                'success': True,
+                'tx': tx
+            }
+        )
         # enter the tx into the database to retain data
         # once tx is accepted into block, mark as complete and hit callback url?
-
-
 
     # if the form has errors return them
     else:

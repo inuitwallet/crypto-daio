@@ -6,4 +6,5 @@ urlpatterns = [
     url(r'^new$', views.new, name='new'),
     url(r'^watch$', views.watch, name='watch'),
     url(r'^balance', views.balance, name='balance'),
+    url(r'^send', views.send, name='send'),
 ]

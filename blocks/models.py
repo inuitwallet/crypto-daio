@@ -198,6 +198,19 @@ class TxOutput(models.Model):
     def __str__(self):
         return str(self.pk)
 
+    def is_unspent(self):
+        """
+        Check if the output has been used as an input on a different Tx
+        :return: Boolean
+        """
+        return (
+            False
+            if TxInput.objects.filter(
+                tx_id=self.transaction.tx_id
+            )
+            else True
+        )
+
 
 class CustodianVote(models.Model):
     pass
