@@ -1,9 +1,12 @@
 from threading import Thread
+
+from django.views.generic import DetailView
+
 from blocks.utils.block_parser import start_parse, save_block
 from blocks.utils.rpc import send_rpc
 from django.http import HttpResponse
 from django.http.response import HttpResponseNotFound
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from django.conf import settings
 from .models import *
@@ -41,31 +44,6 @@ def notify(request, block_hash):
     return HttpResponse('daio received block {}'.format(block_hash))
 
 
-def get_block(request, block_height):
-    """
-    get the block at height
-    :param request:
-    :param block_height:
-    :return:
-    """
-    block = Block.objects.get(height=block_height)
-    context = {'block': block, 'transactions': []}
-    for tx in block.transactions.all():
-        input_id = tx.inputs.all()[0].tx_id
-        input = None
-        if input_id:
-            input = Transaction.objects.get(tx_id=input_id)
-        tx_dict = {
-            'input': input,
-            'outputs': [],
-        }
-        outputs = TxOutput.objects.filter(transaction=tx)
-        for output in outputs:
-            tx_dict['outputs'].append(output)
-
-    return render(request, 'blocks/block.html', context)
-
-
 def parse(request):
     parse_thread = Thread(target=start_parse)
     parse_thread.daemon = True
@@ -73,5 +51,24 @@ def parse(request):
     return render(request, 'admin/blocks/app_index.html')
 
 
-class BlockView(ListView):
+class BlockList(ListView):
     model = Block
+    paginate_by = 50
+
+    def get_queryset(self):
+        return Block.objects.all().order_by('-height')
+
+
+class BlockDetail(DetailView):
+    model = Block
+
+    def get_object(self):
+        return get_object_or_404(Block, hash=self.kwargs['block_hash'])
+
+
+class TransactionDetail(DetailView):
+    model = Transaction
+
+    def get_object(self):
+        return get_object_or_404(Transaction, tx_id=self.kwargs['tx_id'])
+

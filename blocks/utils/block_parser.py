@@ -93,20 +93,20 @@ def save_block(block):
                 )
                 if created:
                     # TODO Calculate address balance to this point in the blockchain
-                    # TODO and save it along side.
+                    # TODO and save it along side address.
                     address.save()
                 tx_output.addresses.add(address)
                 tx_output.save()
                 # check the address against the list of addresses to watch
-                #check_thread = Thread(
-                #    target=check_watch_addresses,
-                #    kwargs={
-                #        'address': address[0],
-                #        'value': tx_output[0].value,
-                #    }
-                #)
-                #check_thread.daemon = True
-                #check_thread.start()
+                check_thread = Thread(
+                    target=check_watch_addresses,
+                    kwargs={
+                        'address': address[0],
+                        'value': tx_output[0].value,
+                    }
+                )
+                check_thread.daemon = True
+                check_thread.start()
     logger.info('saved block {}'.format(this_block.height))
     return
 
@@ -155,7 +155,6 @@ def start_parse():
         # see if the block exists
         try:
             Block.objects.get(height=db_height)
-            # TODO better checks of block health
         except ObjectDoesNotExist:
             # get the block hash
             rpc = send_rpc(
