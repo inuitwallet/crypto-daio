@@ -20,8 +20,8 @@ def notify(request, block_hash):
         return HttpResponseNotFound()
     if len(block_hash) < 60:
         return HttpResponse('Nope')
-    block = Block.objects.get_or_create(hash=block_hash)
-    if block[1]:
+    block, created = Block.objects.get_or_create(hash=block_hash)
+    if created:
         rpc = send_rpc(
             {
                 'method': 'getblock',
