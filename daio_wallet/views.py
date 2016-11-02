@@ -308,6 +308,13 @@ def send(request):
                 'value': int(balance) - int(tx_amount)
             }
         ]
+        if not tx_outputs:
+            return JsonResponse(
+                {
+                    'success': False,
+                    'error': 'No available outputs for {}'.format(address)
+                }
+            )
         tx = pynubitools.mktx(
                 tx_inputs,
                 tx_outputs
