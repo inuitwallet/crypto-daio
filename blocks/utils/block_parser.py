@@ -21,16 +21,15 @@ def save_block(block):
     :param block:
     :return:
     """
-    # Try and get the bloch hash from the pased block
+    # Try and get the bloch hash from the passed block
     try:
         block_hash = block.get('hash', None)
     except AttributeError as e:
         logger.error('parse error {}'.format(e))
         return
     # get or create the block
-    this_block = Block.objects.get_or_create(hash=block_hash)
+    this_block, _ = Block.objects.get_or_create(hash=block_hash)
     logger.info('parsing {}'.format(block_hash))
-    this_block = this_block[0]
     this_block.size = block.get('size', None)
     this_block.height = block.get('height', None)
     this_block.version = block.get('version', None)
@@ -54,9 +53,11 @@ def save_block(block):
     this_block.modifier_checksum = block.get('modifierchecksum', None)
     this_block.coinage_destroyed = block.get('coinagedestroyed', None)
 
+    this_block.save()
+
     # for each transaction in the block, save a new transaction
     for tx in block.get('tx', []):
-        transaction = Transaction.objects.get_or_create(
+        transaction = Transaction.objects.create(
             block=this_block,
             tx_id=tx.get('txid', None),
             version=tx.get('version', None),
@@ -66,8 +67,8 @@ def save_block(block):
         )
         # for each input in the transaction, save a TxInput
         for vin in tx.get('vin', []):
-            tx_input = TxInput.objects.get_or_create(
-                transaction=transaction[0],
+            tx_input = TxInput.objects.create(
+                transaction=transaction,
                 tx_id=vin.get('txid', None),
                 v_out=vin.get('vout', None),
                 sequence=vin.get('sequence', None),
@@ -76,8 +77,8 @@ def save_block(block):
         # similar for each TxOutput
         for vout in tx.get('vout', []):
             script_pubkey = vout.get('scriptPubKey', {})
-            tx_output = TxOutput.objects.get_or_create(
-                transaction=transaction[0],
+            tx_output, _ = TxOutput.objects.get_or_create(
+                transaction=transaction,
                 value=vout.get('value', 0),
                 n=vout.get('value', None),
                 script_pub_key_asm=script_pubkey.get('asm', None),
@@ -87,24 +88,25 @@ def save_block(block):
             )
             # save each address in the output
             for addr in script_pubkey.get('addresses', []):
-                address = Address.objects.get_or_create(
+                address, created = Address.objects.get_or_create(
                     address=addr,
                 )
-                if address[1]:
-                    address[0].save()
-                tx_output[0].addresses.add(address[0])
-                tx_output[0].save()
+                if created:
+                    # TODO Calculate address balance to this point in the blockchain
+                    # TODO and save it along side.
+                    address.save()
+                tx_output.addresses.add(address)
+                tx_output.save()
                 # check the address against the list of addresses to watch
-                check_thread = Thread(
-                    target=check_watch_addresses,
-                    kwargs={
-                        'address': address[0],
-                        'value': tx_output[0].value,
-                    }
-                )
-                check_thread.daemon = True
-                check_thread.start()
-    this_block.save()
+                #check_thread = Thread(
+                #    target=check_watch_addresses,
+                #    kwargs={
+                #        'address': address[0],
+                #        'value': tx_output[0].value,
+                #    }
+                #)
+                #check_thread.daemon = True
+                #check_thread.start()
     logger.info('saved block {}'.format(this_block.height))
     return
 
@@ -124,7 +126,7 @@ def check_watch_addresses(address, value):
     # we have a watched address. lets reduce the value
     watched_address.amount -= float(value)
     watched_address.save()
-    if watched_address <= 0:
+    if watched_address.amount <= 0.0:
         response = requests.post(
             url=watched_address.call_back,
             headers={'Content-Type': 'application/json'},
@@ -134,6 +136,7 @@ def check_watch_addresses(address, value):
                 }
             )
         )
+    return
 
 
 def start_parse():
