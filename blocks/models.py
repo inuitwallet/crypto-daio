@@ -150,6 +150,9 @@ class TxInput(models.Model):
     def __str__(self):
         return str(self.pk)
 
+    def Meta(self):
+        self.unique_together = (self.tx_id, self.v_out)
+
 
 class Address(models.Model):
     address = models.CharField(
@@ -197,6 +200,9 @@ class TxOutput(models.Model):
 
     def __str__(self):
         return str(self.pk)
+
+    def Meta(self):
+        self.unique_together = (self.transaction, self.n)
 
     def is_unspent(self):
         """
