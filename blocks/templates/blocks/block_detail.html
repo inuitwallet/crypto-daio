@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Block {{ block.height }}</title>
+</head>
+<body>
+<h3>Block {{ block.height }}: {{ block.hash }}</h3>
+<div>
+{% for tx in block.transactions.all %}
+    <div>
+        <p>Transaction: {{ tx.tx_id }}</p>
+        {% for input in tx.inputs.all %}
+            <p>Input: {{ input.tx_id }} {{ input.v_out }}</p>
+        {% endfor %}
+        {% for output in tx.outputs.all %}
+            <p>Output: {{ output.n }} {{ output.value }}</p>
+        {% endfor %}
+    </div>
+{% endfor %}
+</div>
+<div class="pagination">
+    <span class="page-links">
+        <a href="/block/{{ block.previous_block_hash }}">Previous Block</a>
+        <span class="page-current">
+            Block {{ block.height }}
+        </span>
+        <a href="/block/{{ block.next_block_hash }}">Next Block</a>
+    </span>
+</div>
+</body>
+</html>

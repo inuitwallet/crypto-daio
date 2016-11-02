@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Transaction {{ transaction.tx_id }}</title>
+</head>
+<body>
+<h3>Transaction {{ transaction.tx_id }}</h3>
+{% for input in transaction.inputs.all %}
+    <p>Input: {{ input.tx_id }} {{ input.v_out }}</p>
+{% endfor %}
+{% for output in transaction.outputs.all %}
+    <p>Output: {{ output.n }} {{ output.value }}</p>
+{% endfor %}
+</body>
+</html>
