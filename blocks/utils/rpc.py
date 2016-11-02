@@ -24,6 +24,7 @@ def send_rpc(data):
             url=rpc_url,
             headers=headers,
             data=json.dumps(data),
+            timeout=180,
         )
 
         try:
