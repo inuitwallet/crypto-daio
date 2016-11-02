@@ -34,6 +34,6 @@ admin.site.register(Address, AddressAdmin)
 
 
 class WatchAddressAdmin(admin.ModelAdmin):
-    list_display = ('address', 'amount', 'callback', 'complete')
+    list_display = ('address', 'amount', 'call_back', 'complete')
 
 admin.site.register(WatchAddress, WatchAddressAdmin)
