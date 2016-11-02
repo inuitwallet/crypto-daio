@@ -77,10 +77,10 @@ def save_block(block):
         # similar for each TxOutput
         for vout in tx.get('vout', []):
             script_pubkey = vout.get('scriptPubKey', {})
-            tx_output, _ = TxOutput.objects.get_or_create(
+            tx_output = TxOutput.objects.create(
                 transaction=transaction,
                 value=vout.get('value', 0),
-                n=vout.get('value', None),
+                n=vout.get('n', None),
                 script_pub_key_asm=script_pubkey.get('asm', None),
                 script_pub_key_hex=script_pubkey.get('hex', None),
                 script_pub_key_type=script_pubkey.get('type', None),
@@ -155,6 +155,7 @@ def start_parse():
         # see if the block exists
         try:
             Block.objects.get(height=db_height)
+            # TODO better checks of block health
         except ObjectDoesNotExist:
             # get the block hash
             rpc = send_rpc(
