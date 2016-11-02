@@ -16,7 +16,7 @@ admin.site.register(Transaction, TransactionAdmin)
 
 
 class TxInputAdmin(admin.ModelAdmin):
-    list_display = ('transaction', 'tx_id', 'vout')
+    list_display = ('transaction', 'tx_id', 'v_out')
 
 admin.site.register(TxInput, TxInputAdmin)
 
