@@ -10,7 +10,7 @@ admin.site.register(Block, BlockAdmin)
 
 
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ('tx_id',)
+    list_display = ('block', 'tx_id', 'is_coin_base', 'is_coin_stake')
 
 admin.site.register(Transaction, TransactionAdmin)
 
@@ -28,7 +28,7 @@ admin.site.register(TxOutput, TxOutputAdmin)
 
 
 class AddressAdmin(admin.ModelAdmin):
-    list_display = ('address')
+    list_display = ('address',)
 
 admin.site.register(Address, AddressAdmin)
 
