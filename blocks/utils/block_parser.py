@@ -101,8 +101,8 @@ def save_block(block):
                 check_thread = Thread(
                     target=check_watch_addresses,
                     kwargs={
-                        'address': address[0],
-                        'value': tx_output[0].value,
+                        'address': address,
+                        'value': tx_output.value,
                     }
                 )
                 check_thread.daemon = True
