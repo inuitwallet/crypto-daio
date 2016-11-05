@@ -49,13 +49,13 @@ class Block(models.Model):
         blank=True,
         null=True,
     )
-    previous_block_hash = models.CharField(
-        max_length=610,
-        blank=True,
-        null=True,
+    previous_block = models.ForeignKey(
+        'Block',
+        related_name='previous',
     )
-    next_block_hash = models.CharField(
-        max_length=610,
+    next_block = models.ForeignKey(
+        'Block',
+        related_name='next',
         blank=True,
         null=True,
     )
