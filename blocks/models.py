@@ -52,6 +52,8 @@ class Block(models.Model):
     previous_block = models.ForeignKey(
         'Block',
         related_name='previous',
+        blank=True,
+        null=True,
     )
     next_block = models.ForeignKey(
         'Block',

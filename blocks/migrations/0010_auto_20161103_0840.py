@@ -43,12 +43,4 @@ class Migration(migrations.Migration):
         migrations.RunPython(
             migrate_blocks,
         ),
-        #migrations.RemoveField(
-        #    model_name='block',
-        #    name='next_block_hash',
-        #),
-        #migrations.RemoveField(
-        #    model_name='block',
-        #    name='previous_block_hash',
-        #),
     ]

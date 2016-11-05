@@ -44,8 +44,16 @@ def save_block(block):
     this_block.bits = block.get('bits', None)
     this_block.difficulty = block.get('difficulty', None)
     this_block.mint = block.get('mint', None)
-    this_block.previous_block_hash = block.get('previousblockhash', None)
-    this_block.next_block_hash = block.get('nextblockhash', None)
+    try:
+        previous_block = Block.objects.get(hash=block.get('previousblockhash', None))
+    except Block.DoesNotExist:
+        previous_block = None
+    this_block.previous_block = previous_block
+    try:
+        next_block = Block.objects.get(hash=block.get('nextblockhash', None))
+    except Block.DoesNotExist:
+        next_block = None
+    this_block.next_block = next_block
     this_block.flags = block.get('flags', None)
     this_block.proof_hash = block.get('proofhash', None)
     this_block.entropy_bit = block.get('entropybit', None)
