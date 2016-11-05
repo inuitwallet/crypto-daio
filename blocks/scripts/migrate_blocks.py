@@ -1,3 +1,6 @@
+import django
+django.setup()
+
 from blocks.models import Block
 
 
