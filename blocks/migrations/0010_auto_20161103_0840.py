@@ -36,7 +36,7 @@ class Migration(migrations.Migration):
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='next_block',
+                related_name='next',
                 to='blocks.Block'
             ),
         ),
@@ -47,7 +47,7 @@ class Migration(migrations.Migration):
                 blank=True,
                 null=True,
                 on_delete=django.db.models.deletion.CASCADE,
-                related_name='previous_block',
+                related_name='previous',
                 to='blocks.Block'
             ),
             preserve_default=False,
