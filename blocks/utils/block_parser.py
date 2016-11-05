@@ -62,10 +62,13 @@ def save_block(block):
     this_block.coinage_destroyed = block.get('coinagedestroyed', None)
 
     this_block.save()
+    save_transactions(block, this_block)
 
+
+def save_transactions(block, this_block):
     # for each transaction in the block, save a new transaction
     for tx in block.get('tx', []):
-        transaction = Transaction.objects.create(
+        transaction, _ = Transaction.objects.get_or_create(
             block=this_block,
             tx_id=tx.get('txid', None),
             version=tx.get('version', None),
@@ -75,7 +78,7 @@ def save_block(block):
         )
         # for each input in the transaction, save a TxInput
         for vin in tx.get('vin', []):
-            tx_input = TxInput.objects.create(
+            TxInput.objects.get_or_create(
                 transaction=transaction,
                 tx_id=vin.get('txid', None),
                 v_out=vin.get('vout', None),
@@ -85,7 +88,7 @@ def save_block(block):
         # similar for each TxOutput
         for vout in tx.get('vout', []):
             script_pubkey = vout.get('scriptPubKey', {})
-            tx_output = TxOutput.objects.create(
+            tx_output, _ = TxOutput.objects.get_or_create(
                 transaction=transaction,
                 value=vout.get('value', 0),
                 n=vout.get('n', None),
@@ -100,8 +103,6 @@ def save_block(block):
                     address=addr,
                 )
                 if created:
-                    # TODO Calculate address balance to this point in the blockchain
-                    # TODO and save it along side address.
                     address.save()
                 tx_output.addresses.add(address)
                 tx_output.save()
@@ -188,10 +189,12 @@ def start_parse():
                     },
                     name=got_block_hash
                 )
-                if got_block_hash not in enumerate():
-                    save.daemon = True
-                    save.start()
-                    time.sleep(0.2)
+                save.daemon = True
+                save.start()
         logger.info('checked block {}'.format(db_height))
         db_height += 1
+
+
+def check_transaction():
+    pass
 

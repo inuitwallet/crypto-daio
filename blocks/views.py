@@ -10,6 +10,7 @@ from django.shortcuts import render, get_object_or_404
 from django.views.generic import ListView
 from django.conf import settings
 from .models import *
+from .forms import SearchForm
 
 
 def notify(request, block_hash):
@@ -72,3 +73,40 @@ class TransactionDetail(DetailView):
     def get_object(self):
         return get_object_or_404(Transaction, tx_id=self.kwargs['tx_id'])
 
+
+def search(request):
+    """
+    Search term can be a full or partial:
+    block height,
+    block hash,
+    tx hash,
+    address
+    :param request:
+    :return:
+    """
+    results = []
+    if request.method == 'POST':
+        form = SearchForm(request.POST)
+        if form.is_valid():
+            # we have a search term.
+            # lets search
+            # block height first
+            results += Block.objects.filter(
+                height__icontains=form.cleaned_data['search']
+            )
+            # then block hash
+            results += Block.objects.filter(
+                hash__icontains=form.cleaned_data['search']
+            )
+            # then Tx hash
+            results += Transaction.objects.filter(
+                tx_id__icontains=form.cleaned_data['search']
+            )
+            # the addresses
+            results += Address.objects.filter(
+                address__icontains=form.cleaned_data['search']
+            )
+    else:
+        form = SearchForm()
+
+    return render(request, 'blocks/search.html', {'form': form, 'results': results})

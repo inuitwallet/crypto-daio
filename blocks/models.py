@@ -1,4 +1,6 @@
 from __future__ import unicode_literals
+
+from decimal import Decimal
 from django.db import models
 
 
@@ -49,16 +51,6 @@ class Block(models.Model):
         blank=True,
         null=True,
     )
-    previous_block_hash = models.CharField(
-        max_length=610,
-        blank=True,
-        null=True,
-    )
-    next_block_hash = models.CharField(
-        max_length=610,
-        blank=True,
-        null=True,
-    )
     previous_block = models.ForeignKey(
         'Block',
         related_name='previous',
@@ -103,6 +95,10 @@ class Block(models.Model):
     def __str__(self):
         return str(self.hash)
 
+    @property
+    def class_type(self):
+        return 'Block'
+
 
 class Transaction(models.Model):
     """
@@ -128,6 +124,10 @@ class Transaction(models.Model):
 
     def __str__(self):
         return str(self.tx_id)
+
+    @property
+    def class_type(self):
+        return 'Transaction'
 
 
 class TxInput(models.Model):
@@ -175,6 +175,23 @@ class Address(models.Model):
     def __str__(self):
         return str(self.address)
 
+    @property
+    def class_type(self):
+        return 'Address'
+
+    @property
+    def balance(self):
+        value = Decimal(0.0)
+        # get the outputs for the address
+        outputs = TxOutput.objects.filter(
+            addresses__address=self.address,
+        )
+        for output in outputs:
+            print(output.is_unspent, output.value)
+            if output.is_unspent:
+                value += Decimal(output.value)
+        return value
+
 
 class TxOutput(models.Model):
     transaction = models.ForeignKey(
@@ -209,6 +226,9 @@ class TxOutput(models.Model):
         related_name='output_addresses',
         related_query_name='output_address',
     )
+    is_unspent = models.BooleanField(
+        default=True,
+    )
 
     def __str__(self):
         return str(self.pk)
@@ -216,7 +236,7 @@ class TxOutput(models.Model):
     def Meta(self):
         self.unique_together = (self.transaction, self.n)
 
-    def is_unspent(self):
+    def unspent(self):
         """
         Check if the output has been used as an input on a different Tx
         :return: Boolean

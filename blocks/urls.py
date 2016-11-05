@@ -21,4 +21,9 @@ urlpatterns = [
         views.TransactionDetail.as_view(),
         name='get_tx'
     ),
+    url(
+        r'^search/$',
+        views.search,
+        name='search',
+    )
 ]

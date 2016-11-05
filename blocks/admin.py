@@ -28,7 +28,7 @@ admin.site.register(TxOutput, TxOutputAdmin)
 
 
 class AddressAdmin(admin.ModelAdmin):
-    list_display = ('address',)
+    list_display = ('address', )
 
 admin.site.register(Address, AddressAdmin)
 
