@@ -96,4 +96,6 @@ ve/
 .idea/
 
 test_client.py
+test_proto.py
+
 
