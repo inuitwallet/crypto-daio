@@ -32,15 +32,27 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='block',
             name='next_block',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='blocks.Block'),
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='next_block',
+                to='blocks.Block'
+            ),
         ),
         migrations.AddField(
             model_name='block',
             name='previous_block',
-            field=models.ForeignKey(default=1, on_delete=django.db.models.deletion.CASCADE, to='blocks.Block'),
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name='previous_block',
+                to='blocks.Block'
+            ),
             preserve_default=False,
         ),
-        migrations.RunPython(
-            migrate_blocks,
-        ),
+        #migrations.RunPython(
+        #    migrate_blocks,
+        #),
     ]

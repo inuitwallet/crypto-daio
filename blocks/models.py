@@ -51,13 +51,13 @@ class Block(models.Model):
     )
     previous_block = models.ForeignKey(
         'Block',
-        related_name='previous',
+        related_name='previous_block',
         blank=True,
         null=True,
     )
     next_block = models.ForeignKey(
         'Block',
-        related_name='next',
+        related_name='next_block',
         blank=True,
         null=True,
     )
