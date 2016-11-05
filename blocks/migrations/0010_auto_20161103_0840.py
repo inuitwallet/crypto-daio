@@ -6,22 +6,6 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
-def migrate_blocks(apps, schema_editor):
-    # We can't import the Person model directly as it may be a newer
-    # version than this migration expects. We use the historical version.
-    Block = apps.get_model("blocks", "Block")
-    for block in Block.objects.all():
-        try:
-            block.previous_block = Block.objects.get(hash=block.previous_block_hash)
-        except Block.DoesNotExist:
-            pass
-
-        try:
-            block.next_block = Block.objects.get(hash=block.next_block_hash)
-        except Block.DoesNotExist:
-            pass
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
