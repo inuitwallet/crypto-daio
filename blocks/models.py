@@ -185,11 +185,10 @@ class Address(models.Model):
         # get the outputs for the address
         outputs = TxOutput.objects.filter(
             addresses__address=self.address,
+            is_unspent=True,
         )
         for output in outputs:
-            print(output.is_unspent, output.value)
-            if output.is_unspent:
-                value += Decimal(output.value)
+            value += Decimal(output.value)
         return value
 
 
