@@ -223,7 +223,7 @@ class TxOutput(models.Model):
     addresses = models.ManyToManyField(
         Address,
         related_name='output_addresses',
-        related_query_name='output_address',
+        related_query_name='tx_output',
     )
     is_unspent = models.BooleanField(
         default=True,
