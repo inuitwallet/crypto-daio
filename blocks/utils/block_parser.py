@@ -92,14 +92,15 @@ def save_transactions(block, this_block):
                 coin_base=vin.get('coinbase', None),
             )
             # if a previous output is used as this input, update it's `is_unspent` status
-            try:
-                spent_output = TxOutput.objects.get(
-                    transaction=Transaction.objects.get(tx_id=tx_input.tx_id),
-                    n=tx_input.v_out,
-                )
-                spent_output.is_unspent = False
-            except TxOutput.DoesNotExist:
-                pass
+            if tx_input.tx_id and tx_input.v_out:
+                try:
+                    spent_output = TxOutput.objects.get(
+                        transaction=Transaction.objects.get(tx_id=tx_input.tx_id),
+                        n=tx_input.v_out,
+                    )
+                    spent_output.is_unspent = False
+                except TxOutput.DoesNotExist:
+                    pass
         # similar for each TxOutput
         for vout in tx.get('vout', []):
             script_pubkey = vout.get('scriptPubKey', {})
