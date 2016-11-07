@@ -44,16 +44,22 @@ def save_block(block):
     this_block.bits = block.get('bits', None)
     this_block.difficulty = block.get('difficulty', None)
     this_block.mint = block.get('mint', None)
+
     try:
         previous_block = Block.objects.get(hash=block.get('previousblockhash', None))
+        this_block.previous_block = previous_block
+        # update the previous block with this block as its next block
+        previous_block.next_block = this_block
+        previous_block.save()
     except Block.DoesNotExist:
-        previous_block = None
-    this_block.previous_block = previous_block
+        pass
+
     try:
         next_block = Block.objects.get(hash=block.get('nextblockhash', None))
+        this_block.next_block = next_block
     except Block.DoesNotExist:
-        next_block = None
-    this_block.next_block = next_block
+        pass
+
     this_block.flags = block.get('flags', None)
     this_block.proof_hash = block.get('proofhash', None)
     this_block.entropy_bit = block.get('entropybit', None)
@@ -78,13 +84,22 @@ def save_transactions(block, this_block):
         )
         # for each input in the transaction, save a TxInput
         for vin in tx.get('vin', []):
-            TxInput.objects.get_or_create(
+            tx_input, _ = TxInput.objects.get_or_create(
                 transaction=transaction,
                 tx_id=vin.get('txid', None),
                 v_out=vin.get('vout', None),
                 sequence=vin.get('sequence', None),
                 coin_base=vin.get('coinbase', None),
             )
+            # if a previous output is used as this input, update it's `is_unspent` status
+            try:
+                spent_output = TxOutput.objects.get(
+                    transaction=tx_input.tx_id,
+                    n=tx_input.v_out,
+                )
+                spent_output.is_unspent = False
+            except TxOutput.DoesNotExist:
+                pass
         # similar for each TxOutput
         for vout in tx.get('vout', []):
             script_pubkey = vout.get('scriptPubKey', {})
