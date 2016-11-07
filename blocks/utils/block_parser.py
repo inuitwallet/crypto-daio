@@ -103,7 +103,7 @@ def save_transactions(block, this_block):
                 )
                 spent_output.is_unspent = False
             except TxOutput.DoesNotExist:
-                pass
+                continue
         # similar for each TxOutput
         for vout in tx.get('vout', []):
             script_pubkey = vout.get('scriptPubKey', {})
