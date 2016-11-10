@@ -3,6 +3,7 @@ import time
 import requests
 import json
 from django.conf import settings
+from requests import ReadTimeout
 from requests.exceptions import ConnectionError
 
 
@@ -24,7 +25,7 @@ def send_rpc(data):
             url=rpc_url,
             headers=headers,
             data=json.dumps(data),
-            timeout=180,
+            timeout=600,
         )
 
         try:
@@ -34,5 +35,8 @@ def send_rpc(data):
 
     except ConnectionError:
         return {'error': True, 'message': 'no connection with daemon'}
+
+    except ReadTimeout:
+        return {'error': True, 'message': 'daemon timeout'}
 
 
