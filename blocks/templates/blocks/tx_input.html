@@ -8,10 +8,10 @@
             <div class="row tx-row">
                 {% if input.coin_base %}
                     <div class="col-md-6 tx-tag text-center">CoinBase</div>
-                    <div class="col-md-6 text-left">{{ input.coin_base }}</div>
+                    <div class="col-md-6 text-left wrap">{{ input.coin_base }}</div>
                 {% endif %}
                 <div class="col-md-6 tx-tag text-center">Sequence</div>
-                <div class="col-md-6 text-left">{{ input.sequence }}</div>
+                <div class="col-md-6 text-left wrap">{{ input.sequence }}</div>
             </div>
             {% for output in input.output_transaction.outputs.all %}
                 {% if output.n == input.v_out %}
