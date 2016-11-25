@@ -12,9 +12,9 @@ def calc_block_hash(block):
         block.bits.decode('hex')[::-1] +
         struct.pack('<L', block.nonce)
     )
-    hash = hashlib.sha256(hashlib.sha256(header).digest()).digest()
-    hash.encode('hex_codec')
-    return hash[::-1].encode('hex_codec')
+    header_hash = hashlib.sha256(hashlib.sha256(header).digest()).digest()
+    header_hash.encode('hex_codec')
+    return header_hash[::-1].encode('hex_codec')
 
 
 def calc_tx_hash(tx):
@@ -23,22 +23,40 @@ def calc_tx_hash(tx):
         tx_inputs += (
             tx_input.tx_id.decode('hex')[::-1]
             if tx_input.tx_id is not None
-            else ''
+            else ('0'*64).decode('hex')[::-1]
         )
-        tx_inputs += struct.pack('<L', tx_input.v_out)
         tx_inputs += (
+            struct.pack('<L', tx_input.v_out)
+            if tx_input.v_out is not None
+            else 'ffffff'.decode('hex')[::-1]
+        )
+        script = (
             tx_input.coin_base.decode('hex')[::-1]
             if tx_input.coin_base is not None
             else ''
         )
+        tx_inputs += struct.pack('<I', len(script))
+        tx_inputs += script
         tx_inputs += struct.pack('<L', tx_input.sequence)
+
+    tx_outputs = ''
+    for tx_output in tx.outputs.all():
+        tx_outputs += (
+            struct.pack('L', tx_output.value) +
+            tx_output.script_pub_key_hex.decode('hex')[::-1]
+        )
 
     header = (
         struct.pack('<L', tx.version) +
         struct.pack('<I', tx.inputs.all().count()) +
-        tx_inputs
+        tx_inputs +
+        struct.pack('<I', tx.outputs.all().count()) +
+        tx_outputs +
+        struct.pack('<L', tx.lock_time)
     )
-    print(header.encode('hex'))
+    header_hash = hashlib.sha256(hashlib.sha256(header).digest()).digest()
+    header_hash.encode('hex_codec')
+    return header_hash[::-1].encode('hex_codec')
 
 
 if __name__ == '__main__':
@@ -59,7 +77,7 @@ if __name__ == '__main__':
 
         for tx in block.transactions.all():
             try:
-                calc_tx_hash(tx)
+                calc_tx_hash = calc_tx_hash(tx)
             except AttributeError as e:
                 print(
                     'problem with tx {} on block {}: {}'.format(
@@ -68,3 +86,7 @@ if __name__ == '__main__':
                         e.message
                     )
                 )
+            print(calc_tx_hash)
+            print(tx.tx_id)
+            assert calc_tx_hash == tx.tx_id
+
