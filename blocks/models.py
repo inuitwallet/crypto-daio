@@ -145,6 +145,11 @@ class TxInput(models.Model):
         blank=True,
         null=True,
     )
+    output_transaction = models.ForeignKey(
+        Transaction,
+        related_name='inout_txs',
+        related_query_name='inout_tx'
+    )
     v_out = models.BigIntegerField(
         blank=True,
         null=True,
@@ -234,6 +239,7 @@ class TxOutput(models.Model):
 
     def Meta(self):
         self.unique_together = (self.transaction, self.n)
+        ordering = 'n'
 
 
 class CustodianVote(models.Model):
