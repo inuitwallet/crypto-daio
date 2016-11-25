@@ -1,10 +1,10 @@
 import django
 django.setup()
 
-from blocks.models import Block
+from blocks.models import Block, TxInput, Transaction
 
 
-def main():
+def migrate_blocks():
     for block in Block.objects.all():
         print('migrating block {}'.format(block.height))
         try:
@@ -19,5 +19,17 @@ def main():
 
         block.save()
 
+
+def migrate_tx_inputs():
+    for tx_input in TxInput.objects.all():
+        print('migrating txinput {}'.format(tx_input))
+        try:
+            tx_input.output_transaction = Transaction.objects.get(tx_id=tx_input.tx_id)
+        except Transaction.DoesNotExist:
+            pass
+
+        tx_input.save()
+
 if __name__ == '__main__':
-    main()
+    #migrate_blocks()
+    migrate_tx_inputs()
