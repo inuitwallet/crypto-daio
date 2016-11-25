@@ -1,40 +1,25 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Blocks</title>
-</head>
-<body>
-{% for block in object_list %}
-    <h3>Block {{ block.height }}: {{ block.hash }}</h3>
-    <div>
-    {% for tx in block.transactions.all %}
-        <div>
-            <p>Transaction: {{ tx.tx_id }}</p>
-            {% for input in tx.inputs.all %}
-                <p>Input: {{ input.tx_id }} {{ input.v_out }}</p>
-            {% endfor %}
-            {% for output in tx.outputs.all %}
-                <p>Output: {{ output.n }} {{ output.value }}</p>
-            {% endfor %}
+{% extends 'blocks/base.html' %}
+
+{% block title %}
+All Blocks
+{% endblock %}
+
+{% block body %}
+    {% if is_paginated %}
+        {% include 'blocks/pagination.html' %}
+    {% endif %}
+    {% for block_data in object_list %}
+        <div class="row">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="block">
+                    <a href="/block/{{ block_data.hash }}">
+                        {% include 'blocks/block.html' %}
+                    </a>
+                </div>
+            </div>
         </div>
     {% endfor %}
-    </div>
-{% endfor %}
-{% if is_paginated %}
-        <div class="pagination">
-            <span class="page-links">
-                {% if page_obj.has_previous %}
-                    <a href="/blocks/?page={{ page_obj.previous_page_number }}">previous</a>
-                {% endif %}
-                <span class="page-current">
-                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
-                </span>
-                {% if page_obj.has_next %}
-                    <a href="/blocks/?page={{ page_obj.next_page_number }}">next</a>
-                {% endif %}
-            </span>
-        </div>
+    {% if is_paginated %}
+        {% include 'blocks/pagination.html' %}
     {% endif %}
-</body>
-</html>
+{% endblock %}

@@ -1,32 +1,41 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Block {{ block.height }}</title>
-</head>
-<body>
-<h3>Block {{ block.height }}: {{ block.hash }}</h3>
-<div>
-{% for tx in block.transactions.all %}
-    <div>
-        <p>Transaction: {{ tx.tx_id }}</p>
-        {% for input in tx.inputs.all %}
-            <p>Input: {{ input.tx_id }} {{ input.v_out }}</p>
-        {% endfor %}
-        {% for output in tx.outputs.all %}
-            <p>Output: {{ output.n }} {{ output.value }}</p>
-        {% endfor %}
+{% extends 'blocks/base.html' %}
+
+{% block title %}
+Block {{ block_data.height }}
+{% endblock %}
+
+{% block body %}
+    <div class="row block-row">
     </div>
-{% endfor %}
-</div>
-<div class="pagination">
-    <span class="page-links">
-        <a href="/block/{{ block.previous_block_hash }}">Previous Block</a>
-        <span class="page-current">
-            Block {{ block.height }}
-        </span>
-        <a href="/block/{{ block.next_block_hash }}">Next Block</a>
-    </span>
-</div>
-</body>
-</html>
+    <div class="row">
+        <div class="col-md-1 block-link text-center">
+            {% if block_data.previous_block %}
+                <a href="/block/{{ block_data.previous_block.hash }}">
+                    Previous Block
+                </a>
+            {% endif %}
+        </div>
+        <div class="col-md-10">
+            <div class="block">
+                {% include 'blocks/block.html' %}
+                <div>
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            {{ block_data.transactions.count }} Transactions
+                        </div>
+                    </div>
+                    {% for tx in block_data.transactions.all %}
+                        {% include 'blocks/tx.html' %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-md-1 block-link text-center">
+            {% if block_data.next_block %}
+                <a href="/block/{{ block_data.next_block.hash }}">
+                    Next Block
+                </a>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}}
