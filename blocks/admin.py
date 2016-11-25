@@ -50,6 +50,9 @@ class TxInputAdmin(admin.ModelAdmin):
         if db_field.name == 'transaction':
             tx_input = TxInput.objects.get(id=request.path.split('/')[4])
             kwargs["queryset"] = Transaction.objects.filter(id=tx_input.transaction.id)
+        if db_field.name == 'output_transaction':
+            tx_input = TxInput.objects.get(id=request.path.split('/')[4])
+            kwargs["queryset"] = Transaction.objects.filter(id=tx_input.output_transaction.id)
         return super(TxInputAdmin, self).formfield_for_foreignkey(
             db_field,
             request,
