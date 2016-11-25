@@ -62,9 +62,37 @@ class BlockList(ListView):
 
 class BlockDetail(DetailView):
     model = Block
+    context_object_name = u'block_data'
 
-    def get_object(self):
+    def get_object(self, **kwargs):
         return get_object_or_404(Block, hash=self.kwargs['block_hash'])
+
+    def get_context_data(self, **kwargs):
+        context = super(BlockDetail, self).get_context_data(**kwargs)
+        context['balance'] = {}
+        block = get_object_or_404(Block, hash=self.kwargs['block_hash'])
+
+        for transaction in block.transactions.all():
+            input_total = 0
+
+            for tx_input in TxInput.objects.filter(transaction=transaction):
+                try:
+                    output = TxOutput.objects.get(
+                        transaction=tx_input.output_transaction,
+                        n=tx_input.v_out
+                    )
+                    input_total += output.value
+                except TxOutput.DoesNotExist:
+                    continue
+
+            output_total = 0
+
+            for tx_output in transaction.outputs.all():
+                output_total += tx_output.value
+
+            context['balance'][str(transaction.tx_id)] = output_total - input_total
+
+        return context
 
 
 class TransactionDetail(DetailView):
