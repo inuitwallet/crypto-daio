@@ -1,0 +1,95 @@
+body {
+    background-color: black;
+    color: white;
+    font-family: "Lucida Console", Monaco, monospace;
+    font-size: 0.8vw;
+}
+
+.block {
+    border: 2px white solid;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 5px;
+}
+
+.block a {
+    color: white;
+    text-decoration: none;
+}
+
+.block a:hover {
+    text-decoration: underline;
+}
+
+.block-row {
+    padding: 5px;
+}
+
+.tag {
+    font-size: 0.9vw;
+}
+
+.block-link {
+    padding-top: 50px;
+}
+
+.block-link a {
+    color: white;
+    text-decoration: none;
+}
+
+.block-link a:hover {
+    text-decoration: underline;
+}
+
+.tx {
+    border: 1px white solid;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 5px;
+}
+
+.tx-row {
+    padding: 5px;
+}
+
+.tx-input, .tx-output {
+    font-size: 0.65vw;
+    border: 1px white solid;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 5px;
+}
+
+.tx-tag {
+    font-weight: 700;
+}
+
+.tx-input-address, .tx-output-address {
+    font-size: 0.8vw;
+}
+
+.tx-input-value, .tx-output-value {
+    font-size: 0.9vw;
+}
+
+.tx-input-row, .tx-output-row {
+    margin: 15px;
+}
+
+.tx-input-indicator, .tx-output-indicator {
+    font-weight: 800;
+    font-size: 1vw;
+}
+
+.wrap {
+    word-wrap: break-word;
+}
+
+.spent {
+    color: red;
+}
+
+.unspent {
+    color: green;
+}
