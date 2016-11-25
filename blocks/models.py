@@ -239,7 +239,7 @@ class TxOutput(models.Model):
 
     def Meta(self):
         self.unique_together = (self.transaction, self.n)
-        ordering = 'n'
+        ordering = '-n'
 
 
 class CustodianVote(models.Model):
