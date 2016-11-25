@@ -57,7 +57,7 @@ class BlockList(ListView):
     paginate_by = 50
 
     def get_queryset(self):
-        return Block.objects.all().order_by('-height')
+        return Block.objects.all().exclude(height=None).order_by('-height')
 
 
 class BlockDetail(DetailView):
