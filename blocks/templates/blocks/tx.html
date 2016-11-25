@@ -1,0 +1,38 @@
+<div class="row">
+    <div class="col-md-10 col-md-offset-1">
+        <div class="tx">
+        <div class="row tx-row">
+            <div class="col-md-10 col-md-offset-1 text-center">
+                {{ tx.tx_id }}
+            </div>
+            <div class="col-md-1 text-center">
+                {% with tx_hash=tx.tx_id %}
+                    {{ balance.tx_hash }}
+                {% endwith %}
+            </div>
+        </div>
+        <div class="row tx-row">
+            <div class="col-md-5 col-md-offset-1">
+                <div class="row tx-row">
+                    <div class="col-md-12 text-center">
+                        Input
+                    </div>
+                </div>
+                {% for input in tx.inputs.all %}
+                    {% include 'blocks/tx_input.html' %}
+                {% endfor %}
+            </div>
+            <div class="col-md-5">
+                <div class="row tx-row">
+                    <div class="col-md-12 text-center">
+                        Outputs ({{ tx.outputs.count }})
+                    </div>
+                </div>
+                {% for output in tx.outputs.all %}
+                    {% include 'blocks/tx_output.html' %}
+                {% endfor %}
+            </div>
+        </div>
+        </div>
+    </div>
+</div>

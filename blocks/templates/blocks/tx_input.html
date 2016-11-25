@@ -1,0 +1,37 @@
+<div class="tx-input">
+    <div class="row">
+        <div class="col-md-10">
+            <div class="row">
+                <div class="col-md-6 tx-tag text-center">Tx Output</div>
+                <div class="col-md-6 text-left wrap">{{ input.output_transaction.tx_id }}{% if input.v_out %} - {{input.v_out }}{% endif %}</div>
+            </div>
+            <div class="row tx-row">
+                {% if input.coin_base %}
+                    <div class="col-md-6 tx-tag text-center">CoinBase</div>
+                    <div class="col-md-6 text-left">{{ input.coin_base }}</div>
+                {% endif %}
+                <div class="col-md-6 tx-tag text-center">Sequence</div>
+                <div class="col-md-6 text-left">{{ input.sequence }}</div>
+            </div>
+            {% for output in input.output_transaction.outputs.all %}
+                {% if output.n == input.v_out %}
+                    <div class="row tx-input-row">
+                        <div class="col-md-12 text-center tx-input-address">
+                            {% for address in output.addresses.all %}
+                                {{ address.address }}
+                            {% endfor %}
+                        </div>
+                        <div class="col-md-12 text-center tx-input-value">
+                            {{ output.value }}
+                        </div>
+                    </div>
+                {% endif %}
+            {% endfor %}
+        </div>
+        <div class="col-md-2 text-right">
+            <span class="tx-input-indicator">
+                >
+            </span>
+        </div>
+    </div>
+</div>
