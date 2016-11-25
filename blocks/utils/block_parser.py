@@ -98,12 +98,8 @@ def save_transactions(block, this_block):
             )
             # if a previous output is used as this input, update it's `is_unspent` status
             try:
-                output_tx = Transaction.objects.get(tx_id=tx_input.tx_id)
-            except Transaction.DoesNotExist:
-                output_tx = None
-            try:
                 spent_output = TxOutput.objects.get(
-                    transaction=output_tx,
+                    transaction=tx_input.output_transaction,
                     n=tx_input.v_out,
                 )
                 spent_output.is_unspent = False
