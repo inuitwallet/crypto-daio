@@ -84,9 +84,14 @@ def save_transactions(block, this_block):
         )
         # for each input in the transaction, save a TxInput
         for vin in tx.get('vin', []):
+            try:
+                output_transaction = Transaction.objects.get(tx_id=vin.get('txid', None))
+            except Transaction.DoesNotExist:
+                output_transaction = None
             tx_input, _ = TxInput.objects.get_or_create(
                 transaction=transaction,
                 tx_id=vin.get('txid', None),
+                output_transaction=output_transaction,
                 v_out=vin.get('vout', None),
                 sequence=vin.get('sequence', None),
                 coin_base=vin.get('coinbase', None),
