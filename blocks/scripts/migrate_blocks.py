@@ -21,8 +21,9 @@ def migrate_blocks():
 
 
 def migrate_tx_inputs():
+    print('fetching all tx_inputs')
     for tx_input in TxInput.objects.all():
-        print('migrating txinput {}'.format(tx_input))
+        print('migrating tx_input {}'.format(tx_input))
         try:
             tx_input.output_transaction = Transaction.objects.get(tx_id=tx_input.tx_id)
         except Transaction.DoesNotExist:
