@@ -148,7 +148,9 @@ class TxInput(models.Model):
     output_transaction = models.ForeignKey(
         Transaction,
         related_name='inout_txs',
-        related_query_name='inout_tx'
+        related_query_name='inout_tx',
+        blank=True,
+        null=True,
     )
     v_out = models.BigIntegerField(
         blank=True,
