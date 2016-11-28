@@ -2,8 +2,7 @@ from threading import Thread
 
 from django.views.generic import DetailView
 
-from blocks.utils.block_parser import start_parse, save_block
-from blocks.utils.rpc import send_rpc, trigger_block_parse
+from blocks.utils.block_parser import start_parse, trigger_block_parse
 from django.http import HttpResponse
 from django.http.response import HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404

@@ -8,7 +8,7 @@ from blocks.models import Block, Transaction, TxInput, TxOutput, Address, WatchA
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils import timezone
-from blocks.utils.rpc import send_rpc, trigger_block_parse
+from blocks.utils.rpc import send_rpc
 import logging
 
 logger = logging.getLogger('block_parser')
@@ -226,3 +226,22 @@ def start_parse():
 def check_transaction():
     pass
 
+
+def trigger_block_parse(block_hash):
+    rpc = send_rpc(
+        {
+            'method': 'getblock',
+            'params': [block_hash]
+        }
+    )
+    got_block = rpc['result'] if not rpc['error'] else None
+    if got_block:
+        save = Thread(
+            target=save_block,
+            kwargs={
+                'block': got_block,
+            },
+            name=block_hash
+        )
+        save.daemon = True
+        save.start()
