@@ -1,7 +1,6 @@
 import hashlib
 import struct
 import time
-from threading import Thread
 
 
 def calc_block_hash(block):

@@ -1,5 +1,5 @@
 import json
-from threading import Thread, enumerate
+from threading import Thread
 import time
 from datetime import datetime as dt
 
@@ -8,7 +8,7 @@ from blocks.models import Block, Transaction, TxInput, TxOutput, Address, WatchA
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils import timezone
-from rpc import send_rpc, trigger_block_parse
+from blocks.utils.rpc import send_rpc, trigger_block_parse
 import logging
 
 logger = logging.getLogger('block_parser')
