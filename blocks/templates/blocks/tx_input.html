@@ -3,7 +3,11 @@
         <div class="col-md-10">
             <div class="row">
                 <div class="col-md-6 tx-tag text-center">Tx Output</div>
-                <div class="col-md-6 text-left wrap">{{ input.output_transaction.tx_id }}{% if input.v_out %} - {{input.v_out }}{% endif %}</div>
+                <div class="col-md-6 text-left wrap">
+                    <a href="/block/{{ input.output_transaction.block.hash }}">
+                        {{ input.output_transaction.tx_id }}{% if input.v_out %} - {{input.v_out }}{% endif %}
+                    </a>
+                </div>
             </div>
             <div class="row tx-row">
                 {% if input.coin_base %}
