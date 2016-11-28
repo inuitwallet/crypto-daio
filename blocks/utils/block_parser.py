@@ -29,9 +29,9 @@ def save_block(block):
         return
     # get or create the block
     this_block, _ = Block.objects.get_or_create(hash=block_hash)
-    logger.info('parsing {}'.format(block_hash))
-    this_block.size = block.get('size', None)
     this_block.height = block.get('height', None)
+    logger.info('parsing {} at height {}'.format(block_hash, this_block.height))
+    this_block.size = block.get('size', None)
     this_block.version = block.get('version', None)
     this_block.merkle_root = block.get('merkleroot', None)
     this_block.time = tz.localize(
