@@ -114,7 +114,10 @@ class Transaction(models.Model):
         max_length=610,
         unique=True,
     )
-    version = models.IntegerField()
+    version = models.IntegerField(
+        blank=True,
+        null=True,
+    )
     lock_time = models.IntegerField(
         blank=True,
         null=True,
