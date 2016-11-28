@@ -5,9 +5,15 @@
                 <div class="col-md-6 tx-tag text-center">Tx Output</div>
                 <div class="col-md-6 text-left wrap">
                     <a href="/block/{{ input.output_transaction.block.hash }}">
-                        {{ input.output_transaction.tx_id }}{% if input.v_out %} - {{input.v_out }}{% endif %}
+                        {{ input.output_transaction.tx_id }}
                     </a>
                 </div>
+                {% if input.v_out %}
+                    <div class="col-md-6 tx-tag text-center">Output N</div>
+                    <div class="col-md-6 text-left wrap">
+                        {{ input.v_out }}
+                    </div>
+                {% endif %}
             </div>
             <div class="row tx-row">
                 {% if input.coin_base %}
