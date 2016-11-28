@@ -68,7 +68,7 @@ def save_block(block):
     this_block.coinage_destroyed = block.get('coinagedestroyed', None)
 
     this_block.save()
-    logger.info('saved block {}'.format(block.height))
+    logger.info('saved block {}'.format(this_block.height))
 
     for tx_hash in block.get('tx', []):
         rpc = send_rpc(
