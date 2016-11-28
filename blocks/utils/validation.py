@@ -2,6 +2,8 @@ import hashlib
 import struct
 import time
 
+from blocks.utils.rpc import send_rpc
+
 
 def calc_block_hash(block):
     header = (
@@ -74,11 +76,30 @@ if __name__ == '__main__':
         latest_block_id = 0
 
     for i in range(latest_block_id):
+        # get the block from the database
         try:
             block = Block.objects.get(id=i)
         except Block.DoesNotExist:
             print('no block with id {}'.format(i))
             continue
+        # if it doesn't have a previous block, we need to get that block first
+        try:
+            prev_block_hash = block.previous_block.hash
+        except AttributeError:
+            print('couldn\'t get previous block hash')
+            rpc = send_rpc(
+                {
+                    'method': 'getblock',
+                    'params': [block.hash]
+                }
+            )
+            got_block = rpc['result'] if not rpc['error'] else None
+            if got_block:
+                trigger_block_parse(block.get('previousblockhash', None))
+                block.previous_block = Block.objects.get(
+                    hash=block.get('previousblockhash', None)
+                )
+
         try:
             calc_hash = calc_block_hash(block)
         except (AttributeError, struct.error) as e:
