@@ -86,7 +86,10 @@ if __name__ == '__main__':
         try:
             prev_block_hash = block.previous_block.hash
         except AttributeError:
-            print('couldn\'t get previous block hash')
+            print('couldn\'t get previous block hash for block {}:{}'.format(
+                block.height,
+                i
+            ))
             rpc = send_rpc(
                 {
                     'method': 'getblock',
