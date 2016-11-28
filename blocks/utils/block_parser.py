@@ -96,10 +96,11 @@ def save_transaction(block, tx):
     transaction, _ = Transaction.objects.get_or_create(
         block=block,
         tx_id=tx.get('txid', None),
-        version=tx.get('version', None),
-        lock_time=tx.get('locktime', None),
-        unit=tx.get('unit', None),
     )
+    transaction.version = tx.get('version', None),
+    transaction.lock_time = tx.get('locktime', None),
+    transaction.unit = tx.get('unit', None)
+    transaction.save()
     # for each input in the transaction, save a TxInput
     for vin in tx.get('vin', []):
         try:
