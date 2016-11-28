@@ -124,8 +124,8 @@ class Transaction(models.Model):
         blank=True,
         null=True,
     )
-    is_coin_base = models.BooleanField()
-    is_coin_stake = models.BooleanField()
+    is_coin_base = models.NullBooleanField()
+    is_coin_stake = models.NullBooleanField()
 
     def __str__(self):
         return str(self.tx_id)
