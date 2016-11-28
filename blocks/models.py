@@ -119,6 +119,11 @@ class Transaction(models.Model):
         blank=True,
         null=True,
     )
+    unit = models.CharField(
+        max_length=15,
+        blank=True,
+        null=True,
+    )
     is_coin_base = models.BooleanField()
     is_coin_stake = models.BooleanField()
 
@@ -162,6 +167,14 @@ class TxInput(models.Model):
         null=True,
     )
     sequence = models.BigIntegerField(
+        blank=True,
+        null=True,
+    )
+    script_sig_asm = models.TextField(
+        blank=True,
+        null=True,
+    )
+    script_sig_hex = models.TextField(
         blank=True,
         null=True,
     )

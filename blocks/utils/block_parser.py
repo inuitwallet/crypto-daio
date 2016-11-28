@@ -68,75 +68,96 @@ def save_block(block):
     this_block.coinage_destroyed = block.get('coinagedestroyed', None)
 
     this_block.save()
-    save_transactions(block, this_block)
+    logger.info('saved block {}'.format(block.height))
 
-
-def save_transactions(block, this_block):
-    # for each transaction in the block, save a new transaction
-    for tx in block.get('tx', []):
-        transaction, _ = Transaction.objects.get_or_create(
-            block=this_block,
-            tx_id=tx.get('txid', None),
-            version=tx.get('version', None),
-            lock_time=tx.get('locktime', None),
-            is_coin_base=tx.get('is_coinbase', None),
-            is_coin_stake=tx.get('is_coinstake', None),
+    for tx_hash in block.get('tx', []):
+        rpc = send_rpc(
+            {
+                'method': 'getrawtransaction',
+                'params': [tx_hash, 1]
+            }
         )
-        # for each input in the transaction, save a TxInput
-        for vin in tx.get('vin', []):
-            try:
-                output_transaction = Transaction.objects.get(tx_id=vin.get('txid', None))
-            except Transaction.DoesNotExist:
-                output_transaction = None
-            tx_input, _ = TxInput.objects.get_or_create(
-                transaction=transaction,
-                tx_id=vin.get('txid', None),
-                output_transaction=output_transaction,
-                v_out=vin.get('vout', None),
-                sequence=vin.get('sequence', None),
-                coin_base=vin.get('coinbase', None),
+        tx = rpc['result'] if not rpc['error'] else None
+        if tx:
+            save = Thread(
+                target=save_transaction,
+                kwargs={
+                    'block': this_block,
+                    'tx': tx,
+                },
+                name=tx_hash
             )
-            # if a previous output is used as this input, update it's `is_unspent` status
-            try:
-                spent_output = TxOutput.objects.get(
-                    transaction=tx_input.output_transaction,
-                    n=tx_input.v_out,
-                )
-                spent_output.is_unspent = False
-            except TxOutput.DoesNotExist:
-                continue
-        # similar for each TxOutput
-        for vout in tx.get('vout', []):
-            script_pubkey = vout.get('scriptPubKey', {})
-            tx_output, _ = TxOutput.objects.get_or_create(
-                transaction=transaction,
-                value=vout.get('value', 0),
-                n=vout.get('n', None),
-                script_pub_key_asm=script_pubkey.get('asm', None),
-                script_pub_key_hex=script_pubkey.get('hex', None),
-                script_pub_key_type=script_pubkey.get('type', None),
-                script_pub_key_req_sig=script_pubkey.get('reqSig', None),
+            save.daemon = True
+            save.start()
+
+
+def save_transaction(block, tx):
+    # get the transaction details
+    transaction, _ = Transaction.objects.get_or_create(
+        block=block,
+        tx_id=tx.get('txid', None),
+        version=tx.get('version', None),
+        lock_time=tx.get('locktime', None),
+        unit=tx.get('unit', None),
+    )
+    # for each input in the transaction, save a TxInput
+    for vin in tx.get('vin', []):
+        try:
+            output_transaction = Transaction.objects.get(tx_id=vin.get('txid', None))
+        except Transaction.DoesNotExist:
+            output_transaction = None
+        script_sig = vin.get('scriptSig', {})
+        tx_input, _ = TxInput.objects.get_or_create(
+            transaction=transaction,
+            output_transaction=output_transaction,
+            v_out=vin.get('vout', None),
+            sequence=vin.get('sequence', None),
+            coin_base=vin.get('coinbase', None),
+            script_sig_asm=script_sig.get('asm', None),
+            script_sig_hex=script_sig.get('hex', None),
+        )
+        # if a previous output is used as this input, update it's `is_unspent` status
+        try:
+            spent_output = TxOutput.objects.get(
+                transaction=tx_input.output_transaction,
+                n=tx_input.v_out,
             )
-            # save each address in the output
-            for addr in script_pubkey.get('addresses', []):
-                address, created = Address.objects.get_or_create(
-                    address=addr,
-                )
-                if created:
-                    address.save()
-                tx_output.addresses.add(address)
-                tx_output.save()
-                # check the address against the list of addresses to watch
-                check_thread = Thread(
-                    target=check_watch_addresses,
-                    kwargs={
-                        'address': address,
-                        'value': tx_output.value,
-                    }
-                )
-                check_thread.daemon = True
-                check_thread.start()
-    logger.info('saved block {}'.format(this_block.height))
+            spent_output.is_unspent = False
+            spent_output.save()
+        except TxOutput.DoesNotExist:
+            continue
+    # similar for each TxOutput
+    for vout in tx.get('vout', []):
+        script_pubkey = vout.get('scriptPubKey', {})
+        tx_output, _ = TxOutput.objects.get_or_create(
+            transaction=transaction,
+            value=vout.get('value', 0),
+            n=vout.get('n', None),
+            script_pub_key_asm=script_pubkey.get('asm', None),
+            script_pub_key_hex=script_pubkey.get('hex', None),
+            script_pub_key_type=script_pubkey.get('type', None),
+            script_pub_key_req_sig=script_pubkey.get('reqSigs', None),
+        )
+        # save each address in the output
+        for addr in script_pubkey.get('addresses', []):
+            address, created = Address.objects.get_or_create(
+                address=addr,
+            )
+            if created:
+                address.save()
+            tx_output.addresses.add(address)
+            tx_output.save()
+            # check the address against the list of addresses to watch
+            check_thread = Thread(
+                target=check_watch_addresses,
+                kwargs={
+                    'address': address,
+                    'value': tx_output.value,
+                }
+            )
+            check_thread.daemon = True
+            check_thread.start()
+    logger.info('saved tx {}'.format(tx.tx_id))
     return
 
 
@@ -197,7 +218,7 @@ def start_parse():
             rpc = send_rpc(
                 {
                     'method': 'getblock',
-                    'params': [got_block_hash, True, True]
+                    'params': [got_block_hash]
                 }
             )
             got_block = rpc['result'] if not rpc['error'] else None
