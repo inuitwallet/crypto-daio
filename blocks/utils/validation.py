@@ -70,10 +70,16 @@ if __name__ == '__main__':
     from blocks.utils.block_parser import save_block
     from blocks.utils.rpc import send_rpc
 
-    latest_block_id = Block.objects.latest('id').id
+    try:
+        latest_block_id = Block.objects.latest('id').id
+    except Block.DoesNotExist:
+        latest_block_id = 0
 
     for i in range(latest_block_id):
-        block = Block.objects.get(pk=i)
+        try:
+            block = Block.objects.get(id=i)
+        except Block.DoesNotExist:
+            print('no block with id {}'.format(i))
         try:
             calc_hash = calc_block_hash(block)
         except (AttributeError, struct.error) as e:
