@@ -70,7 +70,10 @@ if __name__ == '__main__':
     from blocks.utils.block_parser import save_block
     from blocks.utils.rpc import send_rpc
 
-    for block in Block.objects.all().order_by('height'):
+    latest_block_id = Block.objects.latest('id').id
+
+    for i in range(latest_block_id):
+        block = Block.objects.get(pk=i)
         try:
             calc_hash = calc_block_hash(block)
         except (AttributeError, struct.error) as e:
