@@ -80,6 +80,7 @@ if __name__ == '__main__':
             block = Block.objects.get(id=i)
         except Block.DoesNotExist:
             print('no block with id {}'.format(i))
+            continue
         try:
             calc_hash = calc_block_hash(block)
         except (AttributeError, struct.error) as e:
