@@ -89,7 +89,7 @@ if __name__ == '__main__':
 
         if calc_hash != block.hash:
             print('hashes for block {} do not match'.format(block.height))
-            print('{}\n{}'.format(block.hash, calc_hash))
+            print('{} != {}'.format(block.hash, calc_hash))
             rpc = send_rpc(
                 {
                     'method': 'getblock',
