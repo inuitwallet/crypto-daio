@@ -71,6 +71,7 @@ def save_block(block):
     logger.info('saved block {}'.format(this_block.height))
 
     for tx_hash in block.get('tx', []):
+        logger.info('scanning tx {}'.format(tx_hash))
         rpc = send_rpc(
             {
                 'method': 'getrawtransaction',
@@ -100,6 +101,7 @@ def save_transaction(block, tx):
     transaction.version = tx.get('version', None),
     transaction.lock_time = tx.get('locktime', None),
     transaction.unit = tx.get('unit', None)
+    print(transaction.version, transaction.lock_time, transaction.unit)
     transaction.save()
     # for each input in the transaction, save a TxInput
     for vin in tx.get('vin', []):
