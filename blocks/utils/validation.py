@@ -66,7 +66,7 @@ if __name__ == '__main__':
     import django
     django.setup()
     from blocks.models import Block
-    from blocks.utils.rpc import trigger_block_parse
+    from blocks.utils.block_parser import trigger_block_parse
 
     try:
         latest_block_id = Block.objects.latest('id').id
