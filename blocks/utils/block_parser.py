@@ -160,7 +160,7 @@ def save_transaction(block, tx):
             )
             check_thread.daemon = True
             check_thread.start()
-    logger.info('saved tx {}'.format(tx.tx_id))
+    logger.info('saved tx {}'.format(transaction.tx_id))
     return
 
 
