@@ -1,13 +1,9 @@
 import time
-from threading import Thread
-
 import requests
 import json
 from django.conf import settings
 from requests import ReadTimeout
 from requests.exceptions import ConnectionError
-
-from blocks.utils.block_parser import save_block
 
 
 def send_rpc(data):
