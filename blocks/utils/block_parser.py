@@ -98,8 +98,8 @@ def save_transaction(block, tx):
         block=block,
         tx_id=tx.get('txid', None),
     )
-    transaction.version = tx.get('version', None),
-    transaction.lock_time = tx.get('locktime', None),
+    transaction.version = tx.get('version', None)[0],
+    transaction.lock_time = tx.get('locktime', None)[0],
     transaction.unit = tx.get('unit', None)
     print(transaction.version, transaction.lock_time, transaction.unit)
     transaction.save()
