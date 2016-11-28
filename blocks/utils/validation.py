@@ -67,8 +67,7 @@ if __name__ == '__main__':
     import django
     django.setup()
     from blocks.models import Block
-    from blocks.utils.block_parser import save_block
-    from blocks.utils.rpc import send_rpc
+    from blocks.utils.rpc import trigger_block_parse
 
     try:
         latest_block_id = Block.objects.latest('id').id
@@ -84,29 +83,19 @@ if __name__ == '__main__':
         try:
             calc_hash = calc_block_hash(block)
         except (AttributeError, struct.error) as e:
-            print('problem with block {}: {}'.format(block.height, e.message))
-            calc_hash = None
+            print('problem with block at height {}, id {}: {}'.format(
+                block.height,
+                i,
+                e.message
+            ))
+            trigger_block_parse(block.hash)
+            continue
 
         if calc_hash != block.hash:
             print('hashes for block {} do not match'.format(block.height))
             print('{} != {}'.format(block.hash, calc_hash))
-            rpc = send_rpc(
-                {
-                    'method': 'getblock',
-                    'params': [block.hash]
-                }
-            )
-            got_block = rpc['result'] if not rpc['error'] else None
-            if got_block:
-                save = Thread(
-                    target=save_block,
-                    kwargs={
-                        'block': got_block,
-                    },
-                    name=block.hash
-                )
-                save.daemon = True
-                save.start()
+            trigger_block_parse(block.hash)
+            continue
 
         #for tx in block.transactions.all():
         #    try:

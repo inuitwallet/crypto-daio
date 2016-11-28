@@ -3,7 +3,7 @@ from threading import Thread
 from django.views.generic import DetailView
 
 from blocks.utils.block_parser import start_parse, save_block
-from blocks.utils.rpc import send_rpc
+from blocks.utils.rpc import send_rpc, trigger_block_parse
 from django.http import HttpResponse
 from django.http.response import HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404
@@ -26,22 +26,7 @@ def notify(request, block_hash):
         return HttpResponse('Nope')
     block, created = Block.objects.get_or_create(hash=block_hash)
     if created:
-        rpc = send_rpc(
-            {
-                'method': 'getblock',
-                'params': [block_hash]
-            }
-        )
-        got_block = rpc['result'] if not rpc['error'] else None
-        if got_block:
-            save = Thread(
-                target=save_block,
-                kwargs={
-                    'block': got_block,
-                },
-            )
-            save.daemon = True
-            save.start()
+        trigger_block_parse(block_hash)
     return HttpResponse('daio received block {}'.format(block_hash))
 
 
