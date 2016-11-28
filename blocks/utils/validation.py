@@ -96,9 +96,7 @@ if __name__ == '__main__':
             got_block = rpc['result'] if not rpc['error'] else None
             if got_block:
                 trigger_block_parse(got_block.get('previousblockhash', None))
-                block.previous_block = Block.objects.get(
-                    hash=got_block.get('previousblockhash', None)
-                )
+            continue
 
         try:
             calc_hash = calc_block_hash(block)
