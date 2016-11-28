@@ -29,7 +29,7 @@ def notify(request, block_hash):
         rpc = send_rpc(
             {
                 'method': 'getblock',
-                'params': [block_hash, True, True]
+                'params': [block_hash]
             }
         )
         got_block = rpc['result'] if not rpc['error'] else None
