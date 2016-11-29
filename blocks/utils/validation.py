@@ -86,6 +86,11 @@ if __name__ == '__main__':
                     )
                 )
                 print('next block height is {}'.format(block.next_block.height))
+                print('this block')
+                trigger_block_parse(block.hash, blocking=True)
+                block = Block.objects.get(hash=block.hash)
+                print('next block')
+                trigger_block_parse(block.next_block.hash, blocking=True)
         except AttributeError as e:
             print('problem for block {} (id {}): {}'.format(
                 block.hash,
