@@ -72,6 +72,19 @@ if __name__ == '__main__':
 
     latest_block = Block.objects.latest('id')
 
+    # run through the blocks to check that heights are continuous
+    block = Block.objects.get(height=0)
+    while block.height <= latest_block.height:
+        print(
+            'checking height {} < next block height {}'.format(
+                block.height,
+                block.next_block.height
+            )
+        )
+        assert block.next_block.height == (block.height + 1)
+        block = block.next_block
+
+    # validate blocks by calculating hashes and comparing
     try:
         latest_block_id = latest_block.id
     except Block.DoesNotExist:
@@ -143,9 +156,3 @@ if __name__ == '__main__':
         #    print(calc_tx_hash)
         #    print(tx.tx_id)
         #    assert calc_tx_hash == tx.tx_id
-
-    # run through the blocks to check thhat heights are continuous
-    block = Block.objects.get(height=0)
-    while block.height <= latest_block.height:
-        assert block.next_block.height == (block.height + 1)
-        block = block.next_block
