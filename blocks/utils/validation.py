@@ -76,7 +76,7 @@ if __name__ == '__main__':
     block = Block.objects.get(height=0)
     print('checking blocks for continuous heights')
     while block.height <= latest_block.height:
-        if block.height % 20 == 0:
+        if block.height % 5000 == 0:
             print(block.height)
         try:
             if block.next_block.height != (block.height + 1):
