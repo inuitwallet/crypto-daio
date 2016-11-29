@@ -91,6 +91,7 @@ if __name__ == '__main__':
                 block = Block.objects.get(hash=block.hash)
                 print('next block')
                 trigger_block_parse(block.next_block.hash, blocking=True)
+                block = Block.objects.get(hash=block.hash)
         except AttributeError as e:
             print('problem for block {} (id {}): {}'.format(
                 block.hash,
@@ -102,6 +103,7 @@ if __name__ == '__main__':
             block = Block.objects.get(hash=block.hash)
             print('next block')
             trigger_block_parse(block.next_block.hash, blocking=True)
+            block = Block.objects.get(hash=block.hash)
 
         block = block.next_block
 
