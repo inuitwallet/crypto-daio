@@ -92,8 +92,10 @@ if __name__ == '__main__':
                 block.id,
                 e.message
             ))
+            print('this block')
             trigger_block_parse(block.hash, blocking=True)
             block = Block.objects.get(hash=block.hash)
+            print('next block')
             trigger_block_parse(block.next_block.hash, blocking=True)
 
         block = block.next_block
