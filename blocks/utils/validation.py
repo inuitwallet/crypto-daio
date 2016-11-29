@@ -70,8 +70,10 @@ if __name__ == '__main__':
     from blocks.models import Block
     from blocks.utils.block_parser import trigger_block_parse
 
+    latest_block = Block.objects.latest('id')
+
     try:
-        latest_block_id = Block.objects.latest('id').id
+        latest_block_id = latest_block.id
     except Block.DoesNotExist:
         latest_block_id = 0
 
@@ -142,3 +144,8 @@ if __name__ == '__main__':
         #    print(tx.tx_id)
         #    assert calc_tx_hash == tx.tx_id
 
+    # run through the blocks to check thhat heights are continuous
+    block = Block.objects.get(height=0)
+    while block.height <= latest_block.height:
+        assert block.next_block.height == (block.height + 1)
+        block = block.next_block
