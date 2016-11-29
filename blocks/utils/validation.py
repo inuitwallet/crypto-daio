@@ -74,14 +74,18 @@ if __name__ == '__main__':
 
     # run through the blocks to check that heights are continuous
     block = Block.objects.get(height=0)
+    print('checking blocks for continuous heights')
     while block.height <= latest_block.height:
-        print(
-            'checking height {} < next block height {}'.format(
-                block.height,
-                block.next_block.height
-            )
-        )
-        assert block.next_block.height == (block.height + 1)
+        try:
+            if block.next_block.height != (block.height + 1):
+                print(
+                    'error with block at height {} (id {})'.format(
+                        block.height, block.id
+                    )
+                )
+                print('next block height is {}'.format(block.next_block.height))
+        except AttributeError as e:
+            print('problem at id {}: {}'.format(block.id, e.message))
         block = block.next_block
 
     # validate blocks by calculating hashes and comparing
