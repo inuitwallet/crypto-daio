@@ -46,7 +46,9 @@ def save_block(block):
     this_block.mint = block.get('mint', None)
 
     try:
-        previous_block = Block.objects.get(hash=block.get('previousblockhash', None))
+        previous_block, _ = Block.objects.get_or_create(
+            hash=block.get('previousblockhash', None)
+        )
         this_block.previous_block = previous_block
         # update the previous block with this block as its next block
         previous_block.next_block = this_block
@@ -55,7 +57,9 @@ def save_block(block):
         pass
 
     try:
-        next_block = Block.objects.get(hash=block.get('nextblockhash', None))
+        next_block, _ = Block.objects.get_or_create(
+            hash=block.get('nextblockhash', None)
+        )
         this_block.next_block = next_block
     except Block.DoesNotExist:
         pass
@@ -227,7 +231,7 @@ def check_transaction():
     pass
 
 
-def trigger_block_parse(block_hash):
+def trigger_block_parse(block_hash, blocking=False):
     rpc = send_rpc(
         {
             'method': 'getblock',
@@ -236,12 +240,15 @@ def trigger_block_parse(block_hash):
     )
     got_block = rpc['result'] if not rpc['error'] else None
     if got_block:
-        save = Thread(
-            target=save_block,
-            kwargs={
-                'block': got_block,
-            },
-            name=block_hash
-        )
-        save.daemon = True
-        save.start()
+        if blocking:
+            save_block(block=got_block)
+        else:
+            save = Thread(
+                target=save_block,
+                kwargs={
+                    'block': got_block,
+                },
+                name=block_hash
+            )
+            save.daemon = True
+            save.start()

@@ -86,6 +86,9 @@ if __name__ == '__main__':
                 print('next block height is {}'.format(block.next_block.height))
         except AttributeError as e:
             print('problem at id {}: {}'.format(block.id, e.message))
+            trigger_block_parse(block.hash, blocking=True)
+            trigger_block_parse(block.next_block.hash, blocking=True)
+
         block = block.next_block
 
     # validate blocks by calculating hashes and comparing
@@ -126,8 +129,7 @@ if __name__ == '__main__':
                     block.save()
                 except Block.DoesNotExist:
                     print('fetching data for block {}'.format(prev_hash))
-                    trigger_block_parse(prev_hash)
-            continue
+                    trigger_block_parse(prev_hash, blocking=True)
 
         try:
             calc_hash = calc_block_hash(block)
