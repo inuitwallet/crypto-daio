@@ -98,7 +98,14 @@ if __name__ == '__main__':
             )
             got_block = rpc['result'] if not rpc['error'] else None
             if got_block:
-                trigger_block_parse(got_block.get('previousblockhash', None))
+                prev_hash = got_block.get('previousblockhash', None)
+                try:
+                    print('adding previous block')
+                    block.previous_block = Block.objects.get(hash=prev_hash)
+                    block.save()
+                except Block.DoesNotExist:
+                    print('fetching data for block {}'.format(prev_hash))
+                    trigger_block_parse(prev_hash)
             continue
 
         try:
