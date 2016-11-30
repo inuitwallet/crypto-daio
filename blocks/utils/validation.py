@@ -1,8 +1,11 @@
 import hashlib
 import struct
 import time
+import logging
 
 from blocks.utils.rpc import send_rpc
+
+logger = logging.getLogger('block_validation')
 
 
 def calc_block_hash(block):
@@ -58,7 +61,7 @@ def calc_tx_hash(tx):
         tx_outputs +
         struct.pack('<L', tx.lock_time)
     )
-    print(struct.pack('<I', tx.inputs.all().count()).encode('hex_codec'))
+    logger.info(struct.pack('<I', tx.inputs.all().count()).encode('hex_codec'))
     header_hash = hashlib.sha256(hashlib.sha256(header).digest()).digest()
     header_hash.encode('hex_codec')
     return header_hash[::-1].encode('hex_codec')
@@ -71,10 +74,10 @@ def check_continuous_heights(latest_block):
     # run through the blocks to check that heights are continuous
     block = Block.objects.get(height=0)
     previous_block = None
-    print('checking blocks for continuous heights')
+    logger.info('checking blocks for continuous heights')
     while block.height <= latest_block.height:
         if block.height % 5000 == 0:
-            print(block.height)
+            logger.info(block.height)
         # if next or previous block is None, rescan the current block as this should
         # add previous and next blocks to the object
         if block.next_block is None or block.previous_block is None:
@@ -85,7 +88,7 @@ def check_continuous_heights(latest_block):
         if block.next_block is not None:
             try:
                 if block.next_block.height != (block.height + 1):
-                    print(
+                    logger.error(
                         'Error with block at height {} (id {}). Next height is {}'.format(
                             block.height,
                             block.id,
@@ -94,7 +97,7 @@ def check_continuous_heights(latest_block):
                     )
                     trigger_block_parse(block.next_block.hash, blocking=True)
             except AttributeError as e:
-                print(
+                logger.error(
                     'Error checking next block: {}'.format(e.message)
                 )
 
@@ -102,7 +105,7 @@ def check_continuous_heights(latest_block):
         if block.previous_block is not None:
             try:
                 if block.previous_block.height != (block.height - 1):
-                    print(
+                    logger.error(
                         'Error with block at height {} (id {}). '
                         'Previous height is {}'.format(
                             block.height,
@@ -112,32 +115,32 @@ def check_continuous_heights(latest_block):
                     )
                     trigger_block_parse(block.previous_block.hash, blocking=True)
             except AttributeError as e:
-                print(
+                logger.error(
                     'Error checking next block: {}'.format(e.message)
                 )
 
         # check that the previous blocks' next block is this block
         try:
             if previous_block.next_block != block:
-                print(
+                logger.error(
                     'Previous block doens\'t link to this block'
                 )
                 trigger_block_parse(block.previous_block.hash, blocking=True)
         except AttributeError as e:
-            print(
+            logger.error(
                 'Error checking previous blocks\' next block: {}'.format(e.message)
             )
 
         try:
             if block.previous_block != previous_block:
-                print('Previous Blocks do not match {} != {}'.format(
+                logger.error('Previous Blocks do not match {} != {}'.format(
                     block.previous_block,
                     previous_block,
                 ))
                 trigger_block_parse(block.hash, blocking=True)
                 trigger_block_parse(previous_block.hash, blocking=True)
         except AttributeError as e:
-            print(
+            logger.error(
                 'Error comparing previous blocks: {}'.format(e.message)
             )
 
@@ -159,39 +162,13 @@ def check_hashes(latest_block):
         try:
             block = Block.objects.get(id=i)
         except Block.DoesNotExist:
-            print('no block with id {}'.format(i))
+            logger.info('no block with id {}'.format(i))
             continue
-        # if it doesn't have a previous block, we need to get that block first
-        try:
-            prev_block_hash = block.previous_block.hash
-        except AttributeError:
-            print(
-                'couldn\'t get previous block hash for block at height {} (id {})'.format(
-                    block.height,
-                    i
-                )
-            )
-            rpc = send_rpc(
-                {
-                    'method': 'getblock',
-                    'params': [block.hash]
-                }
-            )
-            got_block = rpc['result'] if not rpc['error'] else None
-            if got_block:
-                prev_hash = got_block.get('previousblockhash', None)
-                try:
-                    print('adding previous block')
-                    block.previous_block = Block.objects.get(hash=prev_hash)
-                    block.save()
-                except Block.DoesNotExist:
-                    print('fetching data for block {}'.format(prev_hash))
-                    trigger_block_parse(prev_hash, blocking=True)
 
         try:
             calc_hash = calc_block_hash(block)
         except (AttributeError, struct.error) as e:
-            print('problem with block at height {}, id {}: {}'.format(
+            logger.error('problem with block at height {}, id {}: {}'.format(
                 block.height,
                 i,
                 e.message
@@ -200,8 +177,8 @@ def check_hashes(latest_block):
             continue
 
         if calc_hash != block.hash:
-            print('hashes for block {} do not match'.format(block.height))
-            print('{} != {}'.format(block.hash, calc_hash))
+            logger.warning('hashes for block {} do not match'.format(block.height))
+            logger.warning('{} != {}'.format(block.hash, calc_hash))
             trigger_block_parse(block.hash)
             continue
 
@@ -209,15 +186,15 @@ def check_hashes(latest_block):
             #    try:
             #        calc_tx_hash = calc_tx_hash(tx)
             #    except AttributeError as e:
-            #        print(
+            #        logger.info(
             #            'problem with tx {} on block {}: {}'.format(
             #                tx.tx_id,
             #                block.height,
             #                e.message
             #            )
             #       )
-            #    print(calc_tx_hash)
-            #    print(tx.tx_id)
+            #    logger.info(calc_tx_hash)
+            #    logger.info(tx.tx_id)
             #    assert calc_tx_hash == tx.tx_id
 
 
@@ -226,7 +203,6 @@ def main():
     django.setup()
 
     from blocks.models import Block
-
     latest_block = Block.objects.latest('id')
 
     check_continuous_heights(latest_block)
