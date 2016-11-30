@@ -167,6 +167,7 @@ def check_continuous_heights(latest_block):
         # on to the next block
         previous_block = block
         block = block.next_block
+        height += 1
 
 
 def check_hashes(latest_block):
