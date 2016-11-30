@@ -69,14 +69,35 @@ def calc_tx_hash(tx):
 def check_continuous_heights(latest_block):
     from blocks.utils.block_parser import trigger_block_parse
     from blocks.models import Block
+    from blocks.utils.rpc import send_rpc
 
     # run through the blocks to check that heights are continuous
+    logger.info('checking blocks for continuous heights')
+    height = 0
     block = Block.objects.get(height=0)
     previous_block = None
-    logger.info('checking blocks for continuous heights')
-    while block.height <= latest_block.height:
+    while height <= latest_block.height:
+        # get the block if it doesn't exist
+        if not block:
+            rpc = send_rpc(
+                {
+                    'method': 'getblockhash',
+                    'params': [height]
+                }
+            )
+            got_block_hash = rpc['result'] if not rpc['error'] else None
+            # get the block data
+            if got_block_hash:
+                trigger_block_parse(got_block_hash, blocking=True)
+            try:
+                block = Block.objects.get(height=height)
+            except Block.DoesNotExist:
+                logger.error('No block found at height {}'.format(height))
+                continue
+
         if block.height % 5000 == 0:
             logger.info('checked to block {}'.format(block.height))
+
         # if next or previous block is None, rescan the current block as this should
         # add previous and next blocks to the object
         if block.next_block is None or block.previous_block is None:
@@ -143,6 +164,7 @@ def check_continuous_heights(latest_block):
                 'Error comparing previous blocks: {}'.format(e.message)
             )
 
+        # on to the next block
         previous_block = block
         block = block.next_block
 
