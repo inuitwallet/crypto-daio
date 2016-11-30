@@ -64,50 +64,73 @@ def calc_tx_hash(tx):
     return header_hash[::-1].encode('hex_codec')
 
 
-if __name__ == '__main__':
-    import django
-    django.setup()
-    from blocks.models import Block
+def check_continuous_heights(latest_block):
     from blocks.utils.block_parser import trigger_block_parse
-
-    latest_block = Block.objects.latest('id')
+    from blocks.models import Block
 
     # run through the blocks to check that heights are continuous
     block = Block.objects.get(height=0)
+    previous_block = None
     print('checking blocks for continuous heights')
     while block.height <= latest_block.height:
         if block.height % 5000 == 0:
             print(block.height)
-        try:
-            if block.next_block.height != (block.height + 1):
-                print(
-                    'error with block at height {} (id {})'.format(
-                        block.height, block.id
-                    )
-                )
-                print('next block height is {}'.format(block.next_block.height))
-                print('this block')
-                trigger_block_parse(block.hash, blocking=True)
-                block = Block.objects.get(hash=block.hash)
-                print('next block')
-                trigger_block_parse(block.next_block.hash, blocking=True)
-                block = Block.objects.get(hash=block.hash)
-        except AttributeError as e:
-            print('problem for block {} (id {}): {}'.format(
-                block.hash,
-                block.id,
-                e.message
-            ))
-            print('this block')
+        # if next or previous block is None, rescan the current block as this should
+        # add previous and next blocks to the object
+        if block.next_block is None or block.previous_block is None:
             trigger_block_parse(block.hash, blocking=True)
             block = Block.objects.get(hash=block.hash)
-            print('next block')
-            trigger_block_parse(block.next_block.hash, blocking=True)
-            block = Block.objects.get(hash=block.hash)
 
+        # check that the next block is this block + 1
+        if block.next_block is not None:
+            try:
+                if block.next_block.height != (block.height + 1):
+                    print(
+                        'Error with block at height {} (id {}). Next height is {}'.format(
+                            block.height,
+                            block.id,
+                            block.next_block.height,
+                        )
+                    )
+                    trigger_block_parse(block.next_block.hash, blocking=True)
+            except AttributeError as e:
+                print(
+                    'Error checking next block: {}'.format(e.message)
+                )
+
+        # check that the previous block is this block + 1
+        if block.previous_block is not None:
+            try:
+                if block.previous_block.height != (block.height - 1):
+                    print(
+                        'Error with block at height {} (id {}). '
+                        'Previous height is {}'.format(
+                            block.height,
+                            block.id,
+                            block.previous_block.height,
+                        )
+                    )
+                    trigger_block_parse(block.previous_block.hash, blocking=True)
+            except AttributeError as e:
+                print(
+                    'Error checking next block: {}'.format(e.message)
+                )
+
+        # check that the previous blocks' next block is this block
+        if previous_block.next_block != block:
+            print(
+                'Previous block doens\'t link to this block'
+            )
+            trigger_block_parse(block.previous_block, blocking=True)
+
+        previous_block = block
         block = block.next_block
 
-    # validate blocks by calculating hashes and comparing
+
+def check_hashes(latest_block):
+    from blocks.models import Block
+    from blocks.utils.block_parser import trigger_block_parse
+
     try:
         latest_block_id = latest_block.id
     except Block.DoesNotExist:
@@ -164,17 +187,37 @@ if __name__ == '__main__':
             trigger_block_parse(block.hash)
             continue
 
-        #for tx in block.transactions.all():
-        #    try:
-        #        calc_tx_hash = calc_tx_hash(tx)
-        #    except AttributeError as e:
-        #        print(
-        #            'problem with tx {} on block {}: {}'.format(
-        #                tx.tx_id,
-        #                block.height,
-        #                e.message
-        #            )
-        #       )
-        #    print(calc_tx_hash)
-        #    print(tx.tx_id)
-        #    assert calc_tx_hash == tx.tx_id
+            # for tx in block.transactions.all():
+            #    try:
+            #        calc_tx_hash = calc_tx_hash(tx)
+            #    except AttributeError as e:
+            #        print(
+            #            'problem with tx {} on block {}: {}'.format(
+            #                tx.tx_id,
+            #                block.height,
+            #                e.message
+            #            )
+            #       )
+            #    print(calc_tx_hash)
+            #    print(tx.tx_id)
+            #    assert calc_tx_hash == tx.tx_id
+
+
+def main():
+    import django
+    django.setup()
+
+    from blocks.models import Block
+
+    latest_block = Block.objects.latest('id')
+
+    check_continuous_heights(latest_block)
+
+
+if __name__ == '__main__':
+    main()
+
+
+
+
+
