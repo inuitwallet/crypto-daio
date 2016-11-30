@@ -117,11 +117,16 @@ def check_continuous_heights(latest_block):
                 )
 
         # check that the previous blocks' next block is this block
-        if previous_block.next_block != block:
+        try:
+            if previous_block.next_block != block:
+                print(
+                    'Previous block doens\'t link to this block'
+                )
+                trigger_block_parse(block.previous_block, blocking=True)
+        except AttributeError as e:
             print(
-                'Previous block doens\'t link to this block'
+                'Error checking previous blocks\' next block: {}'.format(e.message)
             )
-            trigger_block_parse(block.previous_block, blocking=True)
 
         previous_block = block
         block = block.next_block
