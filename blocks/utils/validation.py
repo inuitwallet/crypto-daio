@@ -3,9 +3,8 @@ import struct
 import time
 import logging
 
-from blocks.utils.rpc import send_rpc
-
-logger = logging.getLogger('block_validation')
+logger = logging.getLogger('validation')
+logging.basicConfig(level=logging.INFO)
 
 
 def calc_block_hash(block):
