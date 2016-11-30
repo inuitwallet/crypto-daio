@@ -4,7 +4,7 @@ import time
 import logging
 
 logger = logging.getLogger('validation')
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(filename='validation.log', level=logging.INFO)
 
 
 def calc_block_hash(block):
