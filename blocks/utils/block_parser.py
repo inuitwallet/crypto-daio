@@ -48,7 +48,7 @@ def save_block(block):
     this_block.mint = block.get('mint', None)
 
     try:
-        previous_block, _ = Block.objects.get_or_create(
+        previous_block = Block.objects.get(
             hash=block.get('previousblockhash', None)
         )
         this_block.previous_block = previous_block
@@ -59,7 +59,7 @@ def save_block(block):
         pass
 
     try:
-        next_block, _ = Block.objects.get_or_create(
+        next_block = Block.objects.get(
             hash=block.get('nextblockhash', None)
         )
         this_block.next_block = next_block
