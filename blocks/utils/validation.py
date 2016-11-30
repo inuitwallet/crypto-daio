@@ -76,7 +76,7 @@ def check_continuous_heights(latest_block):
     logger.info('checking blocks for continuous heights')
     while block.height <= latest_block.height:
         if block.height % 5000 == 0:
-            logger.info(block.height)
+            logger.info('checked to block {}'.format(block.height))
         # if next or previous block is None, rescan the current block as this should
         # add previous and next blocks to the object
         if block.next_block is None or block.previous_block is None:
