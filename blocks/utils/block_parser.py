@@ -4,6 +4,8 @@ import time
 from datetime import datetime as dt
 
 import requests
+from django.db import IntegrityError
+
 from blocks.models import Block, Transaction, TxInput, TxOutput, Address, WatchAddress
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
@@ -71,8 +73,20 @@ def save_block(block):
     this_block.modifier_checksum = block.get('modifierchecksum', None)
     this_block.coinage_destroyed = block.get('coinagedestroyed', None)
 
-    this_block.save()
-    logger.info('saved block {}'.format(this_block.height))
+    try:
+        this_block.save()
+        logger.info('saved block {}'.format(this_block.height))
+    except IntegrityError:
+        logger.info('block {} already exists'.format(this_block.height))
+        existing_block = Block.objects.get(height=this_block.height)
+        if existing_block.hash != this_block.hash:
+            existing_block.delete()
+            this_block.save()
+            logger.info('saved new block {}'.format(this_block.height))
+        else:
+            logger.info(
+                'hashes match. leaving existing block {}'.format(existing_block.height)
+            )
 
     for tx_hash in block.get('tx', []):
         logger.info('scanning tx {}'.format(tx_hash))
