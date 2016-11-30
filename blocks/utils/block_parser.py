@@ -14,6 +14,7 @@ from blocks.utils.rpc import send_rpc
 import logging
 
 logger = logging.getLogger('block_parser')
+logging.basicConfig(level=logging.INFO)
 
 tz = timezone.get_current_timezone()
 
