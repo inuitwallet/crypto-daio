@@ -96,7 +96,7 @@ def check_continuous_heights(latest_block):
                 logger.error('No block found at height {}'.format(height))
                 continue
 
-        if block.height % 5000 == 0:
+        if height % 5000 == 0:
             logger.info('checked to block {}'.format(block.height))
 
         # if next or previous block is None, rescan the current block as this should

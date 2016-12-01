@@ -109,6 +109,7 @@ class Transaction(models.Model):
         Block,
         related_name='transactions',
         related_query_name='transaction',
+        on_delete=models.CASCADE,
     )
     tx_id = models.CharField(
         max_length=610,
@@ -147,6 +148,7 @@ class TxInput(models.Model):
         Transaction,
         related_name='inputs',
         related_query_name='input',
+        on_delete=models.CASCADE,
     )
     tx_id = models.CharField(
         max_length=610,
@@ -159,6 +161,7 @@ class TxInput(models.Model):
         related_query_name='inout_tx',
         blank=True,
         null=True,
+        on_delete=models.CASCADE,
     )
     v_out = models.BigIntegerField(
         blank=True,
@@ -220,6 +223,7 @@ class TxOutput(models.Model):
         Transaction,
         related_name='outputs',
         related_query_name='output',
+        on_delete=models.CASCADE,
     )
     value = models.FloatField()
     n = models.IntegerField()
