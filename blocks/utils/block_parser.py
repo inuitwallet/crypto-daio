@@ -180,8 +180,9 @@ def save_transaction(block, tx):
             )
             if created:
                 address.save()
-            tx_output.addresses.add(address)
-            tx_output.save()
+            if tx_output:
+                tx_output.addresses.add(address)
+                tx_output.save()
             # check the address against the list of addresses to watch
             check_thread = Thread(
                 target=check_watch_addresses,
