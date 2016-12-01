@@ -73,10 +73,11 @@ def check_continuous_heights(latest_block):
 
     # run through the blocks to check that heights are continuous
     logger.info('checking blocks for continuous heights')
-    height = 0
+
     block = Block.objects.get(height=0)
     previous_block = None
-    while height <= latest_block.height:
+    highest_height = latest_block.height
+    for height in range(highest_height):
         # get the block if it doesn't exist
         if not block:
             rpc = send_rpc(
@@ -167,12 +168,12 @@ def check_continuous_heights(latest_block):
         # on to the next block
         previous_block = block
         block = block.next_block
-        height += 1
 
 
 def check_hashes(latest_block):
     from blocks.models import Block
     from blocks.utils.block_parser import trigger_block_parse
+    from blocks.utils.rpc import send_rpc
 
     try:
         latest_block_id = latest_block.id
@@ -195,13 +196,32 @@ def check_hashes(latest_block):
                 i,
                 e.message
             ))
-            trigger_block_parse(block.hash)
+
+            rpc = send_rpc(
+                {
+                    'method': 'getblockhash',
+                    'params': [block.height]
+                }
+            )
+            got_block_hash = rpc['result'] if not rpc['error'] else None
+            # get the block data
+            if got_block_hash:
+                trigger_block_parse(block.hash)
             continue
 
         if calc_hash != block.hash:
             logger.warning('hashes for block {} do not match'.format(block.height))
             logger.warning('{} != {}'.format(block.hash, calc_hash))
-            trigger_block_parse(block.hash)
+            rpc = send_rpc(
+                {
+                    'method': 'getblockhash',
+                    'params': [block.height]
+                }
+            )
+            got_block_hash = rpc['result'] if not rpc['error'] else None
+            # get the block data
+            if got_block_hash:
+                trigger_block_parse(block.hash)
             continue
 
             # for tx in block.transactions.all():
@@ -228,6 +248,7 @@ def main():
     latest_block = Block.objects.latest('id')
 
     check_continuous_heights(latest_block)
+    check_hashes(latest_block)
 
 
 if __name__ == '__main__':
