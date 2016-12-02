@@ -108,6 +108,12 @@ def save_block(block):
         logger.info('block {} already exists'.format(this_block.height))
         existing_block = Block.objects.get(height=this_block.height)
         if existing_block.hash != this_block.hash:
+            for transaction in existing_block.transactions.all():
+                for tx_input in transaction.inputs.all():
+                    tx_input.delete()
+                for tx_output in transaction.outputs.all():
+                    tx_output.delete()
+                transaction.delete()
             existing_block.delete()
             this_block.save()
             logger.info('saved new block {}'.format(this_block.height))
