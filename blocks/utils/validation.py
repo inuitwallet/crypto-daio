@@ -106,7 +106,11 @@ def check_continuous_heights(latest_block):
 
         # if next or previous block is None, rescan the current block as this should
         # add previous and next blocks to the object
-        if block.next_block is None or block.previous_block is None:
+        try:
+            if not block.next_block or not block.previous_block:
+                trigger_block_parse(block.hash, blocking=True)
+                block = Block.objects.get(hash=block.hash)
+        except AttributeError as e:
             trigger_block_parse(block.hash, blocking=True)
             block = Block.objects.get(hash=block.hash)
 
