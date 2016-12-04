@@ -110,7 +110,10 @@ def check_continuous_heights(latest_block):
             if not block.next_block or not block.previous_block:
                 trigger_block_parse(block.hash, blocking=True)
                 block = Block.objects.get(hash=block.hash)
-        except AttributeError as e:
+        except (AttributeError, Block.DoesNotExist) as e:
+            logger.error(
+                'Error checking next or previous block: {}'.format(e.message)
+            )
             trigger_block_parse(block.hash, blocking=True)
             block = Block.objects.get(hash=block.hash)
 
