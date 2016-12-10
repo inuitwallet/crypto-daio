@@ -56,12 +56,14 @@ class Block(models.Model):
         related_name='previous',
         blank=True,
         null=True,
+        on_delete=models.SET_NULL,
     )
     next_block = models.ForeignKey(
         'Block',
         related_name='next',
         blank=True,
         null=True,
+        on_delete=models.SET_NULL,
     )
     flags = models.CharField(
         max_length=610,
@@ -109,7 +111,9 @@ class Transaction(models.Model):
         Block,
         related_name='transactions',
         related_query_name='transaction',
-        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
     )
     tx_id = models.CharField(
         max_length=610,
@@ -148,7 +152,9 @@ class TxInput(models.Model):
         Transaction,
         related_name='inputs',
         related_query_name='input',
-        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
     )
     tx_id = models.CharField(
         max_length=610,
@@ -161,7 +167,7 @@ class TxInput(models.Model):
         related_query_name='inout_tx',
         blank=True,
         null=True,
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
     )
     v_out = models.BigIntegerField(
         blank=True,
@@ -223,7 +229,9 @@ class TxOutput(models.Model):
         Transaction,
         related_name='outputs',
         related_query_name='output',
-        on_delete=models.CASCADE,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
     )
     value = models.FloatField()
     n = models.IntegerField()

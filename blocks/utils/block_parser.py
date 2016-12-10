@@ -247,20 +247,23 @@ def start_parse():
         # see if the block exists
         try:
             Block.objects.get(height=db_height)
-        except ObjectDoesNotExist:
-            # get the block hash
-            rpc = send_rpc(
-                {
-                    'method': 'getblockhash',
-                    'params': [db_height]
-                }
-            )
-            got_block_hash = rpc['result'] if not rpc['error'] else None
+        except Block.DoesNotExist:
+            got_block_hash = get_block_hash(db_height)
             # get the block data
             if got_block_hash:
                 trigger_block_parse(got_block_hash)
         logger.info('checked block {}'.format(db_height))
         db_height += 1
+
+
+def get_block_hash(height):
+    rpc = send_rpc(
+        {
+            'method': 'getblockhash',
+            'params': [height]
+        }
+    )
+    return rpc['result'] if not rpc['error'] else None
 
 
 def check_transaction():
