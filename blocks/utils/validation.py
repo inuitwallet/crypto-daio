@@ -3,8 +3,6 @@ import struct
 import time
 import logging
 
-from blocks.utils.block_parser import get_block_hash
-
 logger = logging.getLogger('validation')
 logging.basicConfig(filename='validation.log', level=logging.INFO)
 
@@ -69,9 +67,8 @@ def calc_tx_hash(tx):
 
 
 def check_continuous_heights(latest_block):
-    from blocks.utils.block_parser import trigger_block_parse
+    from blocks.utils.block_parser import trigger_block_parse, get_block_hash
     from blocks.models import Block
-    from blocks.utils.rpc import send_rpc
 
     # run through the blocks to check that heights are continuous
     logger.info('checking blocks for continuous heights')
