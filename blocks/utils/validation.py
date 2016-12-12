@@ -95,106 +95,105 @@ def check_continuous_heights(latest_block):
         if height % 5000 == 0:
             logger.info('checking block {}'.format(height))
 
-        # check the block has a previous block
-        if not block.previous_block:
-            if height > 0:
-                # first block has no previous block
-                logger.warning(
-                    'no previous block at height {}. rescanning'.format(height)
+        try:
+            # check that the next block height is this block + 1
+            if block.next_block.height != (block.height + 1):
+                logger.error(
+                    'error with block at height {}. next height is {}'.format(
+                        height,
+                        block.next_block.height,
+                    )
                 )
                 trigger_block_parse(get_block_hash(height), blocking=True)
+                trigger_block_parse(get_block_hash(height + 1), blocking=True)
                 try:
                     block = Block.objects.get(height=height)
                 except Block.DoesNotExist:
                     logger.error(
-                        'no block at height {} after re-parsing to fix previous'.format(
+                        'no block at height {} after re-parsing to fix next height'.format(
                             height
                         )
                     )
                     continue
-                if not block.previous_block:
-                    logger.error('still no previous block at height {}'.format(height))
+                if block.next_block.height != (block.height + 1):
+                    logger.error('next height not continuous at {}'.format(height))
                     continue
-
-        # check the block has a next block
-        if not block.next_block:
-            logger.warning('no next block at height {}. rescanning'.format(height))
+        except AttributeError as e:
+            logger.warning('error with next block at height {}'.format(height))
+            logger.info(e.message)
             trigger_block_parse(get_block_hash(height), blocking=True)
             try:
                 block = Block.objects.get(height=height)
             except Block.DoesNotExist:
                 logger.error(
-                    'no block at height {} after re-parsing to fix next'.format(
-                        height
-                    )
-                )
-                continue
-            if not block.previous_block:
-                logger.error('still no next block at height {}'.format(height))
-                continue
-
-        # check that the next block height is this block + 1
-        if block.next_block.height != (block.height + 1):
-            logger.error(
-                'error with block at height {}. next height is {}'.format(
-                    height,
-                    block.next_block.height,
-                )
-            )
-            trigger_block_parse(get_block_hash(height), blocking=True)
-            trigger_block_parse(get_block_hash(height + 1), blocking=True)
-            try:
-                block = Block.objects.get(height=height)
-            except Block.DoesNotExist:
-                logger.error(
-                    'no block at height {} after re-parsing to fix next height'.format(
+                    'no block at height {} after error to fix next height'.format(
                         height
                     )
                 )
                 continue
             if block.next_block.height != (block.height + 1):
-                logger.error('next height not continuous at {}'.format(height))
+                logger.error(
+                    'still no next block at height {}'.format(height)
+                )
                 continue
 
-        # check that the previous block is this block + 1
-        if block.previous_block.height != (block.height + 1):
-            logger.error(
-                'error with block at height {}. next height is {}'.format(
-                    height,
-                    block.previous_block.height,
+        try:
+            # check that the previous block is this block + 1
+            if block.previous_block.height != (block.height + 1):
+                logger.error(
+                    'error with block at height {}. next height is {}'.format(
+                        height,
+                        block.previous_block.height,
+                    )
                 )
-            )
-            trigger_block_parse(get_block_hash(height - 1), blocking=True)
+                trigger_block_parse(get_block_hash(height - 1), blocking=True)
+                trigger_block_parse(get_block_hash(height), blocking=True)
+                try:
+                    block = Block.objects.get(height=height)
+                except Block.DoesNotExist:
+                    logger.error(
+                        'no block at height {} after re-parsing to fix previous height'.format(  # nopep8
+                            height
+                        )
+                    )
+                    continue
+                if block.previous_block.height != (block.height + 1):
+                    logger.error('previous height not continuous at {}'.format(height))
+                    continue
+        except AttributeError as e:
+            logger.warning('error with previous block at height {}'.format(height))
+            logger.info(e.message)
             trigger_block_parse(get_block_hash(height), blocking=True)
             try:
                 block = Block.objects.get(height=height)
             except Block.DoesNotExist:
                 logger.error(
-                    'no block at height {} after re-parsing to fix previous height'.format(  # nopep8
+                    'no block at height {} after error to fix previous height'.format(
                         height
                     )
                 )
                 continue
             if block.previous_block.height != (block.height + 1):
-                logger.error('previous height not continuous at {}'.format(height))
+                logger.error(
+                    'still no previous block at height {}'.format(height)
+                )
                 continue
 
         # check that the previous blocks' next block is this block
-        if previous_block:
-            if previous_block.next_block != block:
-                logger.error(
-                    'Previous block doens\'t link to this block'
-                )
-                trigger_block_parse(get_block_hash(height - 1), blocking=True)
-                trigger_block_parse(get_block_hash(height), blocking=True)
+        if previous_block.next_block != block:
+            logger.error(
+                'Previous block doens\'t link to this block'
+            )
+            trigger_block_parse(get_block_hash(height - 1), blocking=True)
+            trigger_block_parse(get_block_hash(height), blocking=True)
 
-            if block.previous_block != previous_block:
-                logger.error('Previous Blocks do not match {} != {}'.format(
-                    block.previous_block,
-                    previous_block,
-                ))
-                trigger_block_parse(get_block_hash(height - 1), blocking=True)
-                trigger_block_parse(get_block_hash(height), blocking=True)
+        if block.previous_block != previous_block:
+            logger.error('Previous Blocks do not match {} != {}'.format(
+                block.previous_block,
+                previous_block,
+            ))
+            trigger_block_parse(get_block_hash(height - 1), blocking=True)
+            trigger_block_parse(get_block_hash(height), blocking=True)
 
         # on to the next block
         previous_block = block
