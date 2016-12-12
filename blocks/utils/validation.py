@@ -142,10 +142,10 @@ def check_continuous_heights(latest_block):
                 logger.error('still no next block at height {}'.format(height))
 
         try:
-            # check that the previous block is this block + 1
-            if block.previous_block.height != (block.height + 1):
+            # check that the previous block is this block - 1
+            if block.previous_block.height != (block.height - 1):
                 logger.error(
-                    'error with block at height {}. next height is {}'.format(
+                    'error with block at height {}. previous height is {}'.format(
                         height,
                         block.previous_block.height,
                     )
@@ -161,7 +161,7 @@ def check_continuous_heights(latest_block):
                         )
                     )
                     continue
-                if block.previous_block.height != (block.height + 1):
+                if block.previous_block.height != (block.height - 1):
                     logger.error(
                         'previous height not continuous at {}'.format(height)
                     )
@@ -181,7 +181,7 @@ def check_continuous_heights(latest_block):
                 )
                 continue
             try:
-                if block.previous_block.height != (block.height + 1):
+                if block.previous_block.height != (block.height - 1):
                     logger.error(
                         'still no previous block at height {}'.format(height)
                     )
@@ -205,7 +205,6 @@ def check_continuous_heights(latest_block):
                 ))
                 trigger_block_parse(get_block_hash(height - 1), blocking=True)
                 trigger_block_parse(get_block_hash(height), blocking=True)
-
 
         # on to the next block
         previous_block = block
