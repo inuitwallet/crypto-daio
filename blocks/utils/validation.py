@@ -189,21 +189,23 @@ def check_continuous_heights(latest_block):
             except AttributeError:
                 logger.error('still no previous block at height {}'.format(height))
 
-        # check that the previous blocks' next block is this block
-        if previous_block.next_block != block:
-            logger.error(
-                'Previous block doens\'t link to this block'
-            )
-            trigger_block_parse(get_block_hash(height - 1), blocking=True)
-            trigger_block_parse(get_block_hash(height), blocking=True)
+        if previous_block:
+            # check that the previous blocks' next block is this block
+            if previous_block.next_block != block:
+                logger.error(
+                    'Previous block doens\'t link to this block'
+                )
+                trigger_block_parse(get_block_hash(height - 1), blocking=True)
+                trigger_block_parse(get_block_hash(height), blocking=True)
 
-        if block.previous_block != previous_block:
-            logger.error('Previous Blocks do not match {} != {}'.format(
-                block.previous_block,
-                previous_block,
-            ))
-            trigger_block_parse(get_block_hash(height - 1), blocking=True)
-            trigger_block_parse(get_block_hash(height), blocking=True)
+            if block.previous_block != previous_block:
+                logger.error('Previous Blocks do not match {} != {}'.format(
+                    block.previous_block,
+                    previous_block,
+                ))
+                trigger_block_parse(get_block_hash(height - 1), blocking=True)
+                trigger_block_parse(get_block_hash(height), blocking=True)
+
 
         # on to the next block
         previous_block = block
