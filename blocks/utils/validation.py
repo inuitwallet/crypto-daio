@@ -131,11 +131,14 @@ def check_continuous_heights(latest_block):
                     )
                 )
                 continue
-            if block.next_block.height != (block.height + 1):
-                logger.error(
-                    'still no next block at height {}'.format(height)
-                )
-                continue
+            try:
+                if block.next_block.height != (block.height + 1):
+                    logger.error(
+                        'next height not continuous at {}'.format(height)
+                    )
+                    continue
+            except AttributeError as e:
+                logger.error('still no next block at height {}'.format(height))
 
         try:
             # check that the previous block is this block + 1
@@ -157,9 +160,15 @@ def check_continuous_heights(latest_block):
                         )
                     )
                     continue
-                if block.previous_block.height != (block.height + 1):
-                    logger.error('previous height not continuous at {}'.format(height))
-                    continue
+                try:
+                    if block.previous_block.height != (block.height + 1):
+                        logger.error(
+                            'previous height not continuous at {}'.format(height)
+                        )
+                        continue
+                except AttributeError as e:
+                    logger.error('still no previous block at height {}'.format(height))
+
         except AttributeError as e:
             logger.warning('error with previous block at height {}'.format(height))
             logger.info(e.message)
