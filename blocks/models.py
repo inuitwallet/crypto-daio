@@ -272,7 +272,7 @@ class Block(models.Model):
                 return False, 'incorrect next height'
 
         # calculate merkle root of transactions
-        transactions = self.transactions.all().values_list('tx_id', flat=True)
+        transactions = list(self.transactions.all().values_list('tx_id', flat=True))
         merkle_root = self._calculate_merkle_root(transactions)
         if merkle_root != self.merkle_root:
             return False, 'merkle root incorrect'
