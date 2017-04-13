@@ -129,23 +129,6 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 10
 }
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': True,
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-        },
-    },
-    'loggers': {
-        'block_parser': {
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
-        },
-    },
-}
-
 # Channels
 CHANNEL_LAYERS = {
     "default": {
