@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'daio_wallet.apps.DaioWalletConfig',
     'blocks.apps.BlocksConfig',
     'rest_framework',
+    'channels',
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -130,7 +131,7 @@ REST_FRAMEWORK = {
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
@@ -140,7 +141,18 @@ LOGGING = {
         'block_parser': {
             'handlers': ['console'],
             'level': 'DEBUG',
-            'propagate': True,
+            'propagate': False,
         },
+    },
+}
+
+# Channels
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "asgi_redis.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
+        },
+        "ROUTING": "daio.routing.channel_routing",
     },
 }

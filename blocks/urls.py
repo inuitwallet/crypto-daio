@@ -9,7 +9,6 @@ urlpatterns = [
         views.notify,
         name='notify'
     ),
-    url(r'^parse/', views.parse, name='parse'),
     url(r'^blocks/$', views.BlockList.as_view(), name='all_blocks'),
     url(
         r'^block/(?P<block_hash>{})'.format(base64_pattern),

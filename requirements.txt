@@ -1,7 +1,11 @@
+asgi-redis
+bitstring
 bpython
+channels
 django
 djangorestframework
 ecdsa
 pbkdf2
-requests[security]
 psycopg2
+requests[security]
+service_identity

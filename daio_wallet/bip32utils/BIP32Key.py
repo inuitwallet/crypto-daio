@@ -3,13 +3,13 @@
 # Copyright 2014 Corgan Labs
 # See LICENSE.txt for distribution terms
 #
-
+import codecs
 import os
 import hmac
 import hashlib
 import ecdsa
 import struct
-import Base58
+from daio_wallet.bip32utils import Base58
 
 from hashlib import sha256
 from ecdsa.curves import SECP256k1
@@ -23,8 +23,8 @@ CURVE_GEN       = ecdsa.ecdsa.generator_secp256k1
 CURVE_ORDER     = CURVE_GEN.order()
 FIELD_ORDER     = SECP256k1.curve.p()
 INFINITY        = ecdsa.ellipticcurve.INFINITY
-EX_MAIN_PRIVATE = '0488ade4'.decode('hex') # Version string for mainnet extended private keys
-EX_MAIN_PUBLIC  = '0488b21e'.decode('hex') # Version string for mainnet extended public keys
+EX_MAIN_PRIVATE = codecs.decode('0488ade4', 'hex')  # Version string for mainnet extended private keys
+EX_MAIN_PUBLIC  = codecs.decode('0488b21e', 'hex')  # Version string for mainnet extended public keys
 
 class BIP32Key(object):
 
@@ -303,23 +303,23 @@ class BIP32Key(object):
     #
     def dump(self):
         "Dump key fields mimicking the BIP0032 test vector format"
-        print "   * Identifier"
-        print "     * (hex):      ", self.Identifier().encode('hex')
-        print "     * (fpr):      ", self.Fingerprint().encode('hex')
-        print "     * (main addr):", self.Address()
+        print("   * Identifier")
+        print("     * (hex):      ", self.Identifier().encode('hex'))
+        print("     * (fpr):      ", self.Fingerprint().encode('hex'))
+        print("     * (main addr):", self.Address())
         if self.public is False:
-            print "   * Secret key"
-            print "     * (hex):      ", self.PrivateKey().encode('hex')
-            print "     * (wif):      ", self.WalletImportFormat()
-        print "   * Public key"
-        print "     * (hex):      ", self.PublicKey().encode('hex')
-        print "   * Chain code"
-        print "     * (hex):      ", self.C.encode('hex')
-        print "   * Serialized"
-        print "     * (pub hex):  ", self.ExtendedKey(private=False, encoded=False).encode('hex')
-        print "     * (prv hex):  ", self.ExtendedKey(private=True, encoded=False).encode('hex')
-        print "     * (pub b58):  ", self.ExtendedKey(private=False, encoded=True)
-        print "     * (prv b58):  ", self.ExtendedKey(private=True, encoded=True)
+            print("   * Secret key")
+            print("     * (hex):      ", self.PrivateKey().encode('hex'))
+            print("     * (wif):      ", self.WalletImportFormat())
+        print("   * Public key")
+        print("     * (hex):      ", self.PublicKey().encode('hex'))
+        print("   * Chain code")
+        print("     * (hex):      ", self.C.encode('hex'))
+        print("   * Serialized")
+        print("     * (pub hex):  ", self.ExtendedKey(private=False, encoded=False).encode('hex'))
+        print("     * (prv hex):  ", self.ExtendedKey(private=True, encoded=False).encode('hex'))
+        print("     * (pub b58):  ", self.ExtendedKey(private=False, encoded=True))
+        print("     * (prv b58):  ", self.ExtendedKey(private=True, encoded=True))
 
 
 if __name__ == "__main__":
@@ -328,55 +328,55 @@ if __name__ == "__main__":
     # BIP0032 Test vector 1
     entropy='000102030405060708090A0B0C0D0E0F'.decode('hex')
     m = BIP32Key.fromEntropy(entropy)
-    print "Test vector 1:"
-    print "Master (hex):", entropy.encode('hex')
-    print "* [Chain m]"
+    print("Test vector 1:")
+    print("Master (hex):", entropy.encode('hex'))
+    print("* [Chain m]")
     m.dump()
 
-    print "* [Chain m/0h]"
+    print("* [Chain m/0h]")
     m = m.ChildKey(0+BIP32_HARDEN)
     m.dump()
 
-    print "* [Chain m/0h/1]"
+    print("* [Chain m/0h/1]")
     m = m.ChildKey(1)
     m.dump()
 
-    print "* [Chain m/0h/1/2h]"
+    print("* [Chain m/0h/1/2h]")
     m = m.ChildKey(2+BIP32_HARDEN)
     m.dump()
 
-    print "* [Chain m/0h/1/2h/2]"
+    print("* [Chain m/0h/1/2h/2]")
     m = m.ChildKey(2)
     m.dump()
 
-    print "* [Chain m/0h/1/2h/2/1000000000]"
+    print("* [Chain m/0h/1/2h/2/1000000000]")
     m = m.ChildKey(1000000000)
     m.dump()
 
     # BIP0032 Test vector 2
     entropy = 'fffcf9f6f3f0edeae7e4e1dedbd8d5d2cfccc9c6c3c0bdbab7b4b1aeaba8a5a29f9c999693908d8a8784817e7b7875726f6c696663605d5a5754514e4b484542'.decode('hex')
     m = BIP32Key.fromEntropy(entropy)
-    print "Test vector 2:"
-    print "Master (hex):", entropy.encode('hex')
-    print "* [Chain m]"
+    print("Test vector 2:")
+    print("Master (hex):", entropy.encode('hex'))
+    print("* [Chain m]")
     m.dump()
 
-    print "* [Chain m/0]"
+    print("* [Chain m/0]")
     m = m.ChildKey(0)
     m.dump()
 
-    print "* [Chain m/0/2147483647h]"
+    print("* [Chain m/0/2147483647h]")
     m = m.ChildKey(2147483647+BIP32_HARDEN)
     m.dump()
 
-    print "* [Chain m/0/2147483647h/1]"
+    print("* [Chain m/0/2147483647h/1]")
     m = m.ChildKey(1)
     m.dump()
 
-    print "* [Chain m/0/2147483647h/1/2147483646h]"
+    print("* [Chain m/0/2147483647h/1/2147483646h]")
     m = m.ChildKey(2147483646+BIP32_HARDEN)
     m.dump()
 
-    print "* [Chain m/0/2147483647h/1/2147483646h/2]"
+    print("* [Chain m/0/2147483647h/1/2147483646h/2]")
     m = m.ChildKey(2)
     m.dump()

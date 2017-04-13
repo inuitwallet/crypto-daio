@@ -4,6 +4,7 @@ from .models import *
 
 class BlockAdmin(admin.ModelAdmin):
     list_display = ('height', 'hash', 'time')
+    search_fields = ('height', 'hash')
     ordering = ('-height',)
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
@@ -28,7 +29,8 @@ admin.site.register(Block, BlockAdmin)
 
 
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ('block', 'tx_id', 'is_coin_base', 'is_coin_stake')
+    list_display = ('tx_id', 'block', 'is_coin_base', 'is_coin_stake')
+    search_fields = ('tx_id',)
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == 'block':
@@ -45,6 +47,7 @@ admin.site.register(Transaction, TransactionAdmin)
 
 class TxInputAdmin(admin.ModelAdmin):
     list_display = ('transaction', 'tx_id', 'v_out')
+    search_fields = ('transaction', 'tx_id')
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == 'transaction':
@@ -64,6 +67,7 @@ admin.site.register(TxInput, TxInputAdmin)
 
 class TxOutputAdmin(admin.ModelAdmin):
     list_display = ('transaction', 'n', 'value')
+    search_fields = ('transaction',)
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == 'transaction':

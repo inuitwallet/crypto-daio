@@ -1,8 +1,5 @@
-from threading import Thread
-
 from django.views.generic import DetailView
 
-from blocks.utils.block_parser import start_parse, trigger_block_parse
 from django.http import HttpResponse
 from django.http.response import HttpResponseNotFound
 from django.shortcuts import render, get_object_or_404
@@ -10,6 +7,8 @@ from django.views.generic import ListView
 from django.conf import settings
 from .models import *
 from .forms import SearchForm
+
+from .utils.parser import trigger_block_parse
 
 
 def notify(request, block_hash):
@@ -27,13 +26,6 @@ def notify(request, block_hash):
     if created:
         trigger_block_parse(block_hash)
     return HttpResponse('daio received block {}'.format(block_hash))
-
-
-def parse(request):
-    parse_thread = Thread(target=start_parse)
-    parse_thread.daemon = True
-    parse_thread.start()
-    return render(request, 'admin/blocks/app_index.html')
 
 
 class BlockList(ListView):

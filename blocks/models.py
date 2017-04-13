@@ -1,7 +1,14 @@
 from __future__ import unicode_literals
 
+from datetime import datetime
 from decimal import Decimal
+
+import logging
+
+from channels import Channel
+from django.db import IntegrityError
 from django.db import models
+from django.utils.timezone import make_aware
 
 
 class Block(models.Model):
@@ -101,6 +108,122 @@ class Block(models.Model):
     def class_type(self):
         return 'Block'
 
+    def serialize(self):
+        return {
+            'height': self.height,
+            'size': self.size,
+            'version': self.version,
+            'merkleroot': self.merkle_root,
+            'time': (
+                datetime.strftime(
+                    self.time,
+                    '%Y-%m-%d %H:%M:%S %Z'
+                ) if self.time else None
+            ),
+            'nonce': self.nonce,
+            'bits': self.bits,
+            'difficulty': self.difficulty,
+            'mint': self.mint,
+            'flags': self.flags,
+            'proofhash': self.proof_hash,
+            'entropybit': self.entropy_bit,
+            'modifier': self.modifier,
+            'modifierchecksum': self.modifier_checksum,
+            'coinagedestroyed': self.coinage_destroyed,
+            'previousblockhash': (
+                self.previous_block.hash if self.previous_block else None
+            ),
+            'nextblockhash': (
+                self.next_block.hash if self.next_block else None
+            ),
+        }
+
+    def parse_rpc_block(self, rpc_block):
+        logger = logging.getLogger('block_parser')
+        if not self.height:
+            self.height = rpc_block.get('height', None)
+        logger.info('parsing {} at height {}'.format(self.hash, self.height))
+        # parse the json and apply to the block we just fetched
+        self.size = rpc_block.get('size', None)
+        self.version = rpc_block.get('version', None)
+        self.merkle_root = rpc_block.get('merkleroot', None)
+        self.time = make_aware(
+            datetime.strptime(
+                rpc_block.get('time', None),
+                '%Y-%m-%d %H:%M:%S %Z'
+            )
+        )
+        self.nonce = rpc_block.get('nonce', None)
+        self.bits = rpc_block.get('bits', None)
+        self.difficulty = rpc_block.get('difficulty', None)
+        self.mint = rpc_block.get('mint', None)
+        self.flags = rpc_block.get('flags', None)
+        self.proof_hash = rpc_block.get('proofhash', None)
+        self.entropy_bit = rpc_block.get('entropybit', None)
+        self.modifier = rpc_block.get('modifier', None)
+        self.modifier_checksum = rpc_block.get('modifierchecksum', None)
+        self.coinage_destroyed = rpc_block.get('coinagedestroyed', None)
+
+        # using the previousblockhash, get the block object to connect
+        prev_block_hash = rpc_block.get('previousblockhash', None)
+        if prev_block_hash:
+            previous_block, created = Block.objects.get_or_create(
+                hash=prev_block_hash
+            )
+            self.previous_block = previous_block
+            # update the previous block with this block as its next block
+            previous_block.next_block = self
+            if previous_block.height:
+                self.height = previous_block.height + 1
+            previous_block.save()
+            if created:
+                logger.warning(
+                    'previous block {} wasn\'t found'.format(previous_block.hash)
+                )
+                Channel('parse_block').send({'block_hash': prev_block_hash})
+
+        # do the same for the next block
+        next_block_hash = rpc_block.get('nextblockhash', None)
+        if next_block_hash:
+            next_block, created = Block.objects.get_or_create(
+                hash=next_block_hash
+            )
+            self.next_block = next_block
+            self.next_block.height = self.height + 1
+            next_block.save()
+            Channel('parse_block').send({'block_hash': next_block_hash})
+
+        # attempt to save this block. Orphan blocks can appear which ruins data integrity
+        # if we find a previous block with the same height already exists we check the
+        # hashes of both. If they differ we prefer the newer block as we can assume
+        # it has come directly from, the coin daemon.
+        try:
+            self.save()
+            logger.info('saved block {}'.format(self.height))
+        except IntegrityError:
+            logger.info('block {} already exists'.format(self.height))
+            existing_block = Block.objects.get(height=self.height)
+            if existing_block.hash != self.hash:
+                for transaction in existing_block.transactions.all():
+                    for tx_input in transaction.inputs.all():
+                        tx_input.delete()
+                    for tx_output in transaction.outputs.all():
+                        tx_output.delete()
+                    transaction.delete()
+                existing_block.delete()
+                self.save()
+                logger.info('saved new block {}'.format(self.height))
+            else:
+                logger.info(
+                    'hashes match. leaving existing block {}'.format(
+                        existing_block.height)
+                )
+
+        # now get the transaction hashes and request their data from the daemon
+        # for tx_hash in rpc_block.get('tx', []):
+        #     logger.info('scanning tx {}'.format(tx_hash))
+        #     # trigger_transaction_parse(self, tx_hash)
+
 
 class Transaction(models.Model):
     """
@@ -141,6 +264,73 @@ class Transaction(models.Model):
     @property
     def class_type(self):
         return 'Transaction'
+    
+    def parse_rpc_tx(self, rpc_tx):
+        logger = logging.getLogger('block_parser')
+        logger.info('parsing tx {}'.format(self.tx_id))
+        self.version = rpc_tx.get('version', None)
+        self.lock_time = rpc_tx.get('locktime', None)
+        self.unit = rpc_tx.get('unit', None)
+        self.save()
+        # for each input in the transaction, save a TxInput
+        for vin in rpc_tx.get('vin', []):
+            try:
+                output_transaction = Transaction.objects.get(tx_id=vin.get('txid', None))
+            except self.DoesNotExist:
+                output_transaction = None
+            script_sig = vin.get('scriptSig', {})
+            tx_input, _ = TxInput.objects.get_or_create(
+                transaction=self,
+                output_transaction=output_transaction,
+                v_out=vin.get('vout', None),
+                sequence=vin.get('sequence', None),
+                coin_base=vin.get('coinbase', None),
+                script_sig_asm=script_sig.get('asm', None),
+                script_sig_hex=script_sig.get('hex', None),
+            )
+            # if a previous output is used as this input, update it's `is_unspent` status
+            try:
+                spent_output = TxOutput.objects.get(
+                    transaction=tx_input.output_transaction,
+                    n=tx_input.v_out,
+                )
+                spent_output.is_unspent = False
+                spent_output.save()
+            except TxOutput.DoesNotExist:
+                continue
+        # similar for each TxOutput
+        for vout in rpc_tx.get('vout', []):
+            script_pubkey = vout.get('scriptPubKey', {})
+            tx_output, _ = TxOutput.objects.get_or_create(
+                transaction=self,
+                value=vout.get('value', 0),
+                n=vout.get('n', None),
+                script_pub_key_asm=script_pubkey.get('asm', None),
+                script_pub_key_hex=script_pubkey.get('hex', None),
+                script_pub_key_type=script_pubkey.get('type', None),
+                script_pub_key_req_sig=script_pubkey.get('reqSigs', None),
+            )
+            # save each address in the output
+            for addr in script_pubkey.get('addresses', []):
+                address, created = Address.objects.get_or_create(
+                    address=addr,
+                )
+                if created:
+                    address.save()
+                tx_output.addresses.add(address)
+                tx_output.save()
+                # TODO check the address against the list of addresses to watch
+                # check_thread = Thread(
+                #     target=self.check_watch_addresses,
+                #     kwargs={
+                #         'address': address,
+                #         'value': tx_output.value,
+                #     }
+                # )
+                # check_thread.daemon = True
+                # check_thread.start()
+        logger.info('saved tx {}'.format(self.tx_id))
+        return
 
 
 class TxInput(models.Model):

@@ -1,4 +1,6 @@
 import time
+
+import logging
 import requests
 import json
 from django.conf import settings
@@ -38,3 +40,15 @@ def send_rpc(data):
     except ReadTimeout:
         return {'error': True, 'message': 'daemon timeout'}
 
+
+def get_block_hash(height):
+    rpc = send_rpc(
+        {
+            'method': 'getblockhash',
+            'params': [int(height)]
+        }
+    )
+    if rpc['error']:
+        logger = logging.getLogger(__name__)
+        logger.error(rpc['error'])
+    return rpc['result'] if not rpc['error'] else None
