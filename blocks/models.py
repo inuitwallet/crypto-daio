@@ -274,12 +274,6 @@ class Block(models.Model):
         # calculate merkle root of transactions
         transactions = self.transactions.all().values_list('tx_id', flat=True)
         merkle_root = self._calculate_merkle_root(transactions)
-        print('block: {}, txs: {}, merkle: {}, block_merkle: {}'.format(
-            self.height,
-            transactions,
-            merkle_root,
-            self.merkle_root
-        ))
         if merkle_root != self.merkle_root:
             return False, 'merkle root incorrect'
 
