@@ -1,6 +1,7 @@
 import codecs
 import hashlib
 import json
+import os
 
 from threading import Thread
 import time
@@ -255,8 +256,10 @@ class Command(BaseCommand):
             'nonce': int.from_bytes(block_header[76:80], 'little'),
         }
 
-        block, _ = Block.objects.get_or_create(hash=block_hash)
-        block.parse_rpc_block(block_dict)
+        print(block_header[:4])
+
+        #block, _ = Block.objects.get_or_create(hash=block_hash)
+        #block.parse_rpc_block(block_dict)
 
         #transactions = []
         #for tx_n in range(0, num_tx):
@@ -271,6 +274,7 @@ class Command(BaseCommand):
         start_hash = get_block_hash(options['start_height'])
         if not start_hash:
             logger.error('could not get start hash. check rpc connection')
+            return
         logger.info(
             'starting block chain parse at height {} with block {}'.format(
                 options['start_height'],

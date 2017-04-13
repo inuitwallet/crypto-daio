@@ -1,10 +1,14 @@
 from __future__ import unicode_literals
 
+import hashlib
 from datetime import datetime
 from decimal import Decimal
 
 import logging
 
+import struct
+import time
+import codecs
 from channels import Channel
 from django.db import IntegrityError
 from django.db import models
@@ -223,6 +227,48 @@ class Block(models.Model):
         # for tx_hash in rpc_block.get('tx', []):
         #     logger.info('scanning tx {}'.format(tx_hash))
         #     # trigger_transaction_parse(self, tx_hash)
+
+    def validate(self):
+        # check hash is correct for data
+        # first check the header attributes
+        for attribute in [
+            self.version,
+            self.previous_block,
+            self.next_block,
+            self.merkle_root,
+            self.time,
+            self.bits,
+            self.nonce
+        ]:
+            if not attribute:
+                return False
+
+        # check the previous block has a hash
+        if not self.previous_block.hash:
+            return False
+
+        # calculate the header in bytes (little endian)
+        header_bytes = (
+            self.version.to_bytes(4, 'little') +
+            codecs.decode(self.previous_block.hash, 'hex')[::-1] +
+            codecs.decode(self.merkle_root, 'hex')[::-1] +
+            int(time.mktime(self.time.timetuple())).to_bytes(4, 'little') +
+            codecs.decode(self.bits, 'hex')[::-1] +
+            self.nonce.to_bytes(4, 'little')
+        )
+
+        # hash the header and fail if it doesn't match the one on record
+        header_hash = hashlib.sha256(hashlib.sha256(header_bytes).digest()).digest()
+        calc_hash = codecs.encode(header_hash[::-1], 'hex')
+        if str.encode(self.hash) != calc_hash:
+            return False
+
+        # check that previous block height is this height-1
+        if self.previous_block.height != (self.height - 1):
+            return False
+
+        if self.next_block.height != (self.height + 1):
+            return False
 
 
 class Transaction(models.Model):

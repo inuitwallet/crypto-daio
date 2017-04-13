@@ -31,16 +31,30 @@ def parse_block(message):
         if rpc['error']:
             logger.error('rpc error: {}'.format(rpc['error']))
             return
-
+        # parse the block to save it
         block.parse_rpc_block(rpc['result'])
+        logger.info('saved block {}'.format(block.height))
 
     else:
         logger.info('existing block')
-        if not block.next_block:
-            logger.warning('no next block')
-            block.parse_rpc_block(block.serialize())
-        else:
+        # validate the block
+        if block.validate():
+            # block is valid so restart the scan at the next block
+            logger.info('block valid. moving to next block')
             Channel('parse_block').send({'block_hash': block.next_block.hash})
-
-    logger.info('saved block {}'.format(block.height))
+        else:
+            # block is invalid so re-fetch from rpc and save again
+            logger.warning('INVALID BLOCK!')
+            rpc = send_rpc(
+                {
+                    'method': 'getblock',
+                    'params': [block.hash]
+                }
+            )
+            if rpc['error']:
+                logger.error('rpc error: {}'.format(rpc['error']))
+                return
+            # parse the block to save it
+            block.parse_rpc_block(rpc['result'])
+            logger.info('re scanned and save saved block {}'.format(block.height))
 
