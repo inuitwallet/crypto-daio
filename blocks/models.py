@@ -239,7 +239,7 @@ class Block(models.Model):
             self.bits,
             self.nonce
         ]:
-            if not attribute:
+            if attribute is None:
                 return False, 'missing {}'.format(attribute)
 
         # check the previous block has a hash
