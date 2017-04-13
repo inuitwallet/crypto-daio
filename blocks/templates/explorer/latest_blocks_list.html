@@ -1,0 +1,40 @@
+{% extends 'explorer/base.html' %}
+
+{% block title %}
+Nu Block Explorer
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <td>Height</td>
+                        <td>Age</td>
+                        <td>Size</td>
+                        <td>Num. Trans</td>
+                        <td>Solved by</td>
+                        <td>Total Transacted (NSR)</td>
+                        <td>Total Transacted (NBT)</td>
+                        <td>Block SDD</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for block in object_list %}
+                        <tr>
+                            <td>{{ block.height }}</td>
+                            <td>{{ block.age }}</td>
+                            <td>{{ block.size }}</td>
+                            <td>{{ block.num_trans }}</td>
+                            <td>{{ block.solved_by }}</td>
+                            <td>{{ block.total_nsr }}</td>
+                            <td>{{ block.total_nbt }}</td>
+                            <td>{{ block.coinage_destroyed }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

@@ -223,10 +223,11 @@ class Block(models.Model):
                         existing_block.height)
                 )
 
-        # now get the transaction hashes and request their data from the daemon
-        # for tx_hash in rpc_block.get('tx', []):
-        #     logger.info('scanning tx {}'.format(tx_hash))
-        #     # trigger_transaction_parse(self, tx_hash)
+        # now we do the transactions
+        for tx_hash in rpc_block.get('tx', []):
+            Channel('parse_transaction').send(
+                {'tx_hash': tx_hash, 'block_hash': self.hash}
+            )
 
     def validate(self):
         # check hash is correct for data
@@ -270,7 +271,40 @@ class Block(models.Model):
             if self.next_block.height != (self.height + 1):
                 return False, 'incorrect next height'
 
+        # calculate merkle root of transactions
+        transactions = self.transactions.all().values_list('tx_id', flat=True)
+        merkle_root = self._calculate_merkle_root(transactions)
+        print('block: {}, txs: {}, merkle: {}, block_merkle: {}'.format(
+            self.height,
+            transactions,
+            merkle_root,
+            self.merkle_root
+        ))
+        if merkle_root != self.merkle_root:
+            return False, 'merkle root incorrect'
+
         return True, 'Block is valid'
+
+    def _calculate_merkle_root(self, hash_list):
+        def merkle_hash(a, b):
+            # Reverse inputs before and after hashing
+            # due to big-endian / little-endian nonsense
+            a1 = codecs.decode(a, 'hex')[::-1]
+            b1 = codecs.decode(b, 'hex')[::-1]
+            h = hashlib.sha256(hashlib.sha256(a1 + b1).digest()).digest()
+            return codecs.encode(h[::-1], 'hex')
+
+        if not hash_list:
+            return ''
+        if len(hash_list) == 1:
+            return hash_list[0]
+        new_hash_list = []
+        # Process pairs. For odd length, the last is skipped
+        for i in range(0, len(hash_list) - 1, 2):
+            new_hash_list.append(merkle_hash(hash_list[i], hash_list[i + 1]))
+        if len(hash_list) % 2 == 1:  # odd, hash last item twice
+            new_hash_list.append(merkle_hash(hash_list[-1], hash_list[-1]))
+        return self._calculate_merkle_root(new_hash_list)
 
 
 class Transaction(models.Model):
