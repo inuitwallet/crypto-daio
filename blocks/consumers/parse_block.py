@@ -38,13 +38,14 @@ def parse_block(message):
     else:
         logger.info('existing block')
         # validate the block
-        if block.validate():
+        valid, message = block.validate()
+        if valid:
             # block is valid so restart the scan at the next block
             logger.info('block valid. moving to next block')
             Channel('parse_block').send({'block_hash': block.next_block.hash})
         else:
             # block is invalid so re-fetch from rpc and save again
-            logger.warning('INVALID BLOCK!')
+            logger.warning('INVALID BLOCK! {}'.format(message))
             rpc = send_rpc(
                 {
                     'method': 'getblock',

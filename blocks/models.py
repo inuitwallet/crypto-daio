@@ -234,18 +234,17 @@ class Block(models.Model):
         for attribute in [
             self.version,
             self.previous_block,
-            self.next_block,
             self.merkle_root,
             self.time,
             self.bits,
             self.nonce
         ]:
             if not attribute:
-                return False
+                return False, 'missing {}'.format(attribute)
 
         # check the previous block has a hash
         if not self.previous_block.hash:
-            return False
+            return False, 'no previous block hash'
 
         # calculate the header in bytes (little endian)
         header_bytes = (
@@ -261,14 +260,17 @@ class Block(models.Model):
         header_hash = hashlib.sha256(hashlib.sha256(header_bytes).digest()).digest()
         calc_hash = codecs.encode(header_hash[::-1], 'hex')
         if str.encode(self.hash) != calc_hash:
-            return False
+            return False, 'incorrect hash'
 
         # check that previous block height is this height-1
         if self.previous_block.height != (self.height - 1):
-            return False
+            return False, 'incorrect previous height'
 
-        if self.next_block.height != (self.height + 1):
-            return False
+        if self.next_block:
+            if self.next_block.height != (self.height + 1):
+                return False, 'incorrect next height'
+
+        return True, 'Block is valid'
 
 
 class Transaction(models.Model):
