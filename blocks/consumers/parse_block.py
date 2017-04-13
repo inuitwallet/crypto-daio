@@ -41,7 +41,9 @@ def parse_block(message):
         valid, message = block.validate()
         if valid:
             # block is valid so restart the scan at the next block
-            logger.info('block valid. moving to next block')
+            logger.info(
+                'block valid. moving to next block ({})'.format(block.next_block.height)
+            )
             Channel('parse_block').send({'block_hash': block.next_block.hash})
         else:
             # block is invalid so re-fetch from rpc and save again
