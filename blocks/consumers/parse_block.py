@@ -20,7 +20,7 @@ def parse_block(message):
         hash=block_hash
     )
     if created:
-        logger.info('new block')
+        logger.info('new block found at {}'.format(block.height))
         # fetch the rpc data for the block
         rpc = send_rpc(
             {
@@ -36,9 +36,9 @@ def parse_block(message):
         logger.info('saved block {}'.format(block.height))
 
     else:
-        logger.info('existing block')
+        logger.info('existing block found at {}'.format(block.height))
         # validate the block
-        valid, message = block.validate()
+        valid, error_message = block.validate()
         if valid:
             # block is valid so restart the scan at the next block
             logger.info(
@@ -47,7 +47,7 @@ def parse_block(message):
             Channel('parse_block').send({'block_hash': block.next_block.hash})
         else:
             # block is invalid so re-fetch from rpc and save again
-            logger.warning('INVALID BLOCK! {}'.format(message))
+            logger.warning('INVALID BLOCK at {}! {}'.format(block.height, error_message))
             rpc = send_rpc(
                 {
                     'method': 'getblock',

@@ -135,6 +135,8 @@ CHANNEL_LAYERS = {
         "BACKEND": "asgi_redis.RedisChannelLayer",
         "CONFIG": {
             "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
+            "prefix": "daio",
+            "capacity": 500,
         },
         "ROUTING": "daio.routing.channel_routing",
     },
