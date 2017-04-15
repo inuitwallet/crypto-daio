@@ -276,10 +276,12 @@ class Block(models.Model):
             self.transactions.all().order_by('id').values_list('tx_id', flat=True)
         )
         merkle_root = self._calculate_merkle_root(transactions)
-        if merkle_root.decode() != self.merkle_root:
+        if type(merkle_root) == bytes:
+            merkle_root = merkle_root.decode()
+        if merkle_root != self.merkle_root:
             logger = logging.getLogger('block_parser')
             logger.error('transactions = {}'.format(transactions))
-            logger.error('{} = {}'.format(merkle_root.decode(), self.merkle_root))
+            logger.error('{} = {}'.format(merkle_root, self.merkle_root))
             return False, 'merkle root incorrect'
 
         return True, 'Block is valid'
@@ -294,7 +296,7 @@ class Block(models.Model):
             return codecs.encode(h[::-1], 'hex')
 
         if not hash_list:
-            return ''
+            return ''.encode()
         if len(hash_list) == 1:
             return hash_list[0]
         new_hash_list = []
