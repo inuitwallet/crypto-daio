@@ -272,11 +272,14 @@ class Block(models.Model):
                 return False, 'incorrect next height'
 
         # calculate merkle root of transactions
-        transactions = list(self.transactions.all().values_list('tx_id', flat=True))
+        transactions = list(
+            self.transactions.all().order_by('id').values_list('tx_id', flat=True)
+        )
         merkle_root = self._calculate_merkle_root(transactions)
-        if merkle_root != self.merkle_root:
+        if merkle_root.decode() != self.merkle_root:
             logger = logging.getLogger('block_parser')
-            logger.error('{} {} = {}'.format(transactions, merkle_root, self.merkle_root))
+            logger.error('transactions = {}'.format(transactions))
+            logger.error('{} = {}'.format(merkle_root.decode(), self.merkle_root))
             return False, 'merkle root incorrect'
 
         return True, 'Block is valid'
