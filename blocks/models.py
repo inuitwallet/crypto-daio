@@ -276,7 +276,7 @@ class Block(models.Model):
         merkle_root = self._calculate_merkle_root(transactions)
         if merkle_root != self.merkle_root:
             logger = logging.getLogger('block_parser')
-            logger.error('{} = {}'.format(merkle_root, self.merkle_root))
+            logger.error('{} {} = {}'.format(transactions, merkle_root, self.merkle_root))
             return False, 'merkle root incorrect'
 
         return True, 'Block is valid'
