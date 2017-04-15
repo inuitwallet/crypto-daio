@@ -275,6 +275,8 @@ class Block(models.Model):
         transactions = list(self.transactions.all().values_list('tx_id', flat=True))
         merkle_root = self._calculate_merkle_root(transactions)
         if merkle_root != self.merkle_root:
+            logger = logging.getLogger('block_parser')
+            logger.error(merkle_root, self.merkle_root)
             return False, 'merkle root incorrect'
 
         return True, 'Block is valid'
