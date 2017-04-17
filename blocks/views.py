@@ -33,4 +33,4 @@ class LatestBlocksList(ListView):
     template_name = 'explorer/latest_blocks_list.html'
 
     def get_queryset(self):
-        return Block.objects.all().order_by('-height')[:15]
+        return Block.objects.exclude(height=None).order_by('-height')[:15]

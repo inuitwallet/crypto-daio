@@ -5,8 +5,6 @@ from datetime import datetime
 from decimal import Decimal
 
 import logging
-
-import struct
 import time
 import codecs
 from channels import Channel
@@ -228,6 +226,11 @@ class Block(models.Model):
             Channel('parse_transaction').send(
                 {'tx_hash': tx_hash, 'block_hash': self.hash}
             )
+
+    @property
+    def is_valid(self):
+        valid, message = self.validate()
+        return valid
 
     def validate(self):
         # check hash is correct for data

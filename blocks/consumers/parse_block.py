@@ -48,6 +48,15 @@ def parse_block(message):
         else:
             # block is invalid so re-fetch from rpc and save again
             logger.warning('INVALID BLOCK at {}! {}'.format(block.height, error_message))
+            # delete the block
+            for transaction in block.transactions.all():
+                for tx_input in transaction.inputs.all():
+                    tx_input.delete()
+                for tx_output in transaction.outputs.all():
+                    tx_output.delete()
+                transaction.delete()
+            block.delete()
+            # get it again to redo the inputs
             rpc = send_rpc(
                 {
                     'method': 'getblock',
