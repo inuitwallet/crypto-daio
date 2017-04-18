@@ -18,6 +18,7 @@ class Notify(View):
     """
     @staticmethod
     def get(request, block_hash):
+        print(request.META['REMOTE_ADDR'], settings.NUD_HOST)
         if request.META['REMOTE_ADDR'] != settings.NUD_HOST:
             return HttpResponseNotFound()
         if len(block_hash) < 60:
