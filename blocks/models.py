@@ -166,6 +166,7 @@ class Block(models.Model):
         self.modifier_checksum = rpc_block.get('modifierchecksum', None)
         self.coinage_destroyed = rpc_block.get('coinagedestroyed', None)
 
+        self.save()
         # using the previousblockhash, get the block object to connect
         prev_block_hash = rpc_block.get('previousblockhash', None)
         if prev_block_hash:
@@ -184,6 +185,7 @@ class Block(models.Model):
                 )
                 Channel('parse_block').send({'block_hash': prev_block_hash})
 
+        self.save()
         # do the same for the next block
         next_block_hash = rpc_block.get('nextblockhash', None)
         if next_block_hash:
