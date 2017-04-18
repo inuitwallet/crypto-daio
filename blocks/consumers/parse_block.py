@@ -55,7 +55,6 @@ def parse_block(message):
                 for tx_output in transaction.outputs.all():
                     tx_output.delete()
                 transaction.delete()
-            block.delete()
             # get it again to redo the inputs
             rpc = send_rpc(
                 {
