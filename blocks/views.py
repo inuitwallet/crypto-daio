@@ -19,7 +19,9 @@ class Notify(View):
     @staticmethod
     def get(request, block_hash):
         if request.META['REMOTE_ADDR'] != settings.NUD_HOST:
-            return HttpResponse('not a recognised IP address')
+            return HttpResponse('not a recognised IP address - {} != {}'.format(
+                request.META['REMOTE_ADDR'], settings.NUD_HOST
+            ))
         if len(block_hash) < 60:
             return HttpResponse('Nope')
         block, created = Block.objects.get_or_create(hash=block_hash)
