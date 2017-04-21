@@ -22,7 +22,7 @@ def parse_transaction(message):
     # get the block from the message
     tx_index = message.get('tx_index')
 
-    if not tx_index:
+    if tx_index is None:
         logger.error('no tx index in message')
         return
 
