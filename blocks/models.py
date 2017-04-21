@@ -288,9 +288,6 @@ class Block(models.Model):
         if type(merkle_root) == bytes:
             merkle_root = merkle_root.decode()
         if merkle_root != self.merkle_root:
-            logger = logging.getLogger('block_parser')
-            logger.error('transactions = {}'.format(transactions))
-            logger.error('{} = {}'.format(merkle_root, self.merkle_root))
             return False, 'merkle root incorrect'
 
         return True, 'Block is valid'
@@ -366,7 +363,7 @@ class Transaction(models.Model):
         tx_time = rpc_tx.get('time', None)
 
         if tx_time:
-            self.time = datetime.fromtimestamp(int(tx_time))
+            self.time = make_aware(datetime.fromtimestamp(int(tx_time)))
         else:
             self.time = None
 
