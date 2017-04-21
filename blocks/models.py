@@ -12,6 +12,8 @@ from django.db import IntegrityError
 from django.db import models
 from django.utils.timezone import make_aware
 
+from blocks.utils.numbers import get_var_int_bytes
+
 
 class Block(models.Model):
     """
@@ -246,7 +248,7 @@ class Block(models.Model):
             self.nonce
         ]:
             if attribute is None:
-                return False, 'missing {}'.format(attribute)
+                return False, 'missing attribute'
 
         # check the previous block has a hash
         if not self.previous_block.hash:
@@ -391,7 +393,7 @@ class Transaction(models.Model):
             script_pubkey = vout.get('scriptPubKey', {})
             tx_output, _ = TxOutput.objects.get_or_create(
                 transaction=self,
-                value=vout.get('value', 0),
+                value=vout.get('value', 0) * 100000000,  # convert to satoshis
                 n=vout.get('n', None),
                 script_pub_key_asm=script_pubkey.get('asm', None),
                 script_pub_key_hex=script_pubkey.get('hex', None),
@@ -419,6 +421,36 @@ class Transaction(models.Model):
                 # check_thread.start()
         logger.info('saved tx {}'.format(self.tx_id))
         return
+
+    def validate(self):
+        # start off  with version and number of inputs
+        tx_bytes = [
+            self.version.to_bytes(4, 'little') +
+            get_var_int_bytes(self.inputs.all().count())
+        ]
+        # add each input
+        for tx_input in self.inputs.all():
+            tx_input_bytes = [
+                codecs.decode(tx_input.tx_id, 'hex')[::-1] +
+                tx_input.v_out.to_bytes(4, 'little') +
+                get_var_int_bytes(len(tx_input.script_sig_hex)) +
+                codecs.decode(tx_input.script_sig_hex, 'hex')[::-1] +
+                tx_input.sequence.to_bytes(4, 'little')
+            ]
+            tx_bytes += tx_input_bytes
+        # add the number of outputs
+        tx_bytes += get_var_int_bytes(self.outputs.all().count())
+        # add each output
+        for tx_output in self.outputs.all():
+            tx_output_bytes = [
+                tx_output.value.to_bytes(8, 'little') +
+                get_var_int_bytes(len(tx_output.script_pub_key_hex)) +
+                codecs.decode(tx_output.script_pub_key_hex, 'hex')[::-1]
+            ]
+            tx_bytes += tx_output_bytes
+        # add the locktime
+        tx_bytes += self.lock_time.to_bytes(4, 'little')
+        print(tx_bytes)
 
 
 class TxInput(models.Model):
@@ -511,25 +543,23 @@ class TxOutput(models.Model):
         null=True,
         on_delete=models.SET_NULL,
     )
-    value = models.FloatField()
+    value = models.BigIntegerField(
+        default=0
+    )
     n = models.IntegerField()
     script_pub_key_asm = models.TextField(
-        max_length=610,
         blank=True,
         null=True,
     )
     script_pub_key_hex = models.TextField(
-        max_length=610,
         blank=True,
         null=True,
     )
     script_pub_key_type = models.TextField(
-        max_length=610,
         blank=True,
         null=True,
     )
     script_pub_key_req_sig = models.TextField(
-        max_length=610,
         blank=True,
         null=True,
     )

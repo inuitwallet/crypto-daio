@@ -6,7 +6,6 @@ from django.views.generic import ListView
 from django.conf import settings
 from .models import *
 
-from .utils.parser import trigger_block_parse
 
 
 class Notify(View):
@@ -17,16 +16,14 @@ class Notify(View):
     :return:
     """
     @staticmethod
-    def get(request, block_hash):
-        if request.META['REMOTE_ADDR'] != settings.NUD_HOST:
-            return HttpResponse('not a recognised IP address - {} != {}'.format(
-                request.META['REMOTE_ADDR'], settings.NUD_HOST
-            ))
+    def get(request, block_hash, secret_hash):
+        if secret_hash not in settings.NOTIFY_SECRET_HASHES:
+            return HttpResponseNotFound()
         if len(block_hash) < 60:
-            return HttpResponse('Nope')
+            return HttpResponseNotFound()
         block, created = Block.objects.get_or_create(hash=block_hash)
         if created:
-            trigger_block_parse(block_hash)
+            Channel('parse_block').send({'block_hash': block_hash})
         return HttpResponse('daio received block {}'.format(block_hash))
 
 

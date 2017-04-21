@@ -1,13 +1,18 @@
 from django.conf.urls import url
 from . import views
 
-base64_pattern = r'(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$'
+block_hash_pattern = r'([A-Za-z0-9]{64})'
+secret_hash_pattern = r'([A-Za-z0-9]{32})'
+
 
 urlpatterns = [
 
     # Daemon notification
     url(
-        r'^notify/block/(?P<block_hash>{})'.format(base64_pattern),
+        r'^notify/block/(?P<secret_hash>{})/(?P<block_hash>{})'.format(
+            secret_hash_pattern,
+            block_hash_pattern
+        ),
         views.Notify.as_view(),
         name='notify'
     ),
