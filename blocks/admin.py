@@ -29,7 +29,7 @@ admin.site.register(Block, BlockAdmin)
 
 
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ('tx_id', 'block', 'is_coin_base', 'is_coin_stake')
+    list_display = ('tx_id', 'block')
     search_fields = ('tx_id',)
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
@@ -46,8 +46,8 @@ admin.site.register(Transaction, TransactionAdmin)
 
 
 class TxInputAdmin(admin.ModelAdmin):
-    list_display = ('transaction', 'tx_id', 'v_out')
-    search_fields = ('transaction', 'tx_id')
+    list_display = ('transaction', 'previous_output')
+    search_fields = ('transaction', 'previous_output')
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
         if db_field.name == 'transaction':
@@ -66,7 +66,7 @@ admin.site.register(TxInput, TxInputAdmin)
 
 
 class TxOutputAdmin(admin.ModelAdmin):
-    list_display = ('transaction', 'n', 'value')
+    list_display = ('transaction', 'index', 'value')
     search_fields = ('transaction',)
 
     def formfield_for_foreignkey(self, db_field, request=None, **kwargs):

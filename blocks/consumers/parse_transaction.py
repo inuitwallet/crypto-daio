@@ -1,8 +1,6 @@
 import logging
 
-from channels import Channel
-
-from blocks.models import Transaction, TxInput, TxOutput, Block
+from blocks.models import Transaction, Block
 from blocks.utils.rpc import send_rpc
 
 logger = logging.getLogger('block_parser')
@@ -21,6 +19,12 @@ def parse_transaction(message):
     if not block_hash:
         logger.error('no block id in message')
         return
+    # get the block from the message
+    tx_index = message.get('tx_index')
+
+    if not tx_index:
+        logger.error('no tx index in message')
+        return
 
     try:
         block = Block.objects.get(hash=block_hash)
@@ -29,7 +33,11 @@ def parse_transaction(message):
         return
 
     logger.info('parsing tx {} for block {}'.format(tx_hash, block.height))
-    tx, created = Transaction.objects.get_or_create(tx_id=tx_hash, block=block)
+    tx, created = Transaction.objects.get_or_create(
+        tx_id=tx_hash,
+        block=block,
+        index=tx_index
+    )
     if created:
         logger.info('new tx')
         # fetch the rpc data for the block

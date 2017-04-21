@@ -226,10 +226,12 @@ class Block(models.Model):
                 )
 
         # now we do the transactions
+        index = 0
         for tx_hash in rpc_block.get('tx', []):
             Channel('parse_transaction').send(
-                {'tx_hash': tx_hash, 'block_hash': self.hash}
+                {'tx_hash': tx_hash, 'block_hash': self.hash, 'tx_index': index}
             )
+            index += 1
 
     @property
     def is_valid(self):
@@ -324,7 +326,6 @@ class Transaction(models.Model):
         Block,
         related_name='transactions',
         related_query_name='transaction',
-        blank=True,
         null=True,
         on_delete=models.SET_NULL,
     )
@@ -332,7 +333,12 @@ class Transaction(models.Model):
         max_length=610,
         unique=True,
     )
+    index = models.BigIntegerField()
     version = models.IntegerField(
+        blank=True,
+        null=True,
+    )
+    time = models.DateTimeField(
         blank=True,
         null=True,
     )
@@ -345,8 +351,6 @@ class Transaction(models.Model):
         blank=True,
         null=True,
     )
-    is_coin_base = models.NullBooleanField()
-    is_coin_stake = models.NullBooleanField()
 
     def __str__(self):
         return str(self.tx_id)
@@ -359,47 +363,62 @@ class Transaction(models.Model):
         logger = logging.getLogger('block_parser')
         logger.info('parsing tx {}'.format(self.tx_id))
         self.version = rpc_tx.get('version', None)
+        tx_time = rpc_tx.get('time', None)
+
+        if tx_time:
+            self.time = datetime.fromtimestamp(int(tx_time))
+        else:
+            self.time = None
+
         self.lock_time = rpc_tx.get('locktime', None)
         self.unit = rpc_tx.get('unit', None)
         self.save()
+
         # for each input in the transaction, save a TxInput
         for vin in rpc_tx.get('vin', []):
-            try:
-                output_transaction = Transaction.objects.get(tx_id=vin.get('txid', None))
-            except self.DoesNotExist:
-                output_transaction = None
-            script_sig = vin.get('scriptSig', {})
             tx_input, _ = TxInput.objects.get_or_create(
                 transaction=self,
-                output_transaction=output_transaction,
-                v_out=vin.get('vout', None),
-                sequence=vin.get('sequence', None),
-                coin_base=vin.get('coinbase', None),
-                script_sig_asm=script_sig.get('asm', None),
-                script_sig_hex=script_sig.get('hex', None),
             )
-            # if a previous output is used as this input, update it's `is_unspent` status
-            try:
-                spent_output = TxOutput.objects.get(
-                    transaction=tx_input.output_transaction,
-                    n=tx_input.v_out,
-                )
-                spent_output.is_unspent = False
-                spent_output.save()
-            except TxOutput.DoesNotExist:
-                continue
-        # similar for each TxOutput
+
+            tx_input.sequence = vin.get('sequence', None)
+            tx_input.coin_base = vin.get('coinbase', None)
+
+            script_sig = vin.get('scriptSig', {})
+            tx_input.script_sig_asm = script_sig.get('asm', None)
+            tx_input.script_sig_hex = script_sig.get('hex', None)
+
+            tx_id = vin.get('txid', None)
+
+            if tx_id:
+                # input is spending a previous output. Link it here
+                try:
+                    previous_transaction = Transaction.objects.get(tx_id=tx_id)
+                except Transaction.DoesNotExist:
+                    previous_transaction = None
+
+                try:
+                    previous_output = TxOutput.objects.get(
+                        transaction=previous_transaction,
+                        index=vin.get('vout', None)
+                    )
+                except TxOutput.DoesNotExist:
+                    previous_output = None
+
+                tx_input.previous_output = previous_output
+
+        # save a TXOutput for each output in the Transaction
         for vout in rpc_tx.get('vout', []):
-            script_pubkey = vout.get('scriptPubKey', {})
             tx_output, _ = TxOutput.objects.get_or_create(
                 transaction=self,
                 value=vout.get('value', 0) * 100000000,  # convert to satoshis
-                n=vout.get('n', None),
-                script_pub_key_asm=script_pubkey.get('asm', None),
-                script_pub_key_hex=script_pubkey.get('hex', None),
-                script_pub_key_type=script_pubkey.get('type', None),
-                script_pub_key_req_sig=script_pubkey.get('reqSigs', None),
+                index=vout.get('n', -1),
             )
+            script_pubkey = vout.get('scriptPubKey', {})
+            tx_output.script_pub_key_asm = script_pubkey.get('asm', None)
+            tx_output.script_pub_key_hex = script_pubkey.get('hex', None)
+            tx_output.script_pub_key_type = script_pubkey.get('type', None)
+            tx_output.script_pub_key_req_sig = script_pubkey.get('reqSigs', None)
+
             # save each address in the output
             for addr in script_pubkey.get('addresses', []):
                 address, created = Address.objects.get_or_create(
@@ -453,61 +472,6 @@ class Transaction(models.Model):
         print(tx_bytes)
 
 
-class TxInput(models.Model):
-    """
-    A transaction input.
-    Belongs to a single transaction
-    """
-    transaction = models.ForeignKey(
-        Transaction,
-        related_name='inputs',
-        related_query_name='input',
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-    )
-    tx_id = models.CharField(
-        max_length=610,
-        blank=True,
-        null=True,
-    )
-    output_transaction = models.ForeignKey(
-        Transaction,
-        related_name='inout_txs',
-        related_query_name='inout_tx',
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-    )
-    v_out = models.BigIntegerField(
-        blank=True,
-        null=True,
-    )
-    coin_base = models.CharField(
-        max_length=610,
-        blank=True,
-        null=True,
-    )
-    sequence = models.BigIntegerField(
-        blank=True,
-        null=True,
-    )
-    script_sig_asm = models.TextField(
-        blank=True,
-        null=True,
-    )
-    script_sig_hex = models.TextField(
-        blank=True,
-        null=True,
-    )
-
-    def __str__(self):
-        return str(self.pk)
-
-    def Meta(self):
-        self.unique_together = (self.tx_id, self.v_out)
-
-
 class Address(models.Model):
     address = models.CharField(
         max_length=610,
@@ -527,7 +491,6 @@ class Address(models.Model):
         # get the outputs for the address
         outputs = TxOutput.objects.filter(
             addresses__address=self.address,
-            is_unspent=True,
         )
         for output in outputs:
             value += Decimal(output.value)
@@ -537,16 +500,15 @@ class Address(models.Model):
 class TxOutput(models.Model):
     transaction = models.ForeignKey(
         Transaction,
+        null=True,
         related_name='outputs',
         related_query_name='output',
-        blank=True,
-        null=True,
         on_delete=models.SET_NULL,
     )
     value = models.BigIntegerField(
         default=0
     )
-    n = models.IntegerField()
+    index = models.IntegerField()
     script_pub_key_asm = models.TextField(
         blank=True,
         null=True,
@@ -568,16 +530,54 @@ class TxOutput(models.Model):
         related_name='output_addresses',
         related_query_name='tx_output',
     )
-    is_unspent = models.BooleanField(
-        default=True,
-    )
 
     def __str__(self):
         return str(self.pk)
 
     def Meta(self):
-        self.unique_together = (self.transaction, self.n)
+        self.unique_together = (self.transaction, self.index)
         ordering = '-n'
+
+
+class TxInput(models.Model):
+    """
+    A transaction input.
+    Belongs to a single transaction
+    """
+    transaction = models.ForeignKey(
+        Transaction,
+        null=True,
+        related_name='inputs',
+        related_query_name='input',
+        on_delete=models.SET_NULL,
+    )
+    previous_output = models.OneToOneField(
+        TxOutput,
+        null=True,
+        blank=True,
+        related_name='previous_output',
+        on_delete=models.SET_NULL,
+    )
+    coin_base = models.CharField(
+        max_length=610,
+        blank=True,
+        null=True,
+    )
+    sequence = models.BigIntegerField(
+        blank=True,
+        null=True,
+    )
+    script_sig_asm = models.TextField(
+        blank=True,
+        null=True,
+    )
+    script_sig_hex = models.TextField(
+        blank=True,
+        null=True,
+    )
+
+    def __str__(self):
+        return str(self.pk)
 
 
 class CustodianVote(models.Model):
