@@ -282,7 +282,7 @@ class Block(models.Model):
 
         # calculate merkle root of transactions
         transactions = list(
-            self.transactions.all().order_by('id').values_list('tx_id', flat=True)
+            self.transactions.all().order_by('index').values_list('tx_id', flat=True)
         )
         merkle_root = self._calculate_merkle_root(transactions)
         if type(merkle_root) == bytes:
