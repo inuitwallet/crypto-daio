@@ -391,12 +391,22 @@ class Transaction(models.Model):
                 try:
                     previous_transaction = Transaction.objects.get(tx_id=tx_id)
                 except Transaction.DoesNotExist:
-                    previous_transaction = None
+                    logger.error(
+                        'Tx not found for previous output: {} in {}'.format(tx_id, vin)
+                    )
+                    continue
+
+                output_index = vin.get('vout', None)
+                if output_index is None:
+                    logger.error(
+                        'No previous index found: {} in {}'.format(output_index, vin)
+                    )
+                    continue
 
                 try:
                     previous_output = TxOutput.objects.get(
                         transaction=previous_transaction,
-                        index=vin.get('vout', None)
+                        index=output_index,
                     )
                 except TxOutput.DoesNotExist:
                     previous_output = None
@@ -533,7 +543,6 @@ class TxOutput(models.Model):
 
     def Meta(self):
         self.unique_together = (self.transaction, self.index)
-        ordering = '-n'
 
 
 class TxInput(models.Model):
