@@ -40,17 +40,29 @@ def parse_block(message):
         # validate the block
         valid, error_message = block.validate()
         if valid:
-            if message.get('parse'):
-                # block is valid so restart the scan at the next block
-                if not block.next_block:
-                    logger.warning(
-                        'no next block. Is this the top block? {}'.format(block.height)
-                    )
-                    return
-                logger.info(
-                    'block valid. moving to next block ({})'.format(block.next_block.height)
+            if message.get('no_parse'):
+                return
+
+            # block is valid so restart the scan at the next block
+            if not block.next_block:
+                logger.warning(
+                    'no next block. Is this the top block? {}'.format(block.height)
                 )
-                Channel('parse_block').send({'block_hash': block.next_block.hash})
+                return
+            logger.info(
+                'block valid. checking transactions and '
+                'moving to next block ({})'.format(block.next_block.height)
+            )
+            for tx in block.transactions.all().order_by('index'):
+                if not tx.is_valid:
+                    Channel('parse_transaction').send(
+                        {
+                            'tx_hash': tx.tx_id,
+                            'tx_index': tx.index,
+                            'block_hash': block.hash
+                        }
+                    )
+            Channel('parse_block').send({'block_hash': block.next_block.hash})
         else:
             # block is invalid so re-fetch from rpc and save again
             logger.warning('INVALID BLOCK at {}! {}'.format(block.height, error_message))
