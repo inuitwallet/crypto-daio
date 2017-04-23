@@ -19,7 +19,6 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='transactions', related_query_name='transaction', to='blocks.Block'),
             preserve_default=False,
         ),
-        migrations.RunSQL('DROP FROM ')
         migrations.AlterField(
             model_name='txinput',
             name='previous_output',
