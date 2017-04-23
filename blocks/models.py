@@ -324,6 +324,7 @@ class Transaction(models.Model):
         related_name='transactions',
         related_query_name='transaction',
         on_delete=models.CASCADE,
+        default=None,
     )
     tx_id = models.CharField(
         max_length=610,
@@ -588,6 +589,7 @@ class TxOutput(models.Model):
         related_name='outputs',
         related_query_name='output',
         on_delete=models.CASCADE,
+        default=None,
     )
     value = models.BigIntegerField(
         default=0
@@ -632,6 +634,7 @@ class TxInput(models.Model):
         related_name='inputs',
         related_query_name='input',
         on_delete=models.CASCADE,
+        default=None,
     )
     index = models.BigIntegerField()
     previous_output = models.OneToOneField(
@@ -639,6 +642,7 @@ class TxInput(models.Model):
         blank=True,
         related_name='previous_output',
         on_delete=models.CASCADE,
+        default=''
     )
     coin_base = models.CharField(
         max_length=610,
