@@ -323,12 +323,10 @@ class Transaction(models.Model):
         Block,
         related_name='transactions',
         related_query_name='transaction',
-        null=True,
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
     )
     tx_id = models.CharField(
         max_length=610,
-        unique=True,
     )
     index = models.BigIntegerField()
     version = models.IntegerField(
@@ -352,6 +350,9 @@ class Transaction(models.Model):
     def __str__(self):
         return str(self.tx_id)
 
+    def Meta(self):
+        unique_together = (self.block, self.tx_id)
+
     @property
     def class_type(self):
         return 'Transaction'
@@ -372,17 +373,27 @@ class Transaction(models.Model):
         self.save()
 
         # for each input in the transaction, save a TxInput
+        vin_index = 0
         for vin in rpc_tx.get('vin', []):
-            tx_input, _ = TxInput.objects.get_or_create(
-                transaction=self,
-            )
-
-            tx_input.sequence = vin.get('sequence', None)
-            tx_input.coin_base = vin.get('coinbase', None)
-
             script_sig = vin.get('scriptSig', {})
-            tx_input.script_sig_asm = script_sig.get('asm', None)
-            tx_input.script_sig_hex = script_sig.get('hex', None)
+            try:
+                tx_input = TxInput.objects.get(
+                    transaction=self,
+                    index=vin_index,
+                )
+                tx_input.sequence = vin.get('sequence', None),
+                tx_input.coin_base = vin.get('coinbase', None),
+                tx_input.script_sig_asm = script_sig.get('asm', ''),
+                tx_input.script_sig_hex = script_sig.get('hex', ''),
+            except TxInput.DoesNotExist:
+                tx_input = TxInput.objects.create(
+                    transaction=self,
+                    index=vin_index,
+                    sequence=vin.get('sequence', None),
+                    coin_base=vin.get('coinbase', None),
+                    script_sig_asm=script_sig.get('asm', ''),
+                    script_sig_hex=script_sig.get('hex', ''),
+                )
 
             tx_id = vin.get('txid', None)
 
@@ -394,6 +405,7 @@ class Transaction(models.Model):
                     logger.error(
                         'Tx not found for previous output: {} in {}'.format(tx_id, vin)
                     )
+                    Channel('parse_transaction').send({'tx_hash': tx_id})
                     continue
 
                 output_index = vin.get('vout', None)
@@ -401,6 +413,7 @@ class Transaction(models.Model):
                     logger.error(
                         'No previous index found: {} in {}'.format(output_index, vin)
                     )
+                    Channel('parse_transaction').send({'tx_hash': tx_id})
                     continue
 
                 try:
@@ -409,22 +422,45 @@ class Transaction(models.Model):
                         index=output_index,
                     )
                 except TxOutput.DoesNotExist:
-                    previous_output = None
+                    logger.error(
+                        'Couldn\'t find previous output for {} at {}'.format(
+                            previous_transaction,
+                            output_index
+                        )
+                    )
+                    Channel('parse_transaction').send({'tx_hash': tx_id})
+                    continue
 
                 tx_input.previous_output = previous_output
 
+            tx_input.save()
+            vin_index += 1
+
         # save a TXOutput for each output in the Transaction
         for vout in rpc_tx.get('vout', []):
-            tx_output, _ = TxOutput.objects.get_or_create(
-                transaction=self,
-                value=vout.get('value', 0) * 100000000,  # convert to satoshis
-                index=vout.get('n', -1),
-            )
             script_pubkey = vout.get('scriptPubKey', {})
-            tx_output.script_pub_key_asm = script_pubkey.get('asm', None)
-            tx_output.script_pub_key_hex = script_pubkey.get('hex', None)
-            tx_output.script_pub_key_type = script_pubkey.get('type', None)
-            tx_output.script_pub_key_req_sig = script_pubkey.get('reqSigs', None)
+            try:
+                tx_output = TxOutput.objects.get(
+                    transaction=self,
+                    index=vout.get('n', -1),
+                )
+                tx_output.value = vout.get('value', 0) * 100000000,  # convert to satoshis
+                tx_output.script_pub_key_asm = script_pubkey.get('asm', '')
+                tx_output.script_pub_key_hex = script_pubkey.get('hex', '')
+                tx_output.script_pub_key_type = script_pubkey.get('type', '')
+                tx_output.script_pub_key_req_sig = script_pubkey.get('reqSigs', '')
+            except TxOutput.DoesNotExist:
+                tx_output = TxOutput.objects.create(
+                    transaction=self,
+                    index=vout.get('n', -1),
+                    value=vout.get('value', 0) * 10000,  # convert to satoshis
+                    script_pub_key_asm=script_pubkey.get('asm', ''),
+                    script_pub_key_hex=script_pubkey.get('hex', ''),
+                    script_pub_key_type=script_pubkey.get('type', ''),
+                    script_pub_key_req_sig=script_pubkey.get('reqSigs', ''),
+                )
+
+            tx_output.save()
 
             # save each address in the output
             for addr in script_pubkey.get('addresses', []):
@@ -448,35 +484,77 @@ class Transaction(models.Model):
         logger.info('saved tx {}'.format(self.tx_id))
         return
 
+    @property
+    def is_valid(self):
+        valid, message = self.validate()
+        return valid
+
     def validate(self):
+        for attribute in [
+            self.version,
+            self.time
+        ]:
+            if attribute is None:
+                return False, 'missing attribute'
+
         # start off  with version and number of inputs
-        tx_bytes = [
+        tx_bytes = (
             self.version.to_bytes(4, 'little') +
+            int(time.mktime(self.time.timetuple())).to_bytes(4, 'little') +
             get_var_int_bytes(self.inputs.all().count())
-        ]
+        )
         # add each input
-        for tx_input in self.inputs.all():
-            tx_input_bytes = [
-                codecs.decode(tx_input.tx_id, 'hex')[::-1] +
-                tx_input.v_out.to_bytes(4, 'little') +
-                get_var_int_bytes(len(tx_input.script_sig_hex)) +
-                codecs.decode(tx_input.script_sig_hex, 'hex')[::-1] +
-                tx_input.sequence.to_bytes(4, 'little')
-            ]
+        for tx_input in self.inputs.all().order_by('index'):
+            if tx_input.coin_base:
+                # coinbase
+                tx_input_bytes = (
+                    codecs.decode('0' * 64, 'hex')[::-1] +
+                    codecs.decode('f' * 8, 'hex')[::-1] +
+                    get_var_int_bytes(len(codecs.decode(tx_input.coin_base, 'hex'))) +
+                    codecs.decode(tx_input.coin_base, 'hex') +
+                    tx_input.sequence.to_bytes(4, 'little')
+                )
+            else:
+                if not tx_input.previous_output:
+                    return False, 'Input at index {} has no previous output'.format(
+                        tx_input.index
+                    )
+                tx_input_bytes = (
+                    codecs.decode(
+                        tx_input.previous_output.transaction.tx_id, 'hex'
+                    )[::-1] +
+                    tx_input.previous_output.index.to_bytes(4, 'little') +
+                    get_var_int_bytes(len(codecs.decode(tx_input.script_sig_hex, 'hex'))) +  # noqa
+                    codecs.decode(tx_input.script_sig_hex, 'hex') +
+                    tx_input.sequence.to_bytes(4, 'little')
+                )
             tx_bytes += tx_input_bytes
         # add the number of outputs
         tx_bytes += get_var_int_bytes(self.outputs.all().count())
         # add each output
-        for tx_output in self.outputs.all():
-            tx_output_bytes = [
+        for tx_output in self.outputs.all().order_by('index'):
+            tx_output_bytes = (
                 tx_output.value.to_bytes(8, 'little') +
-                get_var_int_bytes(len(tx_output.script_pub_key_hex)) +
-                codecs.decode(tx_output.script_pub_key_hex, 'hex')[::-1]
-            ]
+                get_var_int_bytes(len(codecs.decode(tx_output.script_pub_key_hex, 'hex'))) +  # noqa
+                codecs.decode(tx_output.script_pub_key_hex, 'hex')
+            )
             tx_bytes += tx_output_bytes
         # add the locktime
         tx_bytes += self.lock_time.to_bytes(4, 'little')
-        print(tx_bytes)
+        # add the unit
+        tx_bytes += codecs.encode(self.unit)
+
+        # get the he
+        # hash the header and fail if it doesn't match the one on record
+        header_hash = hashlib.sha256(hashlib.sha256(tx_bytes).digest()).digest()
+        calc_hash = codecs.encode(header_hash[::-1], 'hex')
+        if str.encode(self.tx_id) != calc_hash:
+            return False, 'incorrect hash {} != {}'.format(
+                str.encode(self.tx_id),
+                calc_hash
+            )
+
+        return True, 'Transaction is valid'
 
 
 class Address(models.Model):
@@ -507,10 +585,9 @@ class Address(models.Model):
 class TxOutput(models.Model):
     transaction = models.ForeignKey(
         Transaction,
-        null=True,
         related_name='outputs',
         related_query_name='output',
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
     )
     value = models.BigIntegerField(
         default=0
@@ -518,19 +595,19 @@ class TxOutput(models.Model):
     index = models.IntegerField()
     script_pub_key_asm = models.TextField(
         blank=True,
-        null=True,
+        default='',
     )
     script_pub_key_hex = models.TextField(
         blank=True,
-        null=True,
+        default='',
     )
     script_pub_key_type = models.TextField(
         blank=True,
-        null=True,
+        default='',
     )
     script_pub_key_req_sig = models.TextField(
         blank=True,
-        null=True,
+        default='',
     )
     addresses = models.ManyToManyField(
         Address,
@@ -552,17 +629,16 @@ class TxInput(models.Model):
     """
     transaction = models.ForeignKey(
         Transaction,
-        null=True,
         related_name='inputs',
         related_query_name='input',
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
     )
+    index = models.BigIntegerField()
     previous_output = models.OneToOneField(
         TxOutput,
-        null=True,
         blank=True,
         related_name='previous_output',
-        on_delete=models.SET_NULL,
+        on_delete=models.CASCADE,
     )
     coin_base = models.CharField(
         max_length=610,
@@ -571,15 +647,15 @@ class TxInput(models.Model):
     )
     sequence = models.BigIntegerField(
         blank=True,
-        null=True,
+        default=4294967295,
     )
     script_sig_asm = models.TextField(
         blank=True,
-        null=True,
+        default='',
     )
     script_sig_hex = models.TextField(
         blank=True,
-        null=True,
+        default='',
     )
 
     def __str__(self):
