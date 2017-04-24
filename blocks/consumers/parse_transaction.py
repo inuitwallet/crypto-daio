@@ -88,7 +88,9 @@ def parse_transaction(message):
         valid, error_message = tx.validate()
         if not valid:
             # transaction is invalid so re-fetch from rpc and save again
-            logger.warning('INVALID TX at {}! {}'.format(block.height, error_message))
+            logger.warning(
+                'INVALID TX {} at {}! {}'.format(tx_hash, block.height, error_message)
+            )
             tx.delete()
             Channel('parse_transaction').send({'tx_hash': tx_hash})
 
