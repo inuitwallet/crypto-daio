@@ -3,13 +3,10 @@ import hashlib
 import logging
 import time
 from datetime import datetime
-from threading import Thread
 
 from channels import Channel
 from django.db import models, IntegrityError
 from django.utils.timezone import make_aware
-
-from blocks.consumers.parse_transaction import parse_transaction
 
 logger = logging.getLogger('daio')
 
