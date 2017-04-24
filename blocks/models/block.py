@@ -226,17 +226,12 @@ class Block(models.Model):
         # now we do the transactions
         index = 0
         for tx_hash in rpc_block.get('tx', []):
-            tx_thread = Thread(
-                target=parse_transaction,
-                kwargs={
-                    'message': {
-                        'tx_hash': tx_hash,
-                        'tx_index': index,
-                        'block_hash': self.hash
-                    }
-                }
+            logger.info(
+                'asking for tx parse for {}:{} at {}'.format(index, tx_hash, self.hash)
             )
-            tx_thread.start()
+            Channel('parse_transaction').send(
+                {'tx_hash': tx_hash, 'block_hash': self.hash, 'tx_index': index}
+            )
             index += 1
 
     @property
