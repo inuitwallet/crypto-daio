@@ -37,6 +37,8 @@ class Command(BaseCommand):
 
     @staticmethod
     def validate(block, repair):
+        if block.height == 0:
+            return True
         valid, message = block.validate()
         if not valid:
             logger.error('block {} is invalid: {}'.format(block.height, message))
