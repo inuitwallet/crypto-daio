@@ -20,7 +20,7 @@ def parse_block(message):
         hash=block_hash
     )
     if created:
-        logger.info('new block found at {}'.format(block.height))
+        logger.info('new block created for {}'.format(block.hash))
         # fetch the rpc data for the block
         rpc = send_rpc(
             {
