@@ -245,8 +245,12 @@ class Block(models.Model):
         return valid
 
     def validate(self):
+        if self.height == 0:
+            return True, 'Genesis Block'
+
         # check hash is correct for data
         # first check the header attributes
+
         for attribute in [
             self.version,
             self.previous_block,

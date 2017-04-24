@@ -3,6 +3,7 @@ from threading import Thread
 from channels import Channel
 from django.core.management import BaseCommand
 
+from blocks.consumers.parse_block import parse_block
 from blocks.consumers.parse_transaction import parse_transaction
 from blocks.models import Block
 from django.utils import timezone
@@ -36,13 +37,37 @@ class Command(BaseCommand):
 
     @staticmethod
     def validate(block, repair):
+        if block.height == 0:
+            return True
         valid, message = block.validate()
         if not valid:
             logger.error('block {} is invalid: {}'.format(block.height, message))
             if repair:
-                block_hash = block.hash
-                block.delete()
-                Channel('parse_block').send({'block_hash': block_hash})
+                if message == 'merkle root incorrect':
+                    rpc = send_rpc(
+                        {
+                            'method': 'getblock',
+                            'params': [block.hash]
+                        }
+                    )
+                    if rpc['error']:
+                        logger.error('rpc error: {}'.format(rpc['error']))
+                        return
+                    transactions = rpc['result'].get('tx', [])
+                    if len(transactions) != block.transactions.all().count():
+                        logger.error('missing transactions')
+                        tx_index = 0
+                        for tx in transactions:
+                            tx_thread = Thread(
+                                target=parse_transaction,
+                                kwargs={'message': {'tx_hash': tx, 'tx_index': tx_index}}
+                            )
+                            tx_thread.start()
+                            tx_index += 1
+                else:
+                    block_hash = block.hash
+                    block.delete()
+                    parse_block({'block_hash': block_hash})
             return False
         for tx in block.transactions.all().order_by('index'):
             tx_valid, tx_message = tx.validate()
@@ -51,7 +76,7 @@ class Command(BaseCommand):
                 if repair:
                     tx_hash = tx.tx_id
                     tx.delete()
-                    Channel('parse_transaction').send({'tx_hash': tx_hash})
+                    parse_transaction({'tx_hash': tx_hash})
                 return False
         return True
 
