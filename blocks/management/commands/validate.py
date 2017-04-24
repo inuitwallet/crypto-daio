@@ -1,10 +1,13 @@
 from channels import Channel
 from django.core.management import BaseCommand
 
+from blocks.consumers.parse_transaction import parse_transaction
 from blocks.models import Block
 from django.utils import timezone
 
 import logging
+
+from blocks.utils.rpc import send_rpc
 
 logger = logging.getLogger('daio')
 
@@ -75,6 +78,23 @@ class Command(BaseCommand):
                 logger.info('{} OK'.format(block.height))
             else:
                 logger.error('BLOCK {} IS INVALID'.format(block.height))
+                if options['repair']:
+                    rpc = send_rpc(
+                        {
+                            'method': 'getblock',
+                            'params': [block.hash]
+                        }
+                    )
+                    if rpc['error']:
+                        logger.error('rpc error: {}'.format(rpc['error']))
+                        return
+                    transactions = rpc['result'].get('tx', [])
+                    if len(transactions) != block.transactions.all().count():
+                        logger.error('missing transactions')
+                        tx_index = 0
+                        for tx in transactions:
+                            parse_transaction({'tx_hash': tx, 'tx_index': tx_index})
+                            tx_index += 1
 
 
 
