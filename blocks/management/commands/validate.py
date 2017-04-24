@@ -3,6 +3,7 @@ from threading import Thread
 from channels import Channel
 from django.core.management import BaseCommand
 
+from blocks.consumers.parse_block import parse_block
 from blocks.consumers.parse_transaction import parse_transaction
 from blocks.models import Block
 from django.utils import timezone
@@ -64,7 +65,7 @@ class Command(BaseCommand):
                 else:
                     block_hash = block.hash
                     block.delete()
-                    Channel('parse_block').send({'block_hash': block_hash})
+                    parse_block({'block_hash': block_hash})
             return False
         for tx in block.transactions.all().order_by('index'):
             tx_valid, tx_message = tx.validate()
@@ -73,7 +74,7 @@ class Command(BaseCommand):
                 if repair:
                     tx_hash = tx.tx_id
                     tx.delete()
-                    Channel('parse_transaction').send({'tx_hash': tx_hash})
+                    parse_transaction({'tx_hash': tx_hash})
                 return False
         return True
 
