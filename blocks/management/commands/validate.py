@@ -40,31 +40,9 @@ class Command(BaseCommand):
         if not valid:
             logger.error('block {} is invalid: {}'.format(block.height, message))
             if repair:
-                if message == 'merkle root incorrect':
-                    rpc = send_rpc(
-                        {
-                            'method': 'getblock',
-                            'params': [block.hash]
-                        }
-                    )
-                    if rpc['error']:
-                        logger.error('rpc error: {}'.format(rpc['error']))
-                        return
-                    transactions = rpc['result'].get('tx', [])
-                    if len(transactions) != block.transactions.all().count():
-                        logger.error('missing transactions')
-                        tx_index = 0
-                        for tx in transactions:
-                            tx_thread = Thread(
-                                target=parse_transaction,
-                                kwargs={'message': {'tx_hash': tx, 'tx_index': tx_index}}
-                            )
-                            tx_thread.start()
-                            tx_index += 1
-                else:
-                    block_hash = block.hash
-                    block.delete()
-                    Channel('parse_block').send({'block_hash': block_hash})
+                block_hash = block.hash
+                block.delete()
+                Channel('parse_block').send({'block_hash': block_hash})
             return False
         for tx in block.transactions.all().order_by('index'):
             tx_valid, tx_message = tx.validate()

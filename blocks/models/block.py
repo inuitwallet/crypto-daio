@@ -3,10 +3,13 @@ import hashlib
 import logging
 import time
 from datetime import datetime
+from threading import Thread
 
 from channels import Channel
 from django.db import models, IntegrityError
 from django.utils.timezone import make_aware
+
+from blocks.consumers.parse_transaction import parse_transaction
 
 logger = logging.getLogger('daio')
 
@@ -223,12 +226,17 @@ class Block(models.Model):
         # now we do the transactions
         index = 0
         for tx_hash in rpc_block.get('tx', []):
-            logger.info(
-                'asking for tx parse for {}:{} at {}'.format(index, tx_hash, self.hash)
+            tx_thread = Thread(
+                target=parse_transaction,
+                kwargs={
+                    'message': {
+                        'tx_hash': tx_hash,
+                        'tx_index': index,
+                        'block_hash': self.hash
+                    }
+                }
             )
-            Channel('parse_transaction').send(
-                {'tx_hash': tx_hash, 'block_hash': self.hash, 'tx_index': index}
-            )
+            tx_thread.start()
             index += 1
 
     @property
