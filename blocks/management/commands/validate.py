@@ -1,3 +1,5 @@
+from threading import Thread
+
 from channels import Channel
 from django.core.management import BaseCommand
 
@@ -53,7 +55,11 @@ class Command(BaseCommand):
                         logger.error('missing transactions')
                         tx_index = 0
                         for tx in transactions:
-                            parse_transaction({'tx_hash': tx, 'tx_index': tx_index})
+                            tx_thread = Thread(
+                                target=parse_transaction,
+                                kwargs={'message': {'tx_hash': tx, 'tx_index': tx_index}}
+                            )
+                            tx_thread.start()
                             tx_index += 1
                 else:
                     block_hash = block.hash
