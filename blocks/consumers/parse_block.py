@@ -55,24 +55,15 @@ def parse_block(message):
             )
             for tx in block.transactions.all().order_by('index'):
                 if not tx.is_valid:
-                    Channel('parse_transaction').send(
-                        {
-                            'tx_hash': tx.tx_id,
-                            'tx_index': tx.index,
-                            'block_hash': block.hash
-                        }
-                    )
+                    tx_hash = tx.tx_id
+                    tx.delete()
+                    Channel('parse_transaction').send({'tx_hash': tx_hash})
             Channel('parse_block').send({'block_hash': block.next_block.hash})
         else:
             # block is invalid so re-fetch from rpc and save again
             logger.warning('INVALID BLOCK at {}! {}'.format(block.height, error_message))
-            # delete the block
-            for transaction in block.transactions.all():
-                for tx_input in transaction.inputs.all():
-                    tx_input.delete()
-                for tx_output in transaction.outputs.all():
-                    tx_output.delete()
-                transaction.delete()
+            # delete all the blocks transactions
+            block.transactions.all().delete()
             # get it again to redo the inputs
             rpc = send_rpc(
                 {
