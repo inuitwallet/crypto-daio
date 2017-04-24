@@ -35,14 +35,18 @@ class Command(BaseCommand):
         if not valid:
             logger.error('block {} is invalid: {}'.format(block.height, message))
             if repair:
-                Channel('parse_block').send({'block_hash': block.hash})
+                block_hash = block.hash
+                block.delete()
+                Channel('parse_block').send({'block_hash': block_hash})
             return False
         for tx in block.transactions.all().order_by('index'):
             tx_valid, tx_message = tx.validate()
             if not tx_valid:
                 logger.error('tx {} is invalid: {}'.format(tx.tx_id, tx_message))
                 if repair:
-                    Channel('parse_transaction').send({'tx_hash': tx.tx_id})
+                    tx_hash = tx.tx_id
+                    tx.delete()
+                    Channel('parse_transaction').send({'tx_hash': tx_hash})
                 return False
         return True
 
