@@ -8,6 +8,8 @@ from channels import Channel
 from django.db import models, IntegrityError
 from django.utils.timezone import make_aware
 
+from blocks.models import Transaction
+
 logger = logging.getLogger('daio')
 
 
@@ -223,8 +225,10 @@ class Block(models.Model):
         # now we do the transactions
         index = 0
         for tx_hash in rpc_block.get('tx', []):
-            logger.info(
-                'asking for tx parse for {}:{} at {}'.format(index, tx_hash, self.hash)
+            tx, _ = Transaction.objects.get_or_create(
+                tx_id=tx_hash,
+                block=self,
+                index=index
             )
             Channel('parse_transaction').send(
                 {'tx_hash': tx_hash, 'block_hash': self.hash, 'tx_index': index}
