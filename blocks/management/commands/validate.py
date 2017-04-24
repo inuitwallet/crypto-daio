@@ -72,7 +72,7 @@ class Command(BaseCommand):
 
         for block in Block.objects.all().order_by('height'):
             if self.validate(block, options['repair']):
-                logger.info('block {} is valid'.format(block.height))
+                logger.info('{} OK'.format(block.height))
             else:
                 logger.error('BLOCK {} IS INVALID'.format(block.height))
 

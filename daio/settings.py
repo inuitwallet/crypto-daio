@@ -150,10 +150,16 @@ LOGGING = {
             'class': 'logging.StreamHandler',
         },
     },
+    'formatters': {
+        'dated': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+    },
     'loggers': {
         'daio': {
             'handlers': ['console'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+            'formatter': 'dated'
         },
     },
 }
