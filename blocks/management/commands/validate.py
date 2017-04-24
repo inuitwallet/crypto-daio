@@ -20,19 +20,29 @@ class Command(BaseCommand):
             help='The block height to validate',
             dest='block',
         )
+        parser.add_argument(
+            '-r',
+            '--repair',
+            help='repair any invalidity found',
+            dest='repair',
+            action='store_true',
+            default=False
+        )
 
     @staticmethod
-    def validate(block):
+    def validate(block, repair):
         valid, message = block.validate()
         if not valid:
             logger.error('block {} is invalid: {}'.format(block.height, message))
-            Channel('parse_block').send({'block_hash': block.hash})
+            if repair:
+                Channel('parse_block').send({'block_hash': block.hash})
             return False
         for tx in block.transactions.all().order_by('index'):
             tx_valid, tx_message = tx.validate()
             if not tx_valid:
                 logger.error('tx {} is invalid: {}'.format(tx.tx_id, tx_message))
-                Channel('parse_transaction').send({'tx_hash': tx.tx_id})
+                if repair:
+                    Channel('parse_transaction').send({'tx_hash': tx.tx_id})
                 return False
         return True
 
@@ -50,14 +60,14 @@ class Command(BaseCommand):
                 logger.error('multiple blocks found at {}'.format(options['block']))
                 return
 
-            if self.validate(block):
+            if self.validate(block, options['repair']):
                 logger.info('block {} is valid'.format(block.height))
             else:
                 logger.error('block {} is invalid'.format(block.height))
             return
 
         for block in Block.objects.all().order_by('height'):
-            if self.validate(block):
+            if self.validate(block, options['repair']):
                 logger.info('block {} is valid'.format(block.height))
             else:
                 logger.error('BLOCK {} IS INVALID'.format(block.height))
