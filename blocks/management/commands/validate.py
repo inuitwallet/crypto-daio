@@ -38,9 +38,27 @@ class Command(BaseCommand):
         if not valid:
             logger.error('block {} is invalid: {}'.format(block.height, message))
             if repair:
-                block_hash = block.hash
-                block.delete()
-                Channel('parse_block').send({'block_hash': block_hash})
+                if message == 'merkle root incorrect':
+                    rpc = send_rpc(
+                        {
+                            'method': 'getblock',
+                            'params': [block.hash]
+                        }
+                    )
+                    if rpc['error']:
+                        logger.error('rpc error: {}'.format(rpc['error']))
+                        return
+                    transactions = rpc['result'].get('tx', [])
+                    if len(transactions) != block.transactions.all().count():
+                        logger.error('missing transactions')
+                        tx_index = 0
+                        for tx in transactions:
+                            parse_transaction({'tx_hash': tx, 'tx_index': tx_index})
+                            tx_index += 1
+                else:
+                    block_hash = block.hash
+                    block.delete()
+                    Channel('parse_block').send({'block_hash': block_hash})
             return False
         for tx in block.transactions.all().order_by('index'):
             tx_valid, tx_message = tx.validate()
@@ -78,23 +96,6 @@ class Command(BaseCommand):
                 logger.info('{} OK'.format(block.height))
             else:
                 logger.error('BLOCK {} IS INVALID'.format(block.height))
-                if options['repair']:
-                    rpc = send_rpc(
-                        {
-                            'method': 'getblock',
-                            'params': [block.hash]
-                        }
-                    )
-                    if rpc['error']:
-                        logger.error('rpc error: {}'.format(rpc['error']))
-                        return
-                    transactions = rpc['result'].get('tx', [])
-                    if len(transactions) != block.transactions.all().count():
-                        logger.error('missing transactions')
-                        tx_index = 0
-                        for tx in transactions:
-                            parse_transaction({'tx_hash': tx, 'tx_index': tx_index})
-                            tx_index += 1
 
 
 
