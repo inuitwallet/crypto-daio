@@ -5,7 +5,7 @@ from channels import Channel
 from blocks.models import Transaction, Block
 from blocks.utils.rpc import send_rpc
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('daio')
 
 
 def parse_transaction(message):

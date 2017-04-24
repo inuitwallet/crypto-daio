@@ -6,7 +6,7 @@ from django.utils import timezone
 
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('daio')
 
 tz = timezone.get_current_timezone()
 

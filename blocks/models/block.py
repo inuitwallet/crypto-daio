@@ -8,7 +8,7 @@ from channels import Channel
 from django.db import models, IntegrityError
 from django.utils.timezone import make_aware
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('daio')
 
 
 class Block(models.Model):

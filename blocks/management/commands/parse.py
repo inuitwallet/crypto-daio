@@ -6,7 +6,7 @@ from django.utils import timezone
 from blocks.utils.rpc import get_block_hash
 import logging
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('daio')
 
 tz = timezone.get_current_timezone()
 

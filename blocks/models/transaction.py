@@ -11,7 +11,7 @@ from django.utils.timezone import make_aware
 from blocks.models import Address, Block
 from blocks.utils.numbers import get_var_int_bytes
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('daio')
 
 
 class Transaction(models.Model):
