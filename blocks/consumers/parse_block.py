@@ -5,7 +5,7 @@ from channels import Channel
 from blocks.models import Block
 from blocks.utils.rpc import send_rpc
 
-logger = logging.getLogger('block_parser')
+logger = logging.getLogger(__name__)
 
 
 def parse_block(message):

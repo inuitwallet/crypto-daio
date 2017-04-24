@@ -5,7 +5,7 @@ from channels import Channel
 from blocks.models import Transaction, Block
 from blocks.utils.rpc import send_rpc
 
-logger = logging.getLogger('block_parser')
+logger = logging.getLogger(__name__)
 
 
 def parse_transaction(message):
@@ -16,12 +16,7 @@ def parse_transaction(message):
     if not tx_hash:
         logger.error('no transaction hash in message')
         return
-    # get the index from the message
-    tx_index = message.get('tx_index')
 
-    if tx_index is None:
-        logger.warning('no tx index in message')
-        tx_index = -1
     # get the block from the message
     block_hash = message.get('block_hash')
 
@@ -35,11 +30,29 @@ def parse_transaction(message):
             }
         )
         if rpc['error']:
-            logger.error('rpc error: {}'.format(rpc['error']))
+            logger.error('rpc error at tx {}: {}'.format(tx_hash, rpc['error']))
             return
 
         # get the block_hash from the transaction
-        block_hash = rpc['result']['blockhash']
+        block_hash = rpc['result'].get('blockhash')
+
+    # get the index from the message
+    tx_index = message.get('tx_index')
+
+    if tx_index is None:
+        logger.warning('no tx index in message')
+        block_rpc = send_rpc(
+            {
+                'method': 'getblock',
+                'params': [block_hash]
+            }
+        )
+        if block_rpc['error']:
+            logger.error(
+                'block rpc error at tx {}: {}'.format(tx_hash, block_rpc['error'])
+            )
+            return
+        tx_index = block_rpc['result'].get('tx', []).index(tx_hash)
 
     block, created = Block.objects.get_or_create(hash=block_hash)
     if created:

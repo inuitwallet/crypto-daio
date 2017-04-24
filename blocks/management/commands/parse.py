@@ -1,23 +1,12 @@
-import codecs
-import hashlib
-import json
-import os
-
-from threading import Thread
-import time
-import requests
 from channels import Channel
 from django.core.management import BaseCommand
 
-from blocks.models import Block, Transaction, TxInput, TxOutput, Address, WatchAddress
-from django.core.exceptions import ObjectDoesNotExist, MultipleObjectsReturned
 from django.utils import timezone
 
-from blocks.utils.numbers import get_var_int
-from blocks.utils.rpc import send_rpc, get_block_hash
+from blocks.utils.rpc import get_block_hash
 import logging
 
-logger = logging.getLogger('block_parser')
+logger = logging.getLogger(__name__)
 
 tz = timezone.get_current_timezone()
 

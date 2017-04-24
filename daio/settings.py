@@ -151,10 +151,9 @@ LOGGING = {
         },
     },
     'loggers': {
-        'block_parser': {
+        'django': {
             'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': True,
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
         },
     },
 }
