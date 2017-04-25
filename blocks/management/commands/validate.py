@@ -91,8 +91,6 @@ class Command(BaseCommand):
                 logger.error('tx {} is invalid: {}'.format(tx.tx_id, tx_message))
 
                 if repair:
-                    tx_hash = tx.tx_id
-                    tx.delete()
                     tx_thread = Thread(
                         target=parse_transaction,
                         kwargs={
