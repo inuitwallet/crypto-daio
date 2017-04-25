@@ -39,9 +39,11 @@ class Command(BaseCommand):
     def validate(block, repair):
         if block.height == 0:
             return True
+
         valid, message = block.validate()
         if not valid:
             logger.error('block {} is invalid: {}'.format(block.height, message))
+
             if repair:
                 if message == 'merkle root incorrect':
                     rpc = send_rpc(
@@ -50,13 +52,16 @@ class Command(BaseCommand):
                             'params': [block.hash]
                         }
                     )
+
                     if rpc['error']:
                         logger.error('rpc error: {}'.format(rpc['error']))
                         return
                     transactions = rpc['result'].get('tx', [])
+
                     if len(transactions) != block.transactions.all().count():
                         logger.error('missing transactions')
                         tx_index = 0
+
                         for tx in transactions:
                             tx_thread = Thread(
                                 target=parse_transaction,
@@ -68,17 +73,24 @@ class Command(BaseCommand):
                     block_hash = block.hash
                     block.delete()
                     parse_block({'block_hash': block_hash})
+
             return False
+
+        tx_all_valid = True
+
         for tx in block.transactions.all().order_by('index'):
             tx_valid, tx_message = tx.validate()
+
             if not tx_valid:
+                tx_all_valid = False
                 logger.error('tx {} is invalid: {}'.format(tx.tx_id, tx_message))
+
                 if repair:
                     tx_hash = tx.tx_id
                     tx.delete()
                     parse_transaction({'tx_hash': tx_hash})
-                return False
-        return True
+
+        return tx_all_valid
 
     def handle(self, *args, **options):
         """
