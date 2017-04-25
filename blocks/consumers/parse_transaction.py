@@ -49,7 +49,11 @@ def parse_transaction(message):
         )
         if block_rpc['error']:
             logger.error(
-                'block rpc error at tx {}: {}'.format(tx_hash, block_rpc['error'])
+                'get tx_index rpc error at tx {} for {} {}'.format(
+                    tx_hash,
+                    block_hash,
+                    block_rpc['error']
+                )
             )
             return
         try:
