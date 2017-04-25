@@ -1,5 +1,3 @@
-from threading import Thread
-
 from django.core.management import BaseCommand
 
 from blocks.consumers.parse_block import parse_block
@@ -61,17 +59,13 @@ class Command(BaseCommand):
                     tx_index = 0
 
                     for tx in transactions:
-                        tx_thread = Thread(
-                            target=parse_transaction,
-                            kwargs={
-                                'message': {
-                                    'tx_hash': tx,
-                                    'tx_index': tx_index,
-                                    'block_hash': block.hash
-                                }
+                        parse_transaction(
+                            {
+                                'tx_hash': tx,
+                                'tx_index': tx_index,
+                                'block_hash': block.hash
                             }
                         )
-                        tx_thread.start()
                         tx_index += 1
                 else:
                     block_hash = block.hash
@@ -90,16 +84,7 @@ class Command(BaseCommand):
                 logger.error('tx {} is invalid: {}'.format(tx.tx_id, tx_message))
 
                 if repair:
-                    tx_thread = Thread(
-                        target=parse_transaction,
-                        kwargs={
-                            'message': {
-                                'tx_hash': tx,
-                                'block_hash': block.hash
-                            }
-                        }
-                    )
-                    tx_thread.start()
+                    parse_transaction({'tx_hash': tx, 'block_hash': block.hash})
 
         return tx_all_valid
 
