@@ -45,7 +45,6 @@ class Command(BaseCommand):
 
             if repair:
                 if message == 'merkle root incorrect':
-                    block.transactions.all().delete()
                     rpc = send_rpc(
                         {
                             'method': 'getblock',
@@ -58,17 +57,30 @@ class Command(BaseCommand):
                         return
 
                     transactions = rpc['result'].get('tx', [])
-                    tx_index = 0
 
-                    for tx in transactions:
+                    block_tx = block.transactions.all().values_list('tx_id', flat=True)
+
+                    # add missing transactions
+                    for tx in list(set(transactions) - set(block_tx)):
+                        logger.info('adding missing tx')
                         Channel('parse_transaction').send(
                             {
                                 'tx_hash': tx,
-                                'tx_index': tx_index,
+                                'tx_index': transactions.index(tx),
                                 'block_hash': block.hash
                             }
                         )
-                        tx_index += 1
+
+                    for tx in block.transactions.all():
+                        # remove additional transactions
+                        if tx.tx_id not in transactions:
+                            logger.error(
+                                'tx {} does not belong to block {}'.format(
+                                    tx.tx_id,
+                                    block.height
+                                )
+                            )
+                            tx.delete()
                 else:
                     block_hash = block.hash
                     block.delete()
