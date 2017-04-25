@@ -52,7 +52,13 @@ def parse_transaction(message):
                 'block rpc error at tx {}: {}'.format(tx_hash, block_rpc['error'])
             )
             return
-        tx_index = block_rpc['result'].get('tx', []).index(tx_hash)
+        try:
+            tx_index = block_rpc['result'].get('tx', []).index(tx_hash)
+        except ValueError:
+            logger.error('transaction doesn\'t belong to block')
+            tx, _ = Transaction.objects.get_or_create(tx_id=tx_hash)
+            tx.delete()
+            return
 
     block, created = Block.objects.get_or_create(hash=block_hash)
     if created:
