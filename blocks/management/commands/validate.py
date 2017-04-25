@@ -45,6 +45,7 @@ class Command(BaseCommand):
 
             if repair:
                 if message == 'merkle root incorrect':
+                    block.transactions.all().delete()
                     rpc = send_rpc(
                         {
                             'method': 'getblock',
@@ -55,25 +56,23 @@ class Command(BaseCommand):
                     if rpc['error']:
                         logger.error('rpc error: {}'.format(rpc['error']))
                         return
+
                     transactions = rpc['result'].get('tx', [])
+                    tx_index = 0
 
-                    if len(transactions) != block.transactions.all().count():
-                        logger.error('missing transactions')
-                        tx_index = 0
-
-                        for tx in transactions:
-                            tx_thread = Thread(
-                                target=parse_transaction,
-                                kwargs={
-                                    'message': {
-                                        'tx_hash': tx,
-                                        'tx_index': tx_index,
-                                        'block_hash': block.hash
-                                    }
+                    for tx in transactions:
+                        tx_thread = Thread(
+                            target=parse_transaction,
+                            kwargs={
+                                'message': {
+                                    'tx_hash': tx,
+                                    'tx_index': tx_index,
+                                    'block_hash': block.hash
                                 }
-                            )
-                            tx_thread.start()
-                            tx_index += 1
+                            }
+                        )
+                        tx_thread.start()
+                        tx_index += 1
                 else:
                     block_hash = block.hash
                     block.delete()

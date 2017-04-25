@@ -36,6 +36,10 @@ def parse_transaction(message):
         # get the block_hash from the transaction
         block_hash = rpc['result'].get('blockhash')
 
+        if not block_hash:
+            logger.error('no block hash found from tx rpc')
+            return
+
     # get the index from the message
     tx_index = message.get('tx_index')
 
