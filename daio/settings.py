@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'blocks.apps.BlocksConfig',
     'rest_framework',
     'channels',
+    'redisboard',
 ]
 
 MIDDLEWARE_CLASSES = [
