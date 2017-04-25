@@ -323,7 +323,7 @@ class TxInput(models.Model):
         blank=True,
         null=True,
         related_name='previous_output',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
     )
     coin_base = models.CharField(
         max_length=610,
