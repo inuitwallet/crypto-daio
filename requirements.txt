@@ -3,6 +3,8 @@ bitstring
 bpython
 channels
 django
+django-redis
+django-redisboard
 djangorestframework
 ecdsa
 pbkdf2

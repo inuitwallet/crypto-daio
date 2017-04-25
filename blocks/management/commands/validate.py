@@ -62,7 +62,7 @@ class Command(BaseCommand):
 
                     # add missing transactions
                     for tx in list(set(transactions) - set(block_tx)):
-                        logger.info('adding missing tx')
+                        logger.info('adding missing tx {}'.format(tx))
                         Channel('parse_transaction').send(
                             {
                                 'tx_hash': tx,
@@ -82,13 +82,11 @@ class Command(BaseCommand):
                             )
                             tx.delete()
                 else:
-                    block_hash = block.hash
-                    block.delete()
                     Channel('parse_block').send(
-                        {'block_hash': block_hash, 'no_parse': True}
+                        {'block_hash': block.hash, 'no_parse': True}
                     )
 
-            return False
+                    return False
 
         tx_all_valid = True
 
