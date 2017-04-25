@@ -117,11 +117,3 @@ class Command(BaseCommand):
                 logger.info('{} OK'.format(block.height))
             else:
                 logger.error('BLOCK {} IS INVALID'.format(block.height))
-                time.sleep(10)
-                for x in range(0, 5):
-                    if not self.validate(block, False):
-                        logger.error('BLOCK {} STILL INVALID')
-                        time.sleep(30)
-                    else:
-                        continue
-                return
