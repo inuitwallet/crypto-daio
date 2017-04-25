@@ -1,6 +1,5 @@
 from threading import Thread
 
-from channels import Channel
 from django.core.management import BaseCommand
 
 from blocks.consumers.parse_block import parse_block
@@ -94,7 +93,7 @@ class Command(BaseCommand):
                 if repair:
                     tx_hash = tx.tx_id
                     tx.delete()
-                    parse_transaction({'tx_hash': tx_hash. 'block_hash': block.hash})
+                    parse_transaction({'tx_hash': tx_hash, 'block_hash': block.hash})
 
         return tx_all_valid
 
@@ -123,10 +122,3 @@ class Command(BaseCommand):
                 logger.info('{} OK'.format(block.height))
             else:
                 logger.error('BLOCK {} IS INVALID'.format(block.height))
-
-
-
-
-
-
-
