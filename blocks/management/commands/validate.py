@@ -1,5 +1,5 @@
 import time
-from redis.exceptions import ResponseError
+from asgiref.base_layer import BaseChannelLayer
 
 from channels import Channel
 from django.core.management import BaseCommand
@@ -129,7 +129,7 @@ class Command(BaseCommand):
                     logger.info('{} OK'.format(block.height))
                 else:
                     logger.error('BLOCK {} IS INVALID'.format(block.height))
-            except ResponseError:
+            except BaseChannelLayer.ChannelFull:
                 logger.warning('Channel Full. Sleeping for a bit')
                 time.sleep(600)
                 if self.validate(block, options['repair']):
