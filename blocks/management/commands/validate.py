@@ -87,7 +87,7 @@ class Command(BaseCommand):
 
                 if repair:
                     Channel('parse_transaction').send(
-                        {'tx_hash': tx, 'block_hash': block.hash}
+                        {'tx_hash': tx.tx_id, 'block_hash': block.hash}
                     )
 
         return tx_all_valid
