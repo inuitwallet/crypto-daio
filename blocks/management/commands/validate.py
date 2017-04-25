@@ -1,9 +1,8 @@
 import time
+import asgiref
+
 from channels import Channel
 from django.core.management import BaseCommand
-
-from blocks.consumers.parse_block import parse_block
-from blocks.consumers.parse_transaction import parse_transaction
 from blocks.models import Block
 from django.utils import timezone
 
@@ -125,7 +124,15 @@ class Command(BaseCommand):
             return
 
         for block in Block.objects.all().order_by('height'):
-            if self.validate(block, options['repair']):
-                logger.info('{} OK'.format(block.height))
-            else:
-                logger.error('BLOCK {} IS INVALID'.format(block.height))
+            try:
+                if self.validate(block, options['repair']):
+                    logger.info('{} OK'.format(block.height))
+                else:
+                    logger.error('BLOCK {} IS INVALID'.format(block.height))
+            except asgiref.base_layer.ChannelFull:
+                time.sleep(600)
+                if self.validate(block, options['repair']):
+                    logger.info('{} OK'.format(block.height))
+                else:
+                    logger.error('BLOCK {} IS INVALID'.format(block.height))
+
