@@ -1,3 +1,5 @@
+import time
+from channels import Channel
 from django.core.management import BaseCommand
 
 from blocks.consumers.parse_block import parse_block
@@ -59,7 +61,7 @@ class Command(BaseCommand):
                     tx_index = 0
 
                     for tx in transactions:
-                        parse_transaction(
+                        Channel('parse_transaction').send(
                             {
                                 'tx_hash': tx,
                                 'tx_index': tx_index,
@@ -70,7 +72,7 @@ class Command(BaseCommand):
                 else:
                     block_hash = block.hash
                     block.delete()
-                    parse_block({'block_hash': block_hash})
+                    Channel('parse_block').send({'block_hash': block_hash})
 
             return False
 
@@ -84,7 +86,9 @@ class Command(BaseCommand):
                 logger.error('tx {} is invalid: {}'.format(tx.tx_id, tx_message))
 
                 if repair:
-                    parse_transaction({'tx_hash': tx, 'block_hash': block.hash})
+                    Channel('parse_transaction').send(
+                        {'tx_hash': tx, 'block_hash': block.hash}
+                    )
 
         return tx_all_valid
 
@@ -113,3 +117,11 @@ class Command(BaseCommand):
                 logger.info('{} OK'.format(block.height))
             else:
                 logger.error('BLOCK {} IS INVALID'.format(block.height))
+                time.sleep(10)
+                for x in range(0, 5):
+                    if not self.validate(block, False):
+                        logger.error('BLOCK {} STILL INVALID')
+                        time.sleep(30)
+                    else:
+                        continue
+                return

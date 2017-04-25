@@ -136,7 +136,8 @@ CHANNEL_LAYERS = {
         "CONFIG": {
             "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
             "prefix": "daio",
-            "capacity": 500,
+            "capacity": 1000,
+            "expiry": 600
         },
         "ROUTING": "daio.routing.channel_routing",
     },
