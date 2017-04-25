@@ -3,6 +3,8 @@ from asgiref.base_layer import BaseChannelLayer
 
 from channels import Channel
 from django.core.management import BaseCommand
+from django.core.paginator import Paginator
+
 from blocks.models import Block
 from django.utils import timezone
 
@@ -18,6 +20,13 @@ tz = timezone.get_current_timezone()
 class Command(BaseCommand):
 
     def add_arguments(self, parser):
+        parser.add_argument(
+            '-s',
+            '--start-height',
+            help='The block height to start the parse from',
+            dest='start_height',
+            default=0
+        )
         parser.add_argument(
             '-b',
             '--block',
@@ -123,17 +132,38 @@ class Command(BaseCommand):
                 logger.error('block {} is invalid'.format(block.height))
             return
 
-        for block in Block.objects.all().order_by('height'):
-            try:
-                if self.validate(block, options['repair']):
-                    logger.info('{} OK'.format(block.height))
-                else:
-                    logger.error('BLOCK {} IS INVALID'.format(block.height))
-            except BaseChannelLayer.ChannelFull:
-                logger.warning('Channel Full. Sleeping for a bit')
-                time.sleep(600)
-                if self.validate(block, options['repair']):
-                    logger.info('{} OK'.format(block.height))
-                else:
-                    logger.error('BLOCK {} IS INVALID'.format(block.height))
+        blocks = Block.objects.filter(
+            height__gte=options['start_height']
+        ).order_by(
+            'height'
+        )
 
+        paginator = Paginator(blocks, 1000)
+
+        all_failed = []
+
+        try:
+            for page_num in paginator.page_range:
+                page_failed = []
+                for block in paginator.page(page_num):
+                    try:
+                        if self.validate(block, options['repair']):
+                            logger.info('{} OK'.format(block.height))
+                        else:
+                            logger.error('BLOCK {} IS INVALID'.format(block.height))
+                            page_failed.append(block.height)
+                    except BaseChannelLayer.ChannelFull:
+                        logger.warning('Channel Full. Sleeping for a bit')
+                        time.sleep(600)
+                        if self.validate(block, options['repair']):
+                            logger.info('{} OK'.format(block.height))
+                        else:
+                            logger.error('BLOCK {} IS INVALID'.format(block.height))
+                            page_failed.append(block.height)
+                all_failed += page_failed
+                if len(page_failed) > 0:
+                    time.sleep(30)
+
+            logger.info('failed blocks: {}'.format(all_failed))
+        except KeyboardInterrupt:
+            logger.info('failed blocks: {}'.format(all_failed))
