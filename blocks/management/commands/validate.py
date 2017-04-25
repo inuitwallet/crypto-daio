@@ -72,7 +72,9 @@ class Command(BaseCommand):
                 else:
                     block_hash = block.hash
                     block.delete()
-                    Channel('parse_block').send({'block_hash': block_hash})
+                    Channel('parse_block').send(
+                        {'block_hash': block_hash, 'no_parse': True}
+                    )
 
             return False
 
