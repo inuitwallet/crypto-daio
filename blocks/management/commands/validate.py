@@ -93,7 +93,16 @@ class Command(BaseCommand):
                 if repair:
                     tx_hash = tx.tx_id
                     tx.delete()
-                    parse_transaction({'tx_hash': tx_hash, 'block_hash': block.hash})
+                    tx_thread = Thread(
+                        target=parse_transaction,
+                        kwargs={
+                            'message': {
+                                'tx_hash': tx,
+                                'block_hash': block.hash
+                            }
+                        }
+                    )
+                    tx_thread.start()
 
         return tx_all_valid
 
