@@ -78,36 +78,45 @@ def parse_transaction(message):
         return
 
     logger.info('parsing tx {} for block {}'.format(tx_hash, block.height))
-    tx, created = Transaction.objects.get_or_create(
-        tx_id=tx_hash,
-        block=block,
-        index=tx_index
-    )
-    if created:
-        logger.info('new tx')
-        # fetch the rpc data for the block
-        if not rpc:
-            rpc = send_rpc(
-                {
-                    'method': 'getrawtransaction',
-                    'params': [tx_hash, 1]
-                }
-            )
-            if rpc['error']:
-                logger.error('rpc error: {}'.format(rpc['error']))
-                return
-        # parse the block to save it
-        tx.parse_rpc_tx(rpc['result'])
-        logger.info('saved tx {} at block {}'.format(tx_hash, block.height))
-    else:
-        logger.info('existing tx found at {}'.format(block.height))
-        # validate the block
-        valid, error_message = tx.validate()
-        if not valid:
-            # transaction is invalid so re-fetch from rpc and save again
-            logger.warning(
-                'INVALID TX {} at {}! {}'.format(tx_hash, block.height, error_message)
-            )
-            tx.delete()
-            Channel('parse_transaction').send({'tx_hash': tx_hash})
+    try:
+        tx, created = Transaction.objects.get_or_create(
+            tx_id=tx_hash,
+            block=block,
+            index=tx_index
+        )
+        if created:
+            logger.info('new tx')
+            # fetch the rpc data for the block
+            if not rpc:
+                rpc = send_rpc(
+                    {
+                        'method': 'getrawtransaction',
+                        'params': [tx_hash, 1]
+                    }
+                )
+                if rpc['error']:
+                    logger.error('rpc error: {}'.format(rpc['error']))
+                    return
+            # parse the block to save it
+            tx.parse_rpc_tx(rpc['result'])
+            logger.info('saved tx {} at block {}'.format(tx_hash, block.height))
+        else:
+            logger.info('existing tx found at {}'.format(block.height))
+            # validate the block
+            valid, error_message = tx.validate()
+            if not valid:
+                # transaction is invalid so re-fetch from rpc and save again
+                logger.warning(
+                    'INVALID TX {} at {}! {}'.format(tx_hash, block.height, error_message)
+                )
+                tx.delete()
+                Channel('parse_transaction').send({'tx_hash': tx_hash})
+
+    except Transaction.MultipleObjectsReturned:
+        Transaction.objects.filter(tx_id=tx_hash, block=block, index=tx_index).delete()
+        parse_transaction({
+            'tx_hash': tx_hash,
+            'block_hash': block_hash,
+            'tx_index': tx_index}
+        )
 
