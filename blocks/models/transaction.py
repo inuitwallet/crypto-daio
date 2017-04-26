@@ -95,6 +95,19 @@ class Transaction(models.Model):
                     script_sig_asm=script_sig.get('asm', ''),
                     script_sig_hex=script_sig.get('hex', ''),
                 )
+            except TxInput.MultipleObjectsReturned:
+                TxInput.objects.filter(
+                    transaction=self,
+                    index=vin_index,
+                ).delete()
+                tx_input = TxInput.objects.create(
+                    transaction=self,
+                    index=vin_index,
+                    sequence=vin.get('sequence', None),
+                    coin_base=vin.get('coinbase', None),
+                    script_sig_asm=script_sig.get('asm', ''),
+                    script_sig_hex=script_sig.get('hex', ''),
+                )
 
             tx_id = vin.get('txid', None)
 
@@ -106,15 +119,15 @@ class Transaction(models.Model):
                     logger.error(
                         'Tx {} not found for previous output. rescanning'.format(tx_id)
                     )
-                    parse_transaction({'tx_hash': tx_id})
-                    previous_transaction = Transaction.objects.get(tx_id=tx_id)
+                    Channel('parse_transaction').send({'tx_hash': tx_id})
+                    continue
                 except Transaction.MultipleObjectsReturned:
                     logger.error(
                         'Multiple TXs found for {}. Deleting and re-scanning'.format(tx_id)  # noqa
                     )
                     Transaction.objects.filter(tx_id=tx_id).delete()
-                    parse_transaction({'tx_hash': tx_id})
-                    previous_transaction = Transaction.objects.get(tx_id=tx_id)
+                    Channel('parse_transaction').send({'tx_hash': tx_id})
+                    continue
 
                 output_index = vin.get('vout', None)
                 if output_index is None:
@@ -131,16 +144,13 @@ class Transaction(models.Model):
                     )
                 except TxOutput.DoesNotExist:
                     logger.error(
-                        'Couldn\'t find previous output for {} at {}'.format(
+                        'no previous output found for {} at {}'.format(
                             previous_transaction,
                             output_index
                         )
                     )
-                    parse_transaction({'tx_hash': tx_id})
-                    previous_output = TxOutput.objects.get(
-                        transaction=previous_transaction,
-                        index=output_index,
-                    )
+                    Channel('parse_transaction').send({'tx_hash': tx_id})
+                    continue
                 except TxOutput.MultipleObjectsReturned:
                     logger.error(
                         'Multiple TxOutputs found for {}. '
@@ -150,11 +160,8 @@ class Transaction(models.Model):
                         transaction=previous_transaction,
                         index=output_index
                     ).delete()
-                    parse_transaction({'tx_hash': tx_id})
-                    previous_output = TxOutput.objects.get(
-                        transaction=previous_transaction,
-                        index=output_index,
-                    )
+                    Channel('parse_transaction').send({'tx_hash': tx_id})
+                    continue
 
                 tx_input.previous_output = previous_output
 
