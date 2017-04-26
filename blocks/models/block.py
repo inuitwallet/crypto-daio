@@ -311,3 +311,32 @@ class Block(models.Model):
         if len(hash_list) % 2 == 1:  # odd, hash last item twice
             new_hash_list.append(merkle_hash(hash_list[-1], hash_list[-1]))
         return self._calculate_merkle_root(new_hash_list)
+
+    @property
+    def solved_by(self):
+        if self.flags == 'proof-of-stake':
+            tx = self.transactions.get(index=1)
+            tx_output = tx.outputs.get(index=1)
+            return tx_output.addresses.all()[0]
+        else:
+            tx = self.transactions.get(index=0)
+            tx_output = tx.outputs.get(index=0)
+            return tx_output.addresses.all()[0]
+
+    @property
+    def total_nsr(self):
+        total_nsr = 0
+        for tx in self.transactions.all():
+            for txout in tx.outputs.all():
+                if tx.unit == 'S':
+                    total_nsr += txout.value
+        return total_nsr / 10000
+
+    @property
+    def total_nbt(self):
+        total_nbt = 0
+        for tx in self.transactions.all():
+            for txout in tx.outputs.all():
+                if tx.unit == 'B':
+                    total_nbt += txout.value
+        return total_nbt / 10000

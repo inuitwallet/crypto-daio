@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.humanize',
     'daio_wallet.apps.DaioWalletConfig',
     'blocks.apps.BlocksConfig',
     'rest_framework',

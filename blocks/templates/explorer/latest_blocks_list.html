@@ -1,5 +1,7 @@
 {% extends 'explorer/base.html' %}
 
+{% load humanize %}
+
 {% block title %}
 Nu Block Explorer
 {% endblock %}
@@ -24,12 +26,12 @@ Nu Block Explorer
                     {% for block in object_list %}
                         <tr>
                             <td>{{ block.height }}</td>
-                            <td>{{ block.age }}</td>
+                            <td>{{ block.time|timesince }}</td>
                             <td>{{ block.size }}</td>
-                            <td>{{ block.num_trans }}</td>
-                            <td>{{ block.solved_by }}</td>
-                            <td>{{ block.total_nsr }}</td>
-                            <td>{{ block.total_nbt }}</td>
+                            <td>{{ block.transactions.all.count }}</td>
+                            <td>{{ block.solved_by.address }}</td>
+                            <td>{{ block.total_nsr|floatformat:4|intcomma }}</td>
+                            <td>{{ block.total_nbt|floatformat:4|intcomma }}</td>
                             <td>{{ block.coinage_destroyed }}</td>
                         </tr>
                     {% endfor %}

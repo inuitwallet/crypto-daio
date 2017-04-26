@@ -1,3 +1,4 @@
+from channels import Channel
 from django.views import View
 
 from django.http import HttpResponse
@@ -5,7 +6,6 @@ from django.http.response import HttpResponseNotFound
 from django.views.generic import ListView
 from django.conf import settings
 from .models import *
-
 
 
 class Notify(View):
