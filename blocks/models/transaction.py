@@ -51,8 +51,9 @@ class Transaction(models.Model):
     def __str__(self):
         return str(self.tx_id)
 
-    def Meta(self):
-        unique_together = (self.block, self.tx_id)
+    class Meta:
+        unique_together = ('block', 'tx_id')
+        ordering = ['index']
 
     @property
     def class_type(self):
@@ -353,8 +354,13 @@ class TxOutput(models.Model):
     def __str__(self):
         return str(self.pk)
 
-    def Meta(self):
-        self.unique_together = (self.transaction, self.index)
+    class Meta:
+        unique_together = ('transaction', 'index')
+        ordering = ['-index']
+
+    @property
+    def display_value(self):
+        return self.value / 10000
 
 
 class TxInput(models.Model):
@@ -396,3 +402,6 @@ class TxInput(models.Model):
 
     def __str__(self):
         return str(self.pk)
+
+    class Meta:
+        ordering = ['-index']

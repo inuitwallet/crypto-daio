@@ -9,7 +9,59 @@ Nu Block Explorer
 {% block content %}
     <div class="row">
         <div class="col-md-10 col-md-offset-1">
-            Blocky block block {{ object.hash }}
+            <h3>Block {{ object.height }} - {{ object.hash }}</h3>
+        </div>
+    </div>
+    <div class="row transactions">
+        <div class="col-md-10 col-md-offset-1">
+            {% for tx in object.transactions.all %}
+                <div class="row transaction">
+                    <div class="col-md-12">
+                        <div class="row tx-header">
+                            <div class="col-md-6 tx-id">
+                                {{ tx.tx_id }}
+                            </div>
+                            <div class="col-md-6 text-right tx-time">
+                                {{ tx.time }}
+                            </div>
+                        </div>
+                        <div class="row tx-body">
+                            <div class="col-md-5 col-md-offset-1 inputs">
+                                {% for tx_input in tx.inputs.all %}
+                                    <div class="tx-input">
+                                        {% if tx_input.coin_base %}
+                                            CoinBase
+                                        {% else %}
+                                            {% for input_address in tx_input.previous_output.addresses.all %}
+                                                {{ input_address.address }}
+                                            {% endfor %}
+                                            {{ tx_input.previous_output.display_value|floatformat:4|intcomma }}
+                                        {% endif %}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="col-md-5 col-md-offset-1 outputs">
+                                {% for tx_output in tx.outputs.all %}
+                                    <div class="tx-output">
+                                        {% if tx_output.addresses.all.count == 0 %}
+                                            {% if tx_output.script_pub_key_type %}
+                                                {{ tx_output.script_pub_key_type }}
+                                            {% else %}
+                                                None
+                                            {% endif %}
+                                        {% else %}
+                                            {% for output_address in tx_output.addresses.all %}
+                                                {{ output_address.address }}
+                                            {% endfor %}
+                                        {% endif %}
+                                        {{ tx_output.display_value|floatformat:4|intcomma }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
         </div>
     </div>
 {% endblock %}
