@@ -8,6 +8,7 @@ from channels import Channel
 from django.db import models
 from django.utils.timezone import make_aware
 
+from blocks.consumers.parse_transaction import parse_transaction
 from blocks.models import Address, Block
 from blocks.utils.numbers import get_var_int_bytes
 
@@ -105,15 +106,15 @@ class Transaction(models.Model):
                     logger.error(
                         'Tx not found for previous output: {} in {}'.format(tx_id, vin)
                     )
-                    Channel('parse_transaction').send({'tx_hash': tx_id})
-                    continue
+                    parse_transaction({'tx_hash': tx_id})
+                    previous_transaction = Transaction.objects.get(tx_id=tx_id)
                 except Transaction.MultipleObjectsReturned:
                     logger.error(
                         'Multiple TXs found. Deleting and re-scanning'
                     )
                     Transaction.objects.filter(tx_id=tx_id).delete()
-                    Channel('parse_transaction').send({'tx_hash': tx_id})
-                    continue
+                    parse_transaction({'tx_hash': tx_id})
+                    previous_transaction = Transaction.objects.get(tx_id=tx_id)
 
                 output_index = vin.get('vout', None)
                 if output_index is None:
@@ -135,8 +136,24 @@ class Transaction(models.Model):
                             output_index
                         )
                     )
-                    Channel('parse_transaction').send({'tx_hash': tx_id})
-                    continue
+                    parse_transaction({'tx_hash': tx_id})
+                    previous_output = TxOutput.objects.get(
+                        transaction=previous_transaction,
+                        index=output_index,
+                    )
+                except TxOutput.MultipleObjectsReturned:
+                    logger.error(
+                        'Multiple TxOutputs found. Deleting and re-scanning'
+                    )
+                    TxOutput.objects.filter(
+                        transaction=previous_transaction,
+                        index=output_index
+                    ).delete()
+                    parse_transaction({'tx_hash': tx_id})
+                    previous_output = TxOutput.objects.get(
+                        transaction=previous_transaction,
+                        index=output_index,
+                    )
 
                 tx_input.previous_output = previous_output
 
@@ -157,6 +174,20 @@ class Transaction(models.Model):
                 tx_output.script_pub_key_type = script_pubkey.get('type', '')
                 tx_output.script_pub_key_req_sig = script_pubkey.get('reqSigs', '')
             except TxOutput.DoesNotExist:
+                tx_output = TxOutput.objects.create(
+                    transaction=self,
+                    index=vout.get('n', -1),
+                    value=vout.get('value', 0) * 10000,  # convert to satoshis
+                    script_pub_key_asm=script_pubkey.get('asm', ''),
+                    script_pub_key_hex=script_pubkey.get('hex', ''),
+                    script_pub_key_type=script_pubkey.get('type', ''),
+                    script_pub_key_req_sig=script_pubkey.get('reqSigs', ''),
+                )
+            except TxOutput.MultipleObjectsReturned:
+                TxOutput.objects.filter(
+                    transaction=self,
+                    index=vout.get('n', -1),
+                ).delete()
                 tx_output = TxOutput.objects.create(
                     transaction=self,
                     index=vout.get('n', -1),
