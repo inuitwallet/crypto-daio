@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 
 from channels import Channel
-from django.db import models
+from django.db import models, IntegrityError
 from django.utils.timezone import make_aware
 
 from blocks.models import Address, Block
@@ -59,7 +59,6 @@ class Transaction(models.Model):
         return 'Transaction'
 
     def parse_rpc_tx(self, rpc_tx):
-        from blocks.consumers.parse_transaction import parse_transaction
         logger.info('parsing tx {}'.format(self.tx_id))
         self.version = rpc_tx.get('version', None)
         tx_time = rpc_tx.get('time', None)
@@ -165,7 +164,13 @@ class Transaction(models.Model):
 
                 tx_input.previous_output = previous_output
 
-            tx_input.save()
+            try:
+                tx_input.save()
+            except IntegrityError as e:
+                logger.error('issue saving tx_input: {}'.format(e))
+                logger.error('likely a missing transaction')
+                return
+
             vin_index += 1
 
         # save a TXOutput for each output in the Transaction
