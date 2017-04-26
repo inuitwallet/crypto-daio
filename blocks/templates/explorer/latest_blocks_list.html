@@ -26,7 +26,7 @@ Nu Block Explorer
                 <tbody>
                     {% for block in object_list %}
                         <tr>
-                            <td>{{ block.height }}</td>
+                            <td><a href="{% url 'block' block.height %}">{{ block.height }}</a></td>
                             <td>{{ block.time|timesince }}</td>
                             <td>{{ block.size }}</td>
                             <td>{{ block.transactions.all.count }}</td>

@@ -9,7 +9,7 @@ urlpatterns = [
 
     # Daemon notification
     url(
-        r'^notify/block/(?P<secret_hash>{})/(?P<block_hash>{})'.format(
+        r'^notify/block/(?P<secret_hash>{})/(?P<block_hash>{})$'.format(
             secret_hash_pattern,
             block_hash_pattern
         ),
@@ -18,5 +18,6 @@ urlpatterns = [
     ),
 
     # Explorer
-    url(r'^', views.LatestBlocksList.as_view(), name='index'),
+    url(r'^$', views.LatestBlocksList.as_view(), name='index'),
+    url(r'^block/(?P<block_height>.*)$', views.BlockDetailView.as_view(), name='block'),
 ]

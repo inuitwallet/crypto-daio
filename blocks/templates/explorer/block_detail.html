@@ -1,0 +1,15 @@
+{% extends 'explorer/base.html' %}
+
+{% load humanize %}
+
+{% block title %}
+Nu Block Explorer
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            Blocky block block {{ object.hash }}
+        </div>
+    </div>
+{% endblock %}

@@ -1,9 +1,10 @@
 from channels import Channel
+from django.shortcuts import get_object_or_404, render
 from django.views import View
 
 from django.http import HttpResponse
 from django.http.response import HttpResponseNotFound
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 from django.conf import settings
 from .models import *
 
@@ -33,3 +34,13 @@ class LatestBlocksList(ListView):
 
     def get_queryset(self):
         return Block.objects.exclude(height=None).order_by('-height')[:15]
+
+
+class BlockDetailView(View):
+    @staticmethod
+    def get(request, block_height):
+        return render(
+            request,
+            'explorer/block_detail.html',
+            {'object': get_object_or_404(Block, height=block_height)}
+        )
