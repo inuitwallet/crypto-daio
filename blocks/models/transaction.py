@@ -19,17 +19,19 @@ class Transaction(models.Model):
     A transaction within a block
     belongs to one block but can have multiple inputs and outputs
     """
+    tx_id = models.CharField(
+        max_length=610,
+    )
     block = models.ForeignKey(
         Block,
         related_name='transactions',
         related_query_name='transaction',
         on_delete=models.CASCADE,
-        default=None,
+        blank=True,
     )
-    tx_id = models.CharField(
-        max_length=610,
+    index = models.BigIntegerField(
+        blank=True
     )
-    index = models.BigIntegerField()
     version = models.IntegerField(
         blank=True,
         null=True,
@@ -105,8 +107,15 @@ class Transaction(models.Model):
                     logger.error(
                         'Tx not found for previous output: {} in {}'.format(tx_id, vin)
                     )
+                    previous_transaction = Transaction.objects.create(tx_id=tx_id)
                     Channel('parse_transaction').send({'tx_hash': tx_id})
-                    continue
+                except Transaction.MultipleObjectsReturned:
+                    logger.error(
+                        'Multiple TXs found. Deleting and re-scanning'
+                    )
+                    Transaction.objects.filter(tx_id=tx_id).delete()
+                    previous_transaction = Transaction.objects.create(tx_id=tx_id)
+                    Channel('parse_transaction').send({'tx_hash': tx_id})
 
                 output_index = vin.get('vout', None)
                 if output_index is None:
