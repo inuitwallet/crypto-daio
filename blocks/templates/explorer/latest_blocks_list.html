@@ -20,6 +20,7 @@ Nu Block Explorer
                         <td>Total Transacted (NSR)</td>
                         <td>Total Transacted (NBT)</td>
                         <td>Block SDD</td>
+                        <td>Valid</td>
                     </tr>
                 </thead>
                 <tbody>
@@ -33,6 +34,7 @@ Nu Block Explorer
                             <td>{{ block.total_nsr|floatformat:4|intcomma }}</td>
                             <td>{{ block.total_nbt|floatformat:4|intcomma }}</td>
                             <td>{{ block.coinage_destroyed }}</td>
+                            <td>{{ block.is_valid }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
