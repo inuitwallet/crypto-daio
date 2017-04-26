@@ -120,14 +120,14 @@ class Transaction(models.Model):
                         'Tx {} not found for previous output. rescanning'.format(tx_id)
                     )
                     Channel('parse_transaction').send({'tx_hash': tx_id})
-                    continue
+                    return
                 except Transaction.MultipleObjectsReturned:
                     logger.error(
                         'Multiple TXs found for {}. Deleting and re-scanning'.format(tx_id)  # noqa
                     )
                     Transaction.objects.filter(tx_id=tx_id).delete()
                     Channel('parse_transaction').send({'tx_hash': tx_id})
-                    continue
+                    return
 
                 output_index = vin.get('vout', None)
                 if output_index is None:
@@ -135,7 +135,7 @@ class Transaction(models.Model):
                         'No previous index {} in rpc output'.format(output_index, vin)
                     )
                     Channel('parse_transaction').send({'tx_hash': tx_id})
-                    continue
+                    return
 
                 try:
                     previous_output = TxOutput.objects.get(
@@ -150,7 +150,7 @@ class Transaction(models.Model):
                         )
                     )
                     Channel('parse_transaction').send({'tx_hash': tx_id})
-                    continue
+                    return
                 except TxOutput.MultipleObjectsReturned:
                     logger.error(
                         'Multiple TxOutputs found for {}. '
@@ -161,7 +161,7 @@ class Transaction(models.Model):
                         index=output_index
                     ).delete()
                     Channel('parse_transaction').send({'tx_hash': tx_id})
-                    continue
+                    return
 
                 tx_input.previous_output = previous_output
 
