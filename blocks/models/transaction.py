@@ -8,7 +8,6 @@ from channels import Channel
 from django.db import models
 from django.utils.timezone import make_aware
 
-from blocks.consumers.parse_transaction import parse_transaction
 from blocks.models import Address, Block
 from blocks.utils.numbers import get_var_int_bytes
 
@@ -60,6 +59,7 @@ class Transaction(models.Model):
         return 'Transaction'
 
     def parse_rpc_tx(self, rpc_tx):
+        from blocks.consumers.parse_transaction import parse_transaction
         logger.info('parsing tx {}'.format(self.tx_id))
         self.version = rpc_tx.get('version', None)
         tx_time = rpc_tx.get('time', None)
