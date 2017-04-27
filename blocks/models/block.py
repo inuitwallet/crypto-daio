@@ -287,10 +287,7 @@ class Block(models.Model):
         if type(merkle_root) == bytes:
             merkle_root = merkle_root.decode()
         if merkle_root != self.merkle_root:
-            return False, 'merkle root incorrect {} != {}'.format(
-                merkle_root,
-                self.merkle_root
-            )
+            return False, 'merkle root incorrect'
 
         return True, 'Block is valid'
 
