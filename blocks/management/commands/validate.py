@@ -68,8 +68,6 @@ class Command(BaseCommand):
 
                     block_tx = block.transactions.all().values_list('tx_id', flat=True)
 
-                    logger.info('{} > {}'.format(transactions, block_tx))
-
                     # add missing transactions
                     for tx in list(set(transactions) - set(block_tx)):
                         logger.info('adding missing tx {}'.format(tx))
@@ -91,6 +89,14 @@ class Command(BaseCommand):
                                 )
                             )
                             tx.delete()
+
+                    if len(transactions) != len(block_tx):
+                        logger.error('different numbers of transactions')
+                        block.transactions.all().delete()
+                        Channel('parse_block').send(
+                            {'block_hash': block.hash, 'no_parse': True}
+                        )
+
                 else:
                     Channel('parse_block').send(
                         {'block_hash': block.hash, 'no_parse': True}

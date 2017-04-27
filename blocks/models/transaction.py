@@ -21,6 +21,7 @@ class Transaction(models.Model):
     """
     tx_id = models.CharField(
         max_length=610,
+        unique=True
     )
     block = models.ForeignKey(
         Block,
@@ -52,7 +53,6 @@ class Transaction(models.Model):
         return str(self.tx_id)
 
     class Meta:
-        unique_together = ('block', 'tx_id')
         ordering = ['index']
 
     @property
