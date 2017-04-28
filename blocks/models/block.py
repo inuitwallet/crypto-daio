@@ -285,9 +285,9 @@ class Block(models.Model):
             if self.next_block.height != (self.height + 1):
                 return False, 'incorrect next height'
 
-        # check the next block has this block as it's previous block
-        if self.next_block.previous_block != self:
-            return False, 'next block does not lead on from this block'
+            # check the next block has this block as it's previous block
+            if self.next_block.previous_block != self:
+                return False, 'next block does not lead on from this block'
 
         # calculate merkle root of transactions
         transactions = list(
