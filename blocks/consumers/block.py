@@ -3,7 +3,7 @@ import logging
 from channels import Channel
 
 from blocks.models import Block
-from blocks.utils.rpc import send_rpc
+from blocks.utils.rpc import send_rpc, get_block_hash
 
 logger = logging.getLogger('daio')
 
@@ -196,6 +196,20 @@ def repair_block(message):
 
         # validate the transactions
         Channel('validate_transactions').send({'block': block})
+
+    elif error_message == 'missing attribute: self.previous_block':
+        try:
+            prev_block = Block.objects.get(height=block.height - 1)
+        except Block.DoesNotExist:
+            logger.error('previous block not found')
+            Channel('parse_block').send({'block_hash': get_block_hash(block.height - 1)})
+            return
+
+        block.previous_block = prev_block
+        block.save()
+
+        prev_block.next_block = block
+        prev_block.save()
 
     else:
         # all other errors with the block can be solved by deleting and re-parsing it
