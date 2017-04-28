@@ -25,6 +25,8 @@ class Block(models.Model):
     )
     height = models.BigIntegerField(
         unique=True,
+        blank=True,
+        null=True,
     )
     version = models.BigIntegerField(
         blank=True,
