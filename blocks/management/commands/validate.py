@@ -65,6 +65,9 @@ class Command(BaseCommand):
                 )
                 return False
 
+            else:
+                return True
+
         else:
             Channel('repair_block').send(
                 {
@@ -96,6 +99,7 @@ class Command(BaseCommand):
             'height'
         )
 
+        logger.info('validating {} blocks'.format(blocks.count()))
         # paginate to speed the initial load up a bit
         paginator = Paginator(blocks, 1000)
 
@@ -113,7 +117,7 @@ class Command(BaseCommand):
                         self.validate_block(block)
 
                 logger.info(
-                    '{} blocks parsed with {} invalid blocks found: {}'.format(
+                    '{} blocks validated with {} invalid blocks found: {}'.format(
                         1000 * page_num,
                         len(page_invalid_blocks),
                         page_invalid_blocks,
