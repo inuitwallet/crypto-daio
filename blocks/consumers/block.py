@@ -221,6 +221,15 @@ def repair_block(message):
 
     else:
         # all other errors with the block can be solved by deleting and re-parsing it
-        Channel('parse_block').send(
-            {'block_hash': block.hash, 'parse_next': parse_next}
+        rpc = send_rpc(
+            {
+                'method': 'getblock',
+                'params': [block_hash]
+            }
         )
+        if rpc['error']:
+            logger.error('rpc error: {}'.format(rpc['error']))
+            return False
+        # parse the block to save it
+        block.parse_rpc_block(rpc['result'])
+        logger.info('saved block {}'.format(block.height))
