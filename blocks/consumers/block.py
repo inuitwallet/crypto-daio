@@ -152,7 +152,7 @@ def repair_block(message):
 
     logger.info('repairing block {}'.format(block.height))
     # merkle root error means missing, extra or duplicate transactions
-    if message == 'merkle root incorrect':
+    if error_message == 'merkle root incorrect':
         rpc = send_rpc(
             {
                 'method': 'getblock',
@@ -205,6 +205,7 @@ def repair_block(message):
             Channel('parse_block').send({'block_hash': get_block_hash(block.height - 1)})
             return
 
+        logger.info('fixing next block')
         block.previous_block = prev_block
         block.save()
 
