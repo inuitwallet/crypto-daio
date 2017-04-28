@@ -246,12 +246,12 @@ class Transaction(models.Model):
 
     def validate(self):
         for attribute in [
-            self.version,
-            self.time,
-            self.index
+            'self.version',
+            'self.time',
+            'self.index'
         ]:
-            if attribute is None:
-                return False, 'missing attribute'
+            if eval(attribute) is None:
+                return False, 'missing attribute: {}'.format(attribute)
 
         if self.index < 0:
             return False, 'incorrect index'
