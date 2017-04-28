@@ -5,6 +5,7 @@ import time
 from datetime import datetime
 
 from channels import Channel
+from decimal import Decimal
 from django.db import models, IntegrityError
 from django.utils.timezone import make_aware
 
@@ -183,7 +184,8 @@ class Transaction(models.Model):
                     transaction=self,
                     index=vout.get('n', -1),
                 )
-                tx_output.value = vout.get('value', 0) * 10000  # convert to satoshis
+                tx_output.value = Decimal(vout.get('value', 0)) * Decimal(10000)
+                # convert to satoshis
                 tx_output.script_pub_key_asm = script_pubkey.get('asm', '')
                 tx_output.script_pub_key_hex = script_pubkey.get('hex', '')
                 tx_output.script_pub_key_type = script_pubkey.get('type', '')
@@ -192,7 +194,8 @@ class Transaction(models.Model):
                 tx_output = TxOutput.objects.create(
                     transaction=self,
                     index=vout.get('n', -1),
-                    value=vout.get('value', 0) * 10000,  # convert to satoshis
+                    value=Decimal(vout.get('value', 0)) * Decimal(10000),
+                    # convert to satoshis
                     script_pub_key_asm=script_pubkey.get('asm', ''),
                     script_pub_key_hex=script_pubkey.get('hex', ''),
                     script_pub_key_type=script_pubkey.get('type', ''),
@@ -206,7 +209,8 @@ class Transaction(models.Model):
                 tx_output = TxOutput.objects.create(
                     transaction=self,
                     index=vout.get('n', -1),
-                    value=vout.get('value', 0) * 10000,  # convert to satoshis
+                    value=Decimal(vout.get('value', 0)) * Decimal(10000),
+                    # convert to satoshis
                     script_pub_key_asm=script_pubkey.get('asm', ''),
                     script_pub_key_hex=script_pubkey.get('hex', ''),
                     script_pub_key_type=script_pubkey.get('type', ''),
