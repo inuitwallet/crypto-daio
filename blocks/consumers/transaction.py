@@ -171,5 +171,5 @@ def validate_transactions(message):
             )
         else:
             logger.info(
-                'transaction {} at block {} is valid'.format(tx.tx_id, block.hash)
+                'transaction {} at block {} is valid'.format(tx.tx_id, block.height)
             )
