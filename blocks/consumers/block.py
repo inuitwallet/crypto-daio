@@ -24,7 +24,7 @@ def parse_block(message):
     parse_next = message.get('parse_next', False)
     block_hash = message.get('block_hash')
     if not block_hash:
-        logger.error('no block hash in message')
+        logger.error('no block hash in message passed to validate')
         return False
 
     logger.info('parsing block {}'.format(block_hash))
