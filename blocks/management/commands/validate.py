@@ -60,6 +60,7 @@ class Command(BaseCommand):
         for page_num in paginator.page_range:
 
             for block in paginator.page(page_num):
+                logger.info('validating block {}'.format(block.height))
                 try:
                     Channel('validate_block').send({'block_hash': block.hash})
                 except BaseChannelLayer.ChannelFull:
