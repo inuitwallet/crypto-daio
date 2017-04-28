@@ -115,7 +115,7 @@ def parse_transaction(message):
                 }
             )
             if rpc['error']:
-                logger.error('rpc error: {}'.format(rpc['error']))
+                logger.error('rpc error: {} {}'.format(rpc['error'], tx_hash))
                 return
         # parse the block to save it
         tx.parse_rpc_tx(rpc['result'])
