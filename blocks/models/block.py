@@ -246,7 +246,8 @@ class Block(models.Model):
             'self.merkle_root',
             'self.time',
             'self.bits',
-            'self.nonce'
+            'self.nonce',
+            'self.height',
         ]:
             if eval(attribute) is None:
                 return False, 'missing attribute: {}'.format(attribute)

@@ -48,7 +48,11 @@ def parse_block(message):
         logger.info('saved block {}'.format(block.height))
 
     else:
-        logger.info('existing block found at {}. validating'.format(block.height))
+        logger.info(
+            'existing block found at {}. validating'.format(
+                block.height if block.height else block.hash
+            )
+        )
         Channel('validate_block').send(
             {'block_hash': block.hash, 'parse_next': parse_next}
         )
