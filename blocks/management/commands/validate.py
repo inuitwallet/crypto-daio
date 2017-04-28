@@ -64,9 +64,6 @@ class Command(BaseCommand):
                     )
                 )
                 return False
-            else:
-                logger.info('block {} OK'.format(block.height))
-                return True
 
         else:
             Channel('repair_block').send(
@@ -105,14 +102,25 @@ class Command(BaseCommand):
         invalid_blocks = []
         try:
             for page_num in paginator.page_range:
+                page_invalid_blocks = []
                 for block in paginator.page(page_num):
                     try:
                         if not self.validate_block(block):
-                            invalid_blocks.append(block.height)
+                            page_invalid_blocks.append(block.height)
                     except BaseChannelLayer.ChannelFull:
                         logger.warning('Channel Full. Sleeping for a bit')
                         time.sleep(600)
                         self.validate_block(block)
+
+                logger.info(
+                    '{} blocks parsed with {} invalid blocks found: {}'.format(
+                        1000 * page_num,
+                        len(page_invalid_blocks),
+                        page_invalid_blocks,
+                    )
+                )
+
+                invalid_blocks += page_invalid_blocks
         except KeyboardInterrupt:
             pass
         logger.info('invalid blocks: {}'.format(invalid_blocks))
