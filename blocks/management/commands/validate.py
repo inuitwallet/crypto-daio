@@ -128,4 +128,4 @@ class Command(BaseCommand):
                 invalid_blocks += page_invalid_blocks
         except KeyboardInterrupt:
             pass
-        logger.info('invalid blocks: {}'.format(invalid_blocks))
+        logger.info('{} invalid blocks: {}'.format(len(invalid_blocks), invalid_blocks))
