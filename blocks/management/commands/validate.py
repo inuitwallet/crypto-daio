@@ -66,7 +66,7 @@ class Command(BaseCommand):
                 logger.error('no block found at {}'.format(options['block']))
                 return
 
-            Channel('validate_block').send({'block_hash': block.hash})
+            self.validate_block(block)
             return
 
         # no block specified so validate all blocks starting from start_height
