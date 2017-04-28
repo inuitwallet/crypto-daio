@@ -84,6 +84,10 @@ def validate_block(message):
         logger.error('no block found with hash {}'.format(block_hash))
         return False
 
+    if block.height == 0:
+        # genesis block is ok
+        return True
+
     valid, error_message = block.validate()
 
     if valid:
