@@ -150,7 +150,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'dated': {
-            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s',
+            'format': '%(asctime)s : %(module)s : %(funcName)d [%(levelname)s] - %(message)s',  # noqa
         },
     },
     'handlers': {
