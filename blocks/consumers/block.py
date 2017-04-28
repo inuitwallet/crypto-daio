@@ -150,6 +150,7 @@ def repair_block(message):
         logger.error('no block found with hash {}'.format(block_hash))
         return False
 
+    logger.info('repairing block {}'.format(block.height))
     # merkle root error means missing, extra or duplicate transactions
     if message == 'merkle root incorrect':
         rpc = send_rpc(
