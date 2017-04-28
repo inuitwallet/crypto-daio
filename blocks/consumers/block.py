@@ -118,7 +118,6 @@ def validate_block(message):
             {
                 'block_hash': block.hash,
                 'error_message': error_message,
-                'parse_next': parse_next
             }
         )
 
@@ -130,12 +129,9 @@ def repair_block(message):
     :param message: asgi valid message containing:
         block_hash (required) string - hash of block to repair
         error_message (required) string - validation error message
-        parse_next (optional) boolean - set True to move to the next block 
-                                        after passing validation
         
     :return: boolean 
     """
-    parse_next = message.get('parse_next', False)
     error_message = message.get('error_message')
 
     if not error_message:
@@ -157,6 +153,7 @@ def repair_block(message):
     logger.info('repairing block {}'.format(block.height))
     # merkle root error means missing, extra or duplicate transactions
     if error_message == 'merkle root incorrect':
+        logger.info('fixing merkle root')
         rpc = send_rpc(
             {
                 'method': 'getblock',
@@ -199,7 +196,7 @@ def repair_block(message):
             block.transactions.all().delete()
 
         # validate the transactions
-        Channel('validate_transactions').send({'block': block})
+        Channel('validate_transactions').send({'block_hash': block_hash})
 
     elif error_message == 'missing attribute: self.previous_block':
         try:
@@ -212,7 +209,7 @@ def repair_block(message):
                 Channel('parse_block').send({'block_hash': prev_hash})
             return
 
-        logger.info('fixing next block')
+        logger.info('fixing previous block')
         block.previous_block = prev_block
         block.save()
 

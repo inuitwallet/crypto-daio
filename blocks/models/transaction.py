@@ -5,7 +5,6 @@ import time
 from datetime import datetime
 
 from channels import Channel
-from decimal import Decimal
 from django.db import models, IntegrityError
 from django.utils.timezone import make_aware
 
