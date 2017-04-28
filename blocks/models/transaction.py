@@ -10,7 +10,7 @@ from django.db import models, IntegrityError
 from django.utils.timezone import make_aware
 
 from blocks.models import Address, Block
-from blocks.utils.numbers import get_var_int_bytes
+from blocks.utils.numbers import get_var_int_bytes, convert_to_satoshis
 
 logger = logging.getLogger('daio')
 
@@ -184,7 +184,7 @@ class Transaction(models.Model):
                     transaction=self,
                     index=vout.get('n', -1),
                 )
-                tx_output.value = Decimal(vout.get('value', 0)) * Decimal(10000)
+                tx_output.value = convert_to_satoshis(vout.get('value', 0.0))
                 # convert to satoshis
                 tx_output.script_pub_key_asm = script_pubkey.get('asm', '')
                 tx_output.script_pub_key_hex = script_pubkey.get('hex', '')
@@ -194,8 +194,7 @@ class Transaction(models.Model):
                 tx_output = TxOutput.objects.create(
                     transaction=self,
                     index=vout.get('n', -1),
-                    value=Decimal(vout.get('value', 0)) * Decimal(10000),
-                    # convert to satoshis
+                    value=convert_to_satoshis(vout.get('value', 0)),
                     script_pub_key_asm=script_pubkey.get('asm', ''),
                     script_pub_key_hex=script_pubkey.get('hex', ''),
                     script_pub_key_type=script_pubkey.get('type', ''),
@@ -209,8 +208,7 @@ class Transaction(models.Model):
                 tx_output = TxOutput.objects.create(
                     transaction=self,
                     index=vout.get('n', -1),
-                    value=Decimal(vout.get('value', 0)) * Decimal(10000),
-                    # convert to satoshis
+                    value=convert_to_satoshis(vout.get('value', 0)),
                     script_pub_key_asm=script_pubkey.get('asm', ''),
                     script_pub_key_hex=script_pubkey.get('hex', ''),
                     script_pub_key_type=script_pubkey.get('type', ''),

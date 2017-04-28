@@ -34,3 +34,16 @@ def get_var_int_bytes(decimal_number):
     else:
         return codecs.decode('FF', 'hex') + decimal_number.to_bytes(8, 'little')
 
+
+def convert_to_satoshis(number):
+    """
+    given a number, ensure 4 dp of precision then form into an int
+    :param number: 
+    :return: 
+    """
+    # split the number into the parts before and after the decimal point
+    parts = str(number).split('.')
+    decimal_part = parts[1]
+    while len(decimal_part) < 4:
+        decimal_part += '0'
+    return int('{}{}'.format(parts[0], decimal_part))
