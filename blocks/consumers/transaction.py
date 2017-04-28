@@ -169,3 +169,7 @@ def validate_transactions(message):
             Channel('parse_transaction').send(
                 {'tx_hash': tx.tx_id, 'block_hash': block.hash}
             )
+        else:
+            logger.info(
+                'transaction {} at block {} is valid'.format(tx.tx_id, block.hash)
+            )
