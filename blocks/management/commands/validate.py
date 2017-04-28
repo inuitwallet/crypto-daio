@@ -39,13 +39,18 @@ class Command(BaseCommand):
         if valid:
             logger.info('block {} is valid'.format(block.height))
             for tx in block.transactions.all():
-                Channel('parse_transaction').send(
-                    {
-                        'tx_hash': tx.tx_id,
-                        'block_hash': block.hash,
-                        'tx_index': tx.index
-                    }
-                )
+                if not tx.is_valid:
+                    Channel('parse_transaction').send(
+                        {
+                            'tx_hash': tx.tx_id,
+                            'block_hash': block.hash,
+                            'tx_index': tx.index
+                        }
+                    )
+                else:
+                    logger.info(
+                        'tx {} at block {} is valid'.format(tx.tx_id, block.height)
+                    )
         else:
             Channel('repair_block').send(
                 {
