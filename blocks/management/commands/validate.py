@@ -36,6 +36,10 @@ class Command(BaseCommand):
 
     @staticmethod
     def validate_block(block):
+        if block.height == 0:
+            # genesis block is ok
+            return True
+
         valid, error_message = block.validate()
 
         if valid:
