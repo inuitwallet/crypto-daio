@@ -89,6 +89,7 @@ class Command(BaseCommand):
             except Block.DoesNotExist:
                 logger.error('no block found at {}'.format(options['block']))
                 block_hash = get_block_hash(options['block'])
+                logger.info('parsing block {}'.format(block_hash))
                 if block_hash:
                     Channel('parse_block').send(
                         {'block_hash': block_hash}
