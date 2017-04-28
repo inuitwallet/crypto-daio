@@ -249,7 +249,7 @@ class Block(models.Model):
             self.nonce
         ]:
             if attribute is None:
-                return False, 'missing attribute'
+                return False, 'missing attribute: {}'.format(eval(attribute))
 
         # check the previous block has a hash
         if not self.previous_block.hash:

@@ -198,7 +198,8 @@ def repair_block(message):
         Channel('validate_transactions').send({'block': block})
 
     else:
-        # all other errors with the block can be solved by re-parsing it
+        # all other errors with the block can be solved by deleting and re-parsing it
+        block.delete()
         Channel('parse_block').send(
             {'block_hash': block.hash, 'parse_next': parse_next}
         )
