@@ -10,6 +10,8 @@ from django.utils import timezone
 
 import logging
 
+from blocks.utils.rpc import get_block_hash
+
 logger = logging.getLogger('daio')
 
 tz = timezone.get_current_timezone()
@@ -34,10 +36,9 @@ class Command(BaseCommand):
 
     @staticmethod
     def validate_block(block):
-        valid, error_message = block.validate()
-
-        if valid:
+        if block.is_valid:
             logger.info('block {} is valid'.format(block.height))
+
             for tx in block.transactions.all():
                 if not tx.is_valid:
                     Channel('parse_transaction').send(
@@ -49,15 +50,23 @@ class Command(BaseCommand):
                     )
                 else:
                     logger.info(
-                        'tx {} at block {} is valid'.format(tx.tx_id, block.height)
+                        'tx {}:{} at block {} is valid'.format(
+                            tx.index,
+                            tx.tx_id[:8],
+                            block.height)
                     )
         else:
-            Channel('repair_block').send(
-                {
-                    'block_hash': block.hash,
-                    'error_message': error_message
-                }
-            )
+            if not block.hash:
+
+                if block.height:
+                    logger.error('block {} hash no hash'.format(block.height))
+                    block.hash = get_block_hash(block.height)
+                else:
+                    logger.error('block has no hash or height. deleting')
+                    block.delete()
+                    return
+
+            Channel('validate_block').send({'block_hash': block.hash})
 
     def handle(self, *args, **options):
         """

@@ -137,7 +137,7 @@ def repair_block(message):
     block_hash = message.get('block')
 
     if not block_hash:
-        logger.error('no block in message')
+        logger.error('no block hash in message passed to repair')
         return False
 
     try:

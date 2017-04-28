@@ -36,7 +36,7 @@ def parse_transaction(message):
     block_hash = message.get('block_hash')
 
     if not block_hash:
-        logger.warning('no block id in message for tx {}'.format(tx_hash))
+        logger.warning('no block hash in message for tx {}'.format(tx_hash))
         # we are scanning just the transaction so fetch the raw data
         rpc = send_rpc(
             {
