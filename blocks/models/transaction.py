@@ -183,7 +183,7 @@ class Transaction(models.Model):
                     transaction=self,
                     index=vout.get('n', -1),
                 )
-                tx_output.value = vout.get('value', 0) * 100000000  # convert to satoshis
+                tx_output.value = vout.get('value', 0) * 10000  # convert to satoshis
                 tx_output.script_pub_key_asm = script_pubkey.get('asm', '')
                 tx_output.script_pub_key_hex = script_pubkey.get('hex', '')
                 tx_output.script_pub_key_type = script_pubkey.get('type', '')
