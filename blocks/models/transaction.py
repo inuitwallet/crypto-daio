@@ -168,8 +168,9 @@ class Transaction(models.Model):
             try:
                 tx_input.save()
             except IntegrityError as e:
-                logger.error('issue saving tx_input: {}'.format(e))
-                logger.error('likely a missing transaction')
+                logger.error(
+                    'issue saving tx_input: {}. likely a missing transaction'.format(e)
+                )
                 return
 
             vin_index += 1
@@ -244,7 +245,8 @@ class Transaction(models.Model):
     def validate(self):
         for attribute in [
             self.version,
-            self.time
+            self.time,
+            self.index
         ]:
             if attribute is None:
                 return False, 'missing attribute'
