@@ -36,8 +36,10 @@ class Command(BaseCommand):
 
     @staticmethod
     def validate_block(block):
-        if block.is_valid:
-            logger.info('block {} is valid'.format(block.height))
+        valid, error_message = block.validate()
+
+        if valid:
+            invalid_txs = []
 
             for tx in block.transactions.all():
                 if not tx.is_valid:
@@ -48,25 +50,26 @@ class Command(BaseCommand):
                             'tx_index': tx.index
                         }
                     )
-                else:
-                    logger.info(
-                        'tx {}:{} at block {} is valid'.format(
-                            tx.index,
-                            tx.tx_id[:8],
-                            block.height)
+                    invalid_txs.append('{}:{}'.format(tx.index, tx.tx_id[:8]))
+
+            if invalid_txs:
+                logger.error(
+                    'block {} has invalid transactions: {}'.format(
+                        block.height,
+                        invalid_txs
                     )
+                )
+                return
+            else:
+                logger.info('block {} OK'.format(block.height))
+
         else:
-            if not block.hash:
-
-                if block.height:
-                    logger.error('block {} hash no hash'.format(block.height))
-                    block.hash = get_block_hash(block.height)
-                else:
-                    logger.error('block has no hash or height. deleting')
-                    block.delete()
-                    return
-
-            Channel('validate_block').send({'block_hash': block.hash})
+            Channel('repair_block').send(
+                {
+                    'block_hash': block.hash,
+                    'error_message': error_message,
+                }
+            )
 
     def handle(self, *args, **options):
         """
