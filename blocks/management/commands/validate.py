@@ -88,9 +88,11 @@ class Command(BaseCommand):
                 block = Block.objects.get(height=options['block'])
             except Block.DoesNotExist:
                 logger.error('no block found at {}'.format(options['block']))
-                Channel('parse_block').send(
-                    {'block_hash': get_block_hash(options['block'])}
-                )
+                block_hash = get_block_hash(options['block'])
+                if block_hash:
+                    Channel('parse_block').send(
+                        {'block_hash': block_hash}
+                    )
                 return
 
             self.validate_block(block)

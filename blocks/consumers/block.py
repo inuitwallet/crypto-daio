@@ -202,7 +202,9 @@ def repair_block(message):
             prev_block = Block.objects.get(height=block.height - 1)
         except Block.DoesNotExist:
             logger.error('previous block not found')
-            Channel('parse_block').send({'block_hash': get_block_hash(block.height - 1)})
+            prev_hash = get_block_hash(block.height - 1)
+            if prev_hash:
+                Channel('parse_block').send({'block_hash': prev_hash})
             return
 
         logger.info('fixing next block')

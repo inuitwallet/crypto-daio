@@ -49,6 +49,6 @@ def get_block_hash(height):
         }
     )
     if rpc['error']:
-        logger = logging.getLogger(__name__)
+        logger = logging.getLogger('daio')
         logger.error(rpc['error'])
     return rpc['result'] if not rpc['error'] else None
