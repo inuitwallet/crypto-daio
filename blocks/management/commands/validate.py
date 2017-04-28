@@ -59,9 +59,10 @@ class Command(BaseCommand):
                         invalid_txs
                     )
                 )
-                return
+                return False
             else:
                 logger.info('block {} OK'.format(block.height))
+                return True
 
         else:
             Channel('repair_block').send(
@@ -70,6 +71,7 @@ class Command(BaseCommand):
                     'error_message': error_message,
                 }
             )
+            return False
 
     def handle(self, *args, **options):
         """
@@ -96,12 +98,17 @@ class Command(BaseCommand):
         # paginate to speed the initial load up a bit
         paginator = Paginator(blocks, 1000)
 
-        for page_num in paginator.page_range:
-
-            for block in paginator.page(page_num):
-                try:
-                    self.validate_block(block)
-                except BaseChannelLayer.ChannelFull:
-                    logger.warning('Channel Full. Sleeping for a bit')
-                    time.sleep(600)
-                    self.validate_block(block)
+        invalid_blocks = []
+        try:
+            for page_num in paginator.page_range:
+                for block in paginator.page(page_num):
+                    try:
+                        if not self.validate_block(block):
+                            invalid_blocks.append(block.height)
+                    except BaseChannelLayer.ChannelFull:
+                        logger.warning('Channel Full. Sleeping for a bit')
+                        time.sleep(600)
+                        self.validate_block(block)
+        except KeyboardInterrupt:
+            pass
+        logger.info('invalid blocks: {}'.format(invalid_blocks))
