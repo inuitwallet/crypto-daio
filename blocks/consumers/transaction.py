@@ -143,33 +143,3 @@ def parse_transaction(message):
             tx.parse_rpc_tx(rpc['result'])
         else:
             logger.info('tx {} is valid'.format(tx_hash))
-
-
-def validate_transactions(message):
-    """
-    given a block, validate all transactions
-    :param message: asgi valid message containing:
-        block_hash (required) string - hash of block to use for validations
-    :return: 
-    """
-    block_hash = message.get('block_hash')
-
-    if not block_hash:
-        logger.error('no block in message')
-        return False
-
-    try:
-        block = Block.objects.get(hash=block_hash)
-    except Block.DoesNotExist:
-        logger.error('no block found with hash {}'.format(block_hash))
-        return False
-
-    for tx in block.transactions.all():
-        if not tx.is_valid:
-            Channel('parse_transaction').send(
-                {'tx_hash': tx.tx_id, 'block_hash': block.hash}
-            )
-        else:
-            logger.info(
-                'transaction {} at block {} is valid'.format(tx.tx_id, block.height)
-            )

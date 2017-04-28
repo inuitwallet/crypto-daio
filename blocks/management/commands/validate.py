@@ -32,6 +32,28 @@ class Command(BaseCommand):
             dest='block',
         )
 
+    @staticmethod
+    def validate_block(block):
+        valid, error_message = block.validate()
+
+        if valid:
+            logger.info('block {} is valid'.format(block.height))
+            for tx in block.transactions.all():
+                Channel('parse_transaction').send(
+                    {
+                        'tx_hash': tx.tx_id,
+                        'block_hash': block.hash,
+                        'tx_index': tx.index
+                    }
+                )
+        else:
+            Channel('repair_block').send(
+                {
+                    'block_hash': block.hash,
+                    'error_message': error_message
+                }
+            )
+
     def handle(self, *args, **options):
         """
         Parse the block chain
@@ -60,10 +82,9 @@ class Command(BaseCommand):
         for page_num in paginator.page_range:
 
             for block in paginator.page(page_num):
-                logger.info('validating block {}'.format(block.height))
                 try:
-                    Channel('validate_block').send({'block_hash': block.hash})
+                    self.validate_block(block)
                 except BaseChannelLayer.ChannelFull:
                     logger.warning('Channel Full. Sleeping for a bit')
                     time.sleep(600)
-                    Channel('validate_block').send({'block_hash': block.hash})
+                    self.validate_block(block)
