@@ -69,6 +69,7 @@ class Command(BaseCommand):
                 return True
 
         else:
+            logger.error('block {} is invalid: {}'.format(block.height, error_message))
             Channel('repair_block').send(
                 {
                     'block_hash': block.hash,
