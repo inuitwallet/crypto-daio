@@ -241,15 +241,15 @@ class Block(models.Model):
         # first check the header attributes
 
         for attribute in [
-            self.version,
-            self.previous_block,
-            self.merkle_root,
-            self.time,
-            self.bits,
-            self.nonce
+            'self.version',
+            'self.previous_block',
+            'self.merkle_root',
+            'self.time',
+            'self.bits',
+            'self.nonce'
         ]:
-            if attribute is None:
-                return False, 'missing attribute: {}'.format(eval(attribute))
+            if eval(attribute) is None:
+                return False, 'missing attribute: {}'.format(attribute)
 
         # check the previous block has a hash
         if not self.previous_block.hash:

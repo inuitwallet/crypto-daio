@@ -194,7 +194,7 @@ class Transaction(models.Model):
                 tx_output = TxOutput.objects.create(
                     transaction=self,
                     index=vout.get('n', -1),
-                    value=convert_to_satoshis(vout.get('value', 0)),
+                    value=convert_to_satoshis(vout.get('value', 0.0)),
                     script_pub_key_asm=script_pubkey.get('asm', ''),
                     script_pub_key_hex=script_pubkey.get('hex', ''),
                     script_pub_key_type=script_pubkey.get('type', ''),
@@ -208,7 +208,7 @@ class Transaction(models.Model):
                 tx_output = TxOutput.objects.create(
                     transaction=self,
                     index=vout.get('n', -1),
-                    value=convert_to_satoshis(vout.get('value', 0)),
+                    value=convert_to_satoshis(vout.get('value', 0.0)),
                     script_pub_key_asm=script_pubkey.get('asm', ''),
                     script_pub_key_hex=script_pubkey.get('hex', ''),
                     script_pub_key_type=script_pubkey.get('type', ''),
