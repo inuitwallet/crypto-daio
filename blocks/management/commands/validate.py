@@ -43,70 +43,10 @@ class Command(BaseCommand):
         )
 
     @staticmethod
-    def validate(block, repair):
-        if block.height == 0:
-            return True
-
-        valid, message = block.validate()
-        if not valid:
-            logger.error('block {} is invalid: {}'.format(block.height, message))
-
-            if repair:
-                if message == 'merkle root incorrect':
-                    rpc = send_rpc(
-                        {
-                            'method': 'getblock',
-                            'params': [block.hash]
-                        }
-                    )
-
-                    if rpc['error']:
-                        logger.error('rpc error: {}'.format(rpc['error']))
-                        return
-
-                    transactions = rpc['result'].get('tx', [])
-
-                    block_tx = block.transactions.all().values_list('tx_id', flat=True)
-
-                    # add missing transactions
-                    for tx in list(set(transactions) - set(block_tx)):
-                        logger.info('adding missing tx {}'.format(tx))
-                        Channel('parse_transaction').send(
-                            {
-                                'tx_hash': tx,
-                                'tx_index': transactions.index(tx),
-                                'block_hash': block.hash
-                            }
-                        )
-
-                    for tx in block.transactions.all():
-                        # remove additional transactions
-                        if tx.tx_id not in transactions:
-                            logger.error(
-                                'tx {} does not belong to block {}'.format(
-                                    tx.tx_id,
-                                    block.height
-                                )
-                            )
-                            tx.delete()
-
-                    if len(transactions) != len(block_tx):
-                        logger.error('different numbers of transactions')
-                        block.transactions.all().delete()
-                        Channel('parse_block').send(
-                            {'block_hash': block.hash, 'no_parse': True}
-                        )
-
-                else:
-                    Channel('parse_block').send(
-                        {'block_hash': block.hash, 'no_parse': True}
-                    )
-
-                    return False
-
+    def validate_transactions(block, repair):
         tx_all_valid = True
 
-        for tx in block.transactions.all().order_by('index'):
+        for tx in block.transactions.all():
             tx_valid, tx_message = tx.validate()
 
             if not tx_valid:
@@ -120,11 +60,85 @@ class Command(BaseCommand):
 
         return tx_all_valid
 
+    def validate_block(self, block, repair):
+        if block.height == 0:
+            # genesis block should be assumed to be valid
+            return True
+
+        valid, message = block.validate()
+
+        if valid:
+            # check the transactions for validity
+            return self.validate_transactions(block, repair)
+        else:
+            logger.error('block {} is invalid: {}'.format(block.height, message))
+
+            if not repair:
+                return False
+            else:
+                # repair the block
+                if message == 'merkle root incorrect':
+                    rpc = send_rpc(
+                        {
+                            'method': 'getblock',
+                            'params': [block.hash]
+                        }
+                    )
+
+                    if rpc['error']:
+                        logger.error('rpc error: {}'.format(rpc['error']))
+                        return False
+
+                    transactions = rpc['result'].get('tx', [])
+                    block_tx = block.transactions.all().values_list('tx_id', flat=True)
+
+                    # add missing transactions
+                    for tx in list(set(transactions) - set(block_tx)):
+                        logger.info('adding missing tx {}'.format(tx))
+                        Channel('parse_transaction').send(
+                            {
+                                'tx_hash': tx,
+                                'tx_index': transactions.index(tx),
+                                'block_hash': block.hash
+                            }
+                        )
+                        return self.validate_transactions(block, repair)
+
+                    # remove additional transactions
+                    for tx in block.transactions.all():
+                        if tx.tx_id not in transactions:
+                            logger.error(
+                                'tx {} does not belong to block {}'.format(
+                                    tx.tx_id,
+                                    block.height
+                                )
+                            )
+                            tx.delete()
+                            return self.validate_transactions(block, repair)
+
+                    # check for duplicate blocks (shouldn't happen as tx_id id unique)
+                    if len(list(set(block_tx))) != len(block_tx):
+                        logger.error('detected duplicate transaction')
+                        block.transactions.all().delete()
+                        Channel('parse_block').send(
+                            {'block_hash': block.hash, 'no_parse': True}
+                        )
+                        return False
+
+                else:
+                    # all other errors with the block can be solved by re-parsing it
+                    Channel('parse_block').send(
+                        {'block_hash': block.hash, 'no_parse': True}
+                    )
+
+                    return False
+
     def handle(self, *args, **options):
         """
         Parse the block chain
         """
         if options['block']:
+            # just validate the single block specified
             try:
                 block = Block.objects.get(height=options['block'])
             except Block.DoesNotExist:
@@ -134,20 +148,21 @@ class Command(BaseCommand):
                 logger.error('multiple blocks found at {}'.format(options['block']))
                 return
 
-            if self.validate(block, options['repair']):
+            if self.validate_block(block, options['repair']):
                 logger.info('block {} is valid'.format(block.height))
             else:
                 logger.error('block {} is invalid'.format(block.height))
             return
 
+        # no block specified so validate all blocks starting from start_height
         blocks = Block.objects.filter(
             height__gte=options['start_height']
         ).order_by(
             'height'
         )
 
+        # paginate to speed the initial load up a bit
         paginator = Paginator(blocks, 1000)
-
         all_failed = []
 
         try:
@@ -155,7 +170,7 @@ class Command(BaseCommand):
                 page_failed = []
                 for block in paginator.page(page_num):
                     try:
-                        if self.validate(block, options['repair']):
+                        if self.validate_block(block, options['repair']):
                             logger.info('{} OK'.format(block.height))
                         else:
                             logger.error('BLOCK {} IS INVALID'.format(block.height))
@@ -163,7 +178,7 @@ class Command(BaseCommand):
                     except BaseChannelLayer.ChannelFull:
                         logger.warning('Channel Full. Sleeping for a bit')
                         time.sleep(600)
-                        if self.validate(block, options['repair']):
+                        if self.validate_block(block, options['repair']):
                             logger.info('{} OK'.format(block.height))
                         else:
                             logger.error('BLOCK {} IS INVALID'.format(block.height))
