@@ -114,13 +114,13 @@ def repair_transaction(message):
         tx = Transaction.objects.get(
             block=block,
             tx_id=tx_id,
-            tx_index=tx_index,
+            index=tx_index,
         )
     except Transaction.DoesNotExist:
         tx = Transaction(
             block=block,
             tx_id=tx_id,
-            tx_index=tx_index,
+            index=tx_index,
         )
 
     tx.parse_rpc_tx(rpc_tx)
