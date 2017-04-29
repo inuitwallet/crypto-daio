@@ -1,7 +1,6 @@
 import time
 from asgiref.base_layer import BaseChannelLayer
 
-from channels import Channel
 from django.core.management import BaseCommand
 from django.core.paginator import Paginator
 
@@ -10,9 +9,10 @@ from django.utils import timezone
 
 import logging
 
+from blocks.utils.channels import send_to_channel
 from blocks.utils.rpc import get_block_hash
 
-logger = logging.getLogger('daio')
+logger = logging.getLogger(__name__)
 
 tz = timezone.get_current_timezone()
 
@@ -47,8 +47,8 @@ class Command(BaseCommand):
 
             for tx in block.transactions.all():
                 if not tx.is_valid:
-                    Channel('parse_transaction').send(
-                        {
+                    send_to_channel(
+                        'parse_transaction', {
                             'tx_hash': tx.tx_id,
                             'block_hash': block.hash,
                             'tx_index': tx.index
@@ -70,8 +70,8 @@ class Command(BaseCommand):
 
         else:
             logger.error('block {} is invalid: {}'.format(block.height, error_message))
-            Channel('repair_block').send(
-                {
+            send_to_channel(
+                'repair_block', {
                     'block_hash': block.hash,
                     'error_message': error_message,
                 }
@@ -83,30 +83,17 @@ class Command(BaseCommand):
         Parse the block chain
         """
         if options['block']:
-            # just validate the single block specified
-            try:
-                block = Block.objects.get(height=options['block'])
-            except Block.DoesNotExist:
-                logger.error('no block found at {}'.format(options['block']))
-                block_hash = get_block_hash(options['block'])
-                logger.info('parsing block {}'.format(block_hash))
-                if block_hash:
-                    Channel('parse_block').send(
-                        {'block_hash': block_hash}
-                    )
-                return
-
-            self.validate_block(block)
-            return
-
-        # no block specified so validate all blocks starting from start_height
-        blocks = Block.objects.filter(
-            height__gte=options['start_height']
-        ).order_by(
-            'height'
-        )
+            blocks = Block.objects.filter(height=options['block'])
+        else:
+            # no block specified so validate all blocks starting from start_height
+            blocks = Block.objects.filter(
+                height__gte=options['start_height']
+            ).order_by(
+                'height'
+            )
 
         logger.info('validating {} blocks'.format(blocks.count()))
+
         # paginate to speed the initial load up a bit
         paginator = Paginator(blocks, 1000)
 
@@ -115,13 +102,9 @@ class Command(BaseCommand):
             for page_num in paginator.page_range:
                 page_invalid_blocks = []
                 for block in paginator.page(page_num):
-                    try:
-                        if not self.validate_block(block):
-                            page_invalid_blocks.append(block.height)
-                    except BaseChannelLayer.ChannelFull:
-                        logger.warning('Channel Full. Sleeping for a bit')
-                        time.sleep(600)
-                        self.validate_block(block)
+                    if not block.is_valid:
+                        page_invalid_blocks.append(block)
+                        block.save()
 
                 logger.info(
                     '{} blocks validated with {} invalid blocks found: {}'.format(

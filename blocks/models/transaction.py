@@ -4,14 +4,14 @@ import logging
 import time
 from datetime import datetime
 
-from channels import Channel
 from django.db import models, IntegrityError
 from django.utils.timezone import make_aware
 
 from blocks.models import Address, Block
+from blocks.utils.channels import send_to_channel
 from blocks.utils.numbers import get_var_int_bytes, convert_to_satoshis
 
-logger = logging.getLogger('daio')
+logger = logging.getLogger(__name__)
 
 
 class Transaction(models.Model):
@@ -50,10 +50,16 @@ class Transaction(models.Model):
     )
 
     def __str__(self):
-        return str(self.tx_id)
+        return '{}:{}@{}'.format(self.index, self.tx_id[:8], self.block)
 
     class Meta:
         ordering = ['index']
+
+    def save(self, *args, **kwargs):
+        super(Transaction, self).save(*args, **kwargs)
+        valid, error_message = self.validate()
+        if not valid:
+            send_to_channel('repair_transaction', {'tx_id': self.tx_id})
 
     @property
     def class_type(self):
@@ -71,7 +77,6 @@ class Transaction(models.Model):
 
         self.lock_time = rpc_tx.get('locktime', None)
         self.unit = rpc_tx.get('unit', None)
-        self.save()
 
         # for each input in the transaction, save a TxInput
         vin_index = 0
@@ -95,19 +100,6 @@ class Transaction(models.Model):
                     script_sig_asm=script_sig.get('asm', ''),
                     script_sig_hex=script_sig.get('hex', ''),
                 )
-            except TxInput.MultipleObjectsReturned:
-                TxInput.objects.filter(
-                    transaction=self,
-                    index=vin_index,
-                ).delete()
-                tx_input = TxInput.objects.create(
-                    transaction=self,
-                    index=vin_index,
-                    sequence=vin.get('sequence', None),
-                    coin_base=vin.get('coinbase', None),
-                    script_sig_asm=script_sig.get('asm', ''),
-                    script_sig_hex=script_sig.get('hex', ''),
-                )
 
             tx_id = vin.get('txid', None)
 
@@ -117,25 +109,12 @@ class Transaction(models.Model):
                     previous_transaction = Transaction.objects.get(tx_id=tx_id)
                 except Transaction.DoesNotExist:
                     logger.error(
-                        'Tx {} not found for previous output. rescanning'.format(tx_id)
+                        'Tx {} not found for previous output'.format(tx_id)
                     )
-                    Channel('parse_transaction').send({'tx_hash': tx_id})
-                    return
-                except Transaction.MultipleObjectsReturned:
-                    logger.error(
-                        'Multiple TXs found for {}. Deleting and re-scanning'.format(tx_id)  # noqa
-                    )
-                    Transaction.objects.filter(tx_id=tx_id).delete()
-                    Channel('parse_transaction').send({'tx_hash': tx_id})
+                    send_to_channel('repair_transaction', {'tx_id': tx_id})
                     return
 
-                output_index = vin.get('vout', None)
-                if output_index is None:
-                    logger.error(
-                        'No previous index {} in rpc output'.format(output_index, vin)
-                    )
-                    Channel('parse_transaction').send({'tx_hash': tx_id})
-                    return
+                output_index = vin.get('vout', -100)
 
                 try:
                     previous_output = TxOutput.objects.get(
@@ -145,22 +124,11 @@ class Transaction(models.Model):
                 except TxOutput.DoesNotExist:
                     logger.error(
                         'no previous output found for {} at {}'.format(
+                            output_index,
                             previous_transaction,
-                            output_index
                         )
                     )
-                    Channel('parse_transaction').send({'tx_hash': tx_id})
-                    return
-                except TxOutput.MultipleObjectsReturned:
-                    logger.error(
-                        'Multiple TxOutputs found for {}. '
-                        'Deleting and re-scanning'.format(tx_id)
-                    )
-                    TxOutput.objects.filter(
-                        transaction=previous_transaction,
-                        index=output_index
-                    ).delete()
-                    Channel('parse_transaction').send({'tx_hash': tx_id})
+                    send_to_channel('repair_transaction', {'tx_id': tx_id})
                     return
 
                 tx_input.previous_output = previous_output
@@ -171,6 +139,7 @@ class Transaction(models.Model):
                 logger.error(
                     'issue saving tx_input: {}. likely a missing transaction'.format(e)
                 )
+                send_to_channel('repair_transaction', {'tx_id': tx_id})
                 return
 
             vin_index += 1
@@ -190,20 +159,6 @@ class Transaction(models.Model):
                 tx_output.script_pub_key_type = script_pubkey.get('type', '')
                 tx_output.script_pub_key_req_sig = script_pubkey.get('reqSigs', '')
             except TxOutput.DoesNotExist:
-                tx_output = TxOutput.objects.create(
-                    transaction=self,
-                    index=vout.get('n', -1),
-                    value=convert_to_satoshis(vout.get('value', 0.0)),
-                    script_pub_key_asm=script_pubkey.get('asm', ''),
-                    script_pub_key_hex=script_pubkey.get('hex', ''),
-                    script_pub_key_type=script_pubkey.get('type', ''),
-                    script_pub_key_req_sig=script_pubkey.get('reqSigs', ''),
-                )
-            except TxOutput.MultipleObjectsReturned:
-                TxOutput.objects.filter(
-                    transaction=self,
-                    index=vout.get('n', -1),
-                ).delete()
                 tx_output = TxOutput.objects.create(
                     transaction=self,
                     index=vout.get('n', -1),
@@ -235,6 +190,7 @@ class Transaction(models.Model):
                 # )
                 # check_thread.daemon = True
                 # check_thread.start()
+        self.save()
         logger.info('saved tx {}'.format(self.tx_id))
         return
 
@@ -355,7 +311,7 @@ class TxOutput(models.Model):
     )
 
     def __str__(self):
-        return str(self.pk)
+        return '{}:{}@{}'.format(self.index, self.value, self.transaction)
 
     class Meta:
         unique_together = ('transaction', 'index')
@@ -404,7 +360,7 @@ class TxInput(models.Model):
     )
 
     def __str__(self):
-        return str(self.pk)
+        return '{}@{}'.format(self.index, self.transaction)
 
     class Meta:
         ordering = ['-index']

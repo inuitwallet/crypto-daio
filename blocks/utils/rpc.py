@@ -8,6 +8,9 @@ from requests import ReadTimeout
 from requests.exceptions import ConnectionError
 
 
+logger = logging.getLogger(__name__)
+
+
 def send_rpc(data):
     """
     Return a connection to the nud  rpc  interface
@@ -22,7 +25,7 @@ def send_rpc(data):
     )
     headers = {'Content-Type': 'applications/json'}
     try:
-        result = requests.post(
+        response = requests.post(
             url=rpc_url,
             headers=headers,
             data=json.dumps(data),
@@ -30,25 +33,28 @@ def send_rpc(data):
         )
 
         try:
-            return result.json()
+            result = response.json()
+            error = result.get('error', None)
+            if error:
+                logger.error(
+                    'rpc error sending {}: {}'.format(data, result.get('result'))
+                )
+                return False
+            return result.get('result')
+
         except ValueError:
-            return {'error': True, 'message': result.text, 'data': data}
+            logger.error('rpc error sending {}: {}'.format(data, response.text))
+            return False
 
     except ConnectionError:
-        return {'error': True, 'message': 'no connection with daemon'}
+        logger.error('rpc error sending {}: {}'.format(data, 'no connection with daemon'))
+        return False
 
     except ReadTimeout:
-        return {'error': True, 'message': 'daemon timeout'}
+        logger.error('rpc error sending {}: {}'.format(data, 'daemon timeout'))
+        return False
 
 
 def get_block_hash(height):
-    rpc = send_rpc(
-        {
-            'method': 'getblockhash',
-            'params': [int(height)]
-        }
-    )
-    if rpc['error']:
-        logger = logging.getLogger('daio')
-        logger.error(rpc['error'])
-    return rpc['result'] if not rpc['error'] else None
+    return send_rpc({'method': 'getblockhash', 'params': [int(height)]})
+

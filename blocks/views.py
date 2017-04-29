@@ -6,6 +6,8 @@ from django.http import HttpResponse
 from django.http.response import HttpResponseNotFound
 from django.views.generic import ListView, DetailView
 from django.conf import settings
+
+from blocks.utils.channels import send_to_channel
 from .models import *
 
 
@@ -22,9 +24,8 @@ class Notify(View):
             return HttpResponseNotFound()
         if len(block_hash) < 60:
             return HttpResponseNotFound()
-        block, created = Block.objects.get_or_create(hash=block_hash)
-        if created:
-            Channel('parse_block').send({'block_hash': block_hash})
+        # block validation is tied to the save method
+        Block.objects.get_or_create(hash=block_hash)
         return HttpResponse('daio received block {}'.format(block_hash))
 
 

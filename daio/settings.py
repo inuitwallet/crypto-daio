@@ -150,7 +150,7 @@ LOGGING = {
     'disable_existing_loggers': False,
     'formatters': {
         'dated': {
-            'format': '%(asctime)s [%(levelname)s] %(message)s',
+            'format': '%(asctime)s [%(levelname)s] (%(funcName)s) %(message)s',
         },
     },
     'handlers': {
@@ -160,7 +160,7 @@ LOGGING = {
         },
     },
     'loggers': {
-        'daio': {
+        'blocks': {
             'handlers': ['console'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
         },

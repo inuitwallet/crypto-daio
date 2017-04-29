@@ -4,11 +4,12 @@ import logging
 import time
 from datetime import datetime
 
-from channels import Channel
 from django.db import models, IntegrityError
 from django.utils.timezone import make_aware
 
-logger = logging.getLogger('daio')
+from blocks.utils.channels import send_to_channel
+
+logger = logging.getLogger(__name__)
 
 
 class Block(models.Model):
@@ -102,7 +103,23 @@ class Block(models.Model):
     )
 
     def __str__(self):
-        return str(self.hash)
+        return '{}:{}'.format(self.height, self.hash[:8])
+
+    def save(self, *args, **kwargs):
+        super(Block, self).save(*args, **kwargs)
+        valid, error_message = self.validate()
+        if not valid:
+            send_to_channel(
+                'repair_block', {
+                    'block_hash': self.hash,
+                    'error_message': error_message
+                }
+            )
+        else:
+            # block is valid. validate the transactions too
+            for tx in self.transactions.all():
+                if not tx.is_valid:
+                    send_to_channel('repair_transaction', {'tx_id': tx.tx_id})
 
     @property
     def class_type(self):
@@ -146,12 +163,14 @@ class Block(models.Model):
         self.size = rpc_block.get('size', None)
         self.version = rpc_block.get('version', None)
         self.merkle_root = rpc_block.get('merkleroot', None)
-        self.time = make_aware(
-            datetime.strptime(
-                rpc_block.get('time', None),
-                '%Y-%m-%d %H:%M:%S %Z'
+        block_time = rpc_block.get('time', None)
+        if block_time:
+            self.time = make_aware(
+                datetime.strptime(
+                    block_time,
+                    '%Y-%m-%d %H:%M:%S %Z'
+                )
             )
-        )
         self.nonce = rpc_block.get('nonce', None)
         self.bits = rpc_block.get('bits', None)
         self.difficulty = rpc_block.get('difficulty', None)
@@ -163,70 +182,39 @@ class Block(models.Model):
         self.modifier_checksum = rpc_block.get('modifierchecksum', None)
         self.coinage_destroyed = rpc_block.get('coinagedestroyed', None)
 
-        self.save()
         # using the previousblockhash, get the block object to connect
         prev_block_hash = rpc_block.get('previousblockhash', None)
+        # genesis block has no previous block
         if prev_block_hash:
             previous_block, created = Block.objects.get_or_create(
                 hash=prev_block_hash
             )
             self.previous_block = previous_block
-            # update the previous block with this block as its next block
-            previous_block.next_block = self
-            if previous_block.height:
-                self.height = previous_block.height + 1
-            previous_block.save()
-            if created:
-                logger.warning(
-                    'previous block {} wasn\'t found'.format(previous_block.hash)
-                )
-                Channel('parse_block').send({'block_hash': prev_block_hash})
 
-        self.save()
         # do the same for the next block
         next_block_hash = rpc_block.get('nextblockhash', None)
         if next_block_hash:
+            # top block has no next block yet
             next_block, created = Block.objects.get_or_create(
                 hash=next_block_hash
             )
             self.next_block = next_block
-            self.next_block.height = self.height + 1
-            next_block.save()
-            Channel('parse_block').send({'block_hash': next_block_hash})
 
-        # attempt to save this block. Orphan blocks can appear which ruins data integrity
-        # if we find a previous block with the same height already exists we check the
-        # hashes of both. If they differ we prefer the newer block as we can assume
-        # it has come directly from, the coin daemon.
-        try:
-            self.save()
-            logger.info('saved block {}'.format(self.height))
-        except IntegrityError:
-            logger.info('block {} already exists'.format(self.height))
-            existing_block = Block.objects.get(height=self.height)
-            if existing_block.hash != self.hash:
-                for transaction in existing_block.transactions.all():
-                    for tx_input in transaction.inputs.all():
-                        tx_input.delete()
-                    for tx_output in transaction.outputs.all():
-                        tx_output.delete()
-                    transaction.delete()
-                existing_block.delete()
-                self.save()
-                logger.info('saved new block {}'.format(self.height))
-            else:
-                logger.info(
-                    'hashes match. leaving existing block {}'.format(
-                        existing_block.height)
-                )
+        # save triggers the validation
+        self.save()
 
         # now we do the transactions
-        index = 0
-        for tx_hash in rpc_block.get('tx', []):
-            Channel('parse_transaction').send(
-                {'tx_hash': tx_hash, 'block_hash': self.hash, 'tx_index': index}
+        tx_index = 0
+        for tx_id in rpc_block.get('tx', []):
+            send_to_channel(
+                'parse_transaction', {
+                    'tx_id': tx_id,
+                    'block_hash': self.hash,
+                    'tx_index': tx_index
+                }
             )
-            index += 1
+            tx_index += 1
+        logger.info('saved block {}'.format(self))
 
     @property
     def is_valid(self):
@@ -237,7 +225,7 @@ class Block(models.Model):
         if self.height == 0:
             return True, 'Genesis Block'
 
-        # check hash is correct for data
+        # check hash is corr-
         # first check the header attributes
 
         for attribute in [
@@ -272,7 +260,7 @@ class Block(models.Model):
         if str.encode(self.hash) != calc_hash:
             return False, 'incorrect hash'
 
-        # check that previous block height is this height-1
+        # check that previous block height is this height - 1
         if self.previous_block.height != (self.height - 1):
             return False, 'incorrect previous height'
 
@@ -280,7 +268,7 @@ class Block(models.Model):
         if self.previous_block.next_block != self:
             return False, 'previous block does not point to this block'
 
-        # check the next block height is this block + 1
+        # check the next block height is this height + 1
         if self.next_block:
             if self.next_block.height != (self.height + 1):
                 return False, 'incorrect next height'

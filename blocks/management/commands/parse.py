@@ -1,12 +1,12 @@
-from channels import Channel
 from django.core.management import BaseCommand
 
 from django.utils import timezone
 
+from blocks.utils.channels import send_to_channel
 from blocks.utils.rpc import get_block_hash
 import logging
 
-logger = logging.getLogger('daio')
+logger = logging.getLogger(__name__)
 
 tz = timezone.get_current_timezone()
 
@@ -37,8 +37,4 @@ class Command(BaseCommand):
             )
         )
         # send the hash to the channel for parsing a block
-        Channel('parse_block').send({'block_hash': start_hash})
-
-
-
-
+        send_to_channel('parse_block', {'block_hash': start_hash})
