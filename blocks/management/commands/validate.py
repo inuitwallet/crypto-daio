@@ -83,7 +83,7 @@ class Command(BaseCommand):
         Parse the block chain
         """
         if options['block']:
-            blocks = Block.objects.filter(height=options['block'])
+            blocks = Block.objects.filter(height=options['block']).order_by('height')
         else:
             # no block specified so validate all blocks starting from start_height
             blocks = Block.objects.filter(
