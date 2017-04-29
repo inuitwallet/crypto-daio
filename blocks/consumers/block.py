@@ -97,7 +97,7 @@ def repair_block(message):
     if not rpc:
         return False
     # parse the block to save it
-    block.parse_rpc_block(rpc['result'])
+    block.parse_rpc_block(rpc)
 
 
 def fix_previous_block(block):
@@ -144,7 +144,7 @@ def fix_merkle_root(block):
     if not rpc:
         return False
 
-    transactions = rpc['result'].get('tx', [])
+    transactions = rpc.get('tx', [])
     block_tx = block.transactions.all().values_list('tx_id', flat=True)
 
     # add missing transactions
