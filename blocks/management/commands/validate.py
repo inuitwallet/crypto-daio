@@ -98,17 +98,19 @@ class Command(BaseCommand):
         paginator = Paginator(blocks, 1000)
 
         invalid_blocks = []
+        total_blocks = 0
         try:
             for page_num in paginator.page_range:
                 page_invalid_blocks = []
                 for block in paginator.page(page_num):
+                    total_blocks += 1
                     if not block.is_valid:
                         page_invalid_blocks.append(block)
                         block.save()
 
                 logger.info(
                     '{} blocks validated with {} invalid blocks found: {}'.format(
-                        1000 * page_num,
+                        total_blocks,
                         len(page_invalid_blocks),
                         page_invalid_blocks,
                     )
