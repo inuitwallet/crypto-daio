@@ -223,7 +223,10 @@ class Transaction(models.Model):
 
         for tx_input in self.inputs.all():
             if tx_input.index < 0:
-                return False, 'incorrect input index'
+                return False, 'incorrect input index: {} < 0 for {}'.format(
+                    tx_input.index,
+                    tx_input
+                )
 
         # start off  with version and number of inputs
         tx_bytes = (
