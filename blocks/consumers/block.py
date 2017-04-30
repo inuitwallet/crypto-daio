@@ -163,6 +163,11 @@ def fix_merkle_root(block):
         if tx.tx_id not in transactions:
             logger.error('tx {} does not belong to block {}'.format(tx, block))
             tx.delete()
+            continue
+
+        # fix index
+        tx.index = transactions.index(tx.tx_id)
+        tx.save()
 
     # reinitialise validation
     block.save()

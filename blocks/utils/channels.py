@@ -13,4 +13,4 @@ def send_to_channel(channel, message):
     except BaseChannelLayer.ChannelFull:
         logger.error('Channel Full. Sleeping for a bit')
         time.sleep(600)
-        send_to_channel(channel, message)
+        return send_to_channel(channel, message)
