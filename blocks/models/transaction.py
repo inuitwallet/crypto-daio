@@ -147,7 +147,7 @@ class Transaction(models.Model):
                 tx_input.save()
             except IntegrityError as e:
                 logger.error(
-                    'issue saving tx_input: {}. likely a missing transaction'.format(e)
+                    'issue saving tx_input for {}: {}'.format(self, e)
                 )
                 send_to_channel('repair_transaction', {'tx_id': tx_id})
                 return
