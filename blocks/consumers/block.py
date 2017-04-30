@@ -171,7 +171,7 @@ def fix_merkle_root(block):
             logger.error(
                 'incorrect index for tx {}: {} != {}'.format(tx, tx.index, rpc_index)
             )
-            tx.index = transactions.index(tx.tx_id)
+            tx.index = rpc_index
             tx.save()
 
     # reinitialise validation
