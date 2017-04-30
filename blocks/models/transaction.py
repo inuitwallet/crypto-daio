@@ -87,16 +87,16 @@ class Transaction(models.Model):
                     transaction=self,
                     index=vin_index,
                 )
-                tx_input.sequence = vin.get('sequence', None)
-                tx_input.coin_base = vin.get('coinbase', None)
+                tx_input.sequence = vin.get('sequence', '')
+                tx_input.coin_base = vin.get('coinbase', '')
                 tx_input.script_sig_asm = script_sig.get('asm', '')
                 tx_input.script_sig_hex = script_sig.get('hex', '')
             except TxInput.DoesNotExist:
                 tx_input = TxInput.objects.create(
                     transaction=self,
                     index=vin_index,
-                    sequence=vin.get('sequence', None),
-                    coin_base=vin.get('coinbase', None),
+                    sequence=vin.get('sequence', ''),
+                    coin_base=vin.get('coinbase', ''),
                     script_sig_asm=script_sig.get('asm', ''),
                     script_sig_hex=script_sig.get('hex', ''),
                 )
@@ -105,8 +105,8 @@ class Transaction(models.Model):
                 tx_input = TxInput.objects.create(
                     transaction=self,
                     index=vin_index,
-                    sequence=vin.get('sequence', None),
-                    coin_base=vin.get('coinbase', None),
+                    sequence=vin.get('sequence', ''),
+                    coin_base=vin.get('coinbase', ''),
                     script_sig_asm=script_sig.get('asm', ''),
                     script_sig_hex=script_sig.get('hex', ''),
                 )
@@ -344,7 +344,6 @@ class TxInput(models.Model):
     coin_base = models.CharField(
         max_length=610,
         blank=True,
-        null=True,
     )
     sequence = models.BigIntegerField(
         blank=True,
