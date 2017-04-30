@@ -66,7 +66,7 @@ class Transaction(models.Model):
         return 'Transaction'
 
     def parse_rpc_tx(self, rpc_tx):
-        logger.info('parsing tx {}'.format(self.tx_id))
+        logger.info('parsing tx {}'.format(self))
         self.version = rpc_tx.get('version', None)
         tx_time = rpc_tx.get('time', None)
 
@@ -109,7 +109,7 @@ class Transaction(models.Model):
                     previous_transaction = Transaction.objects.get(tx_id=tx_id)
                 except Transaction.DoesNotExist:
                     logger.error(
-                        'Tx {} not found for previous output'.format(tx_id)
+                        'Tx {} not found for previous output'.format(tx_id[:8])
                     )
                     send_to_channel('repair_transaction', {'tx_id': tx_id})
                     return
@@ -191,7 +191,7 @@ class Transaction(models.Model):
                 # check_thread.daemon = True
                 # check_thread.start()
         self.save()
-        logger.info('saved tx {}'.format(self.tx_id))
+        logger.info('saved tx {}'.format(self))
         return
 
     @property
