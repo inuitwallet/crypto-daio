@@ -100,6 +100,16 @@ class Transaction(models.Model):
                     script_sig_asm=script_sig.get('asm', ''),
                     script_sig_hex=script_sig.get('hex', ''),
                 )
+            except TxInput.MultipleObjectsReturned:
+                TxInput.objects.filter(transaction=self, index=vin_index).delete()
+                tx_input = TxInput.objects.create(
+                    transaction=self,
+                    index=vin_index,
+                    sequence=vin.get('sequence', None),
+                    coin_base=vin.get('coinbase', None),
+                    script_sig_asm=script_sig.get('asm', ''),
+                    script_sig_hex=script_sig.get('hex', ''),
+                )
 
             tx_id = vin.get('txid', None)
 
