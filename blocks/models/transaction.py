@@ -218,16 +218,6 @@ class Transaction(models.Model):
             if eval(attribute) is None:
                 return False, 'missing attribute: {}'.format(attribute)
 
-        if self.index < 0:
-            return False, 'incorrect index'
-
-        for tx_input in self.inputs.all():
-            if tx_input.index < 0:
-                return False, 'incorrect input index: {} < 0 for {}'.format(
-                    tx_input.index,
-                    tx_input
-                )
-
         # start off  with version and number of inputs
         tx_bytes = (
             self.version.to_bytes(4, 'little') +
@@ -286,6 +276,16 @@ class Transaction(models.Model):
                 str.encode(self.tx_id),
                 calc_hash
             )
+
+        if self.index < 0:
+            return False, 'incorrect index'
+
+        for tx_input in self.inputs.all():
+            if tx_input.index < 0:
+                return False, 'incorrect input index: {} < 0 for {}'.format(
+                    tx_input.index,
+                    tx_input
+                )
 
         return True, 'Transaction is valid'
 
