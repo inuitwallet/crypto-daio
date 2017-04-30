@@ -61,6 +61,10 @@ def repair_block(message):
         send_to_channel('parse_block', {'block_hash', block_hash})
         return
 
+    if block.is_valid:
+        logger.info('block {} is valid'.format(block))
+        return
+
     logger.info('repairing block {}: {}'.format(block, error_message))
 
     # Possible error messages are:

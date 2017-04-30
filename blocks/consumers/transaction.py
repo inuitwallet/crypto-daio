@@ -123,6 +123,10 @@ def repair_transaction(message):
             index=tx_index,
         )
 
+    if tx.is_valid:
+        logger.info('tx {} is valid'.format(tx))
+        return
+
     tx.parse_rpc_tx(rpc_tx)
 
 
