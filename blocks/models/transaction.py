@@ -364,3 +364,4 @@ class TxInput(models.Model):
 
     class Meta:
         ordering = ['-index']
+        unique_together = ('transaction', 'index')
