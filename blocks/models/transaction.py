@@ -160,7 +160,7 @@ class Transaction(models.Model):
             try:
                 tx_output = TxOutput.objects.get(
                     transaction=self,
-                    index=vout.get('n', -1),
+                    index=vout.get('n'),
                 )
                 tx_output.value = convert_to_satoshis(vout.get('value', 0.0))
                 # convert to satoshis
@@ -171,7 +171,7 @@ class Transaction(models.Model):
             except TxOutput.DoesNotExist:
                 tx_output = TxOutput.objects.create(
                     transaction=self,
-                    index=vout.get('n', -1),
+                    index=vout.get('n'),
                     value=convert_to_satoshis(vout.get('value', 0.0)),
                     script_pub_key_asm=script_pubkey.get('asm', ''),
                     script_pub_key_hex=script_pubkey.get('hex', ''),
@@ -218,6 +218,9 @@ class Transaction(models.Model):
             if eval(attribute) is None:
                 return False, 'missing attribute: {}'.format(attribute)
 
+        if self.index < 0:
+            return False, 'incorrect index'
+
         # start off  with version and number of inputs
         tx_bytes = (
             self.version.to_bytes(4, 'little') +
@@ -226,20 +229,7 @@ class Transaction(models.Model):
         )
         # add each input
         for tx_input in self.inputs.all().order_by('index'):
-            if tx_input.coin_base:
-                # coinbase
-                tx_input_bytes = (
-                    codecs.decode('0' * 64, 'hex')[::-1] +
-                    codecs.decode('f' * 8, 'hex')[::-1] +
-                    get_var_int_bytes(len(codecs.decode(tx_input.coin_base, 'hex'))) +
-                    codecs.decode(tx_input.coin_base, 'hex') +
-                    tx_input.sequence.to_bytes(4, 'little')
-                )
-            else:
-                if not tx_input.previous_output:
-                    return False, 'Input at index {} has no previous output'.format(
-                        tx_input.index
-                    )
+            if tx_input.previous_output:
                 tx_input_bytes = (
                     codecs.decode(
                         tx_input.previous_output.transaction.tx_id, 'hex'
@@ -250,6 +240,16 @@ class Transaction(models.Model):
                     codecs.decode(tx_input.script_sig_hex, 'hex') +
                     tx_input.sequence.to_bytes(4, 'little')
                 )
+            else:
+                # coinbase or custodial grant
+                tx_input_bytes = (
+                    codecs.decode('0' * 64, 'hex')[::-1] +
+                    codecs.decode('f' * 8, 'hex')[::-1] +
+                    get_var_int_bytes(len(codecs.decode(tx_input.coin_base, 'hex'))) +
+                    codecs.decode(tx_input.coin_base, 'hex') +
+                    tx_input.sequence.to_bytes(4, 'little')
+                )
+
             tx_bytes += tx_input_bytes
         # add the number of outputs
         tx_bytes += get_var_int_bytes(self.outputs.all().count())
@@ -272,20 +272,7 @@ class Transaction(models.Model):
         header_hash = hashlib.sha256(hashlib.sha256(tx_bytes).digest()).digest()
         calc_hash = codecs.encode(header_hash[::-1], 'hex')
         if str.encode(self.tx_id) != calc_hash:
-            return False, 'incorrect hash {} != {}'.format(
-                str.encode(self.tx_id),
-                calc_hash
-            )
-
-        if self.index < 0:
-            return False, 'incorrect index'
-
-        for tx_input in self.inputs.all():
-            if tx_input.index < 0:
-                return False, 'incorrect input index: {} < 0 for {}'.format(
-                    tx_input.index,
-                    tx_input
-                )
+            return False, 'incorrect hash'
 
         return True, 'Transaction is valid'
 

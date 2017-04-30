@@ -147,6 +147,13 @@ def repair_transaction(message):
         return
 
     logger.error('tx invalid: {}'.format(error_message))
+
+    # error messages can be:
+    # missing attribute,
+    # incorrect index,
+    # Input at index <index> has no previous output,
+    # incorrect hash
+
     tx.parse_rpc_tx(rpc_tx)
 
 
