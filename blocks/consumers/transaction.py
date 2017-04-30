@@ -138,6 +138,8 @@ def repair_transaction(message):
             index=tx_index,
         )
 
+    logger.info('repairing tx {}'.format(tx))
+
     if tx.is_valid:
         logger.info('tx {} is valid'.format(tx))
         return
