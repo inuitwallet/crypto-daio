@@ -107,12 +107,10 @@ class Block(models.Model):
 
     def save(self, *args, **kwargs):
         super(Block, self).save(*args, **kwargs)
-        valid, error_message = self.validate()
-        if not valid:
+        if not self.is_valid:
             send_to_channel(
                 'repair_block', {
                     'block_hash': self.hash,
-                    'error_message': error_message
                 }
             )
         else:

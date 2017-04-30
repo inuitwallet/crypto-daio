@@ -40,14 +40,7 @@ def repair_block(message):
     
     :param message: asgi valid message containing:
         block_hash (required) string - hash of block to repair
-        error_message (required) string - validation error message
     """
-    error_message = message.get('error_message')
-
-    if not error_message:
-        logger.error('no error message in message')
-        return
-
     block_hash = message.get('block_hash')
 
     if not block_hash:
@@ -61,7 +54,8 @@ def repair_block(message):
         send_to_channel('parse_block', {'block_hash', block_hash})
         return
 
-    if block.is_valid:
+    valid, error_message = block.validate()
+    if valid:
         logger.info('block {} is valid'.format(block))
         return
 
