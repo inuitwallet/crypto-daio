@@ -11,10 +11,14 @@ from requests.exceptions import ConnectionError
 logger = logging.getLogger(__name__)
 
 
-def send_rpc(data):
+def send_rpc(data, retry=0):
     """
     Return a connection to the nud  rpc  interface
     """
+    if retry == 5:
+        logger.error('5 retries have failed')
+        return
+
     data['jsonrpc'] = "2.0"
     data['id'] = int(time.time())
     rpc_url = 'http://{}:{}@{}:{}'.format(
@@ -51,7 +55,8 @@ def send_rpc(data):
         return False
 
     except ReadTimeout:
-        logger.error('rpc error sending {}: {}'.format(data, 'daemon timeout'))
+        logger.warning('rpc error sending {}: {}'.format(data, 'daemon timeout'))
+        send_rpc(data, retry + 1)
         return False
 
 
