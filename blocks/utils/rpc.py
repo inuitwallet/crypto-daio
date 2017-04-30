@@ -55,7 +55,7 @@ def send_rpc(data, retry=0):
         return False
 
     except ReadTimeout:
-        logger.warning('rpc error sending {}: {}'.format(data, 'daemon timeout'))
+        logger.warning('rpc error: {}'.format(data, 'daemon timeout'))
         send_rpc(data, retry + 1)
         return False
 
