@@ -158,7 +158,7 @@ class Block(models.Model):
     def parse_rpc_block(self, rpc_block):
         if not self.height:
             self.height = rpc_block.get('height', None)
-        logger.info('parsing {} at height {}'.format(self.hash, self.height))
+        logger.info('parsing block {}'.format(self))
         # parse the json and apply to the block we just fetched
         self.size = rpc_block.get('size', None)
         self.version = rpc_block.get('version', None)
