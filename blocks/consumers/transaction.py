@@ -1,5 +1,7 @@
 import logging
 
+from django.db import IntegrityError
+
 from blocks.models import Transaction, Block
 from blocks.utils.channels import send_to_channel
 from blocks.utils.rpc import send_rpc
@@ -50,11 +52,24 @@ def parse_transaction(message):
         logger.warning('block {} is new when parsing tx {}'.format(block, tx_id))
         return False
 
-    tx, created = Transaction.objects.get_or_create(
-        tx_id=tx_id,
-        block=block,
-        index=tx_index
-    )
+    try:
+        tx, created = Transaction.objects.get_or_create(
+            tx_id=tx_id,
+            block=block,
+            index=tx_index
+        )
+    except IntegrityError:
+        logger.error(
+            'transaction with id {} already exists. '
+            '{} index {} was passed'.format(
+                tx_id[:8],
+                block,
+                tx_index,
+            )
+        )
+        send_to_channel('repair_transaction', {'tx_id', tx_id})
+        return
+
     if not created:
         logger.info('existing tx {} found at {}'.format(tx, block))
         tx.save()
