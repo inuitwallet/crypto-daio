@@ -92,7 +92,12 @@ class Command(BaseCommand):
                 'height'
             )
 
-        logger.info('validating {} blocks'.format(blocks.count()))
+        logger.info(
+            'validating {} blocks starting from {}'.format(
+                blocks.count(),
+                options['start_height']
+            )
+        )
 
         # paginate to speed the initial load up a bit
         paginator = Paginator(blocks, 1000)
@@ -107,9 +112,15 @@ class Command(BaseCommand):
                     if not block.is_valid:
                         page_invalid_blocks.append(block)
                         block.save()
+                        continue
+                    for tx in block.transactions.all():
+                        if not tx.is_valid:
+                            page_invalid_blocks.append(block)
+                            tx.save()
 
                 logger.info(
-                    '{} blocks validated with {} invalid blocks found: {}'.format(
+                    '{} blocks validated with {} '
+                    'invalid blocks found this round: {}'.format(
                         total_blocks,
                         len(page_invalid_blocks),
                         page_invalid_blocks,

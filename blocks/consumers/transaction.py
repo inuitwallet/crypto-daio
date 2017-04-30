@@ -140,10 +140,13 @@ def repair_transaction(message):
 
     logger.info('repairing tx {}'.format(tx))
 
-    if tx.is_valid:
+    valid, error_message = tx.validate()
+
+    if valid:
         logger.info('tx {} is valid'.format(tx))
         return
 
+    logger.error('tx still invalid: {}'.format(error_message))
     tx.parse_rpc_tx(rpc_tx)
 
 
