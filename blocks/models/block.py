@@ -188,6 +188,8 @@ class Block(models.Model):
                 hash=prev_block_hash
             )
             self.previous_block = previous_block
+            self.previous_block.next_block = self
+            self.previous_block.save()
 
         # do the same for the next block
         next_block_hash = rpc_block.get('nextblockhash', None)
@@ -197,6 +199,8 @@ class Block(models.Model):
                 hash=next_block_hash
             )
             self.next_block = next_block
+            self.next_block.previous_block = self
+            self.next_block.save()
 
         # save triggers the validation
         self.save()
