@@ -100,48 +100,42 @@ class Transaction(models.Model):
                     script_sig_asm=script_sig.get('asm', ''),
                     script_sig_hex=script_sig.get('hex', ''),
                 )
-            except TxInput.MultipleObjectsReturned:
-                TxInput.objects.filter(transaction=self, index=vin_index).delete()
-                tx_input = TxInput.objects.create(
-                    transaction=self,
-                    index=vin_index,
-                    sequence=vin.get('sequence', ''),
-                    coin_base=vin.get('coinbase', ''),
-                    script_sig_asm=script_sig.get('asm', ''),
-                    script_sig_hex=script_sig.get('hex', ''),
-                )
 
             tx_id = vin.get('txid', None)
 
             if tx_id:
-                # input is spending a previous output. Link it here
-                try:
-                    previous_transaction = Transaction.objects.get(tx_id=tx_id)
-                except Transaction.DoesNotExist:
-                    logger.error(
-                        'Tx {} not found for previous output'.format(tx_id[:8])
-                    )
-                    send_to_channel('repair_transaction', {'tx_id': tx_id})
-                    return
-
-                output_index = vin.get('vout', -100)
-
-                try:
-                    previous_output = TxOutput.objects.get(
-                        transaction=previous_transaction,
-                        index=output_index,
-                    )
-                except TxOutput.DoesNotExist:
-                    logger.error(
-                        'no previous output found for {} at {}'.format(
-                            output_index,
-                            previous_transaction,
+                if tx_id == '0000000000000000000000000000000000000000000000000000000000000000':  # noqa
+                    # grant reward
+                    tx_input.coin_base = 'grant reward'
+                else:
+                    # input is spending a previous output. Link it here
+                    try:
+                        previous_transaction = Transaction.objects.get(tx_id=tx_id)
+                    except Transaction.DoesNotExist:
+                        logger.error(
+                            'Tx {} not found for previous output'.format(tx_id[:8])
                         )
-                    )
-                    send_to_channel('repair_transaction', {'tx_id': tx_id})
-                    return
+                        send_to_channel('repair_transaction', {'tx_id': tx_id})
+                        return
 
-                tx_input.previous_output = previous_output
+                    output_index = vin.get('vout')
+
+                    try:
+                        previous_output = TxOutput.objects.get(
+                            transaction=previous_transaction,
+                            index=output_index,
+                        )
+                    except TxOutput.DoesNotExist:
+                        logger.error(
+                            'no previous output found for {} at {}'.format(
+                                output_index,
+                                previous_transaction,
+                            )
+                        )
+                        send_to_channel('repair_transaction', {'tx_id': tx_id})
+                        return
+
+                    tx_input.previous_output = previous_output
 
             try:
                 tx_input.save()
