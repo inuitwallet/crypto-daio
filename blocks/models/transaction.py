@@ -55,11 +55,12 @@ class Transaction(models.Model):
     class Meta:
         ordering = ['index']
 
-    def save(self, *args, **kwargs):
+    def save(self, validate=True, *args, **kwargs):
         super(Transaction, self).save(*args, **kwargs)
-        valid, error_message = self.validate()
-        if not valid:
-            send_to_channel('repair_transaction', {'tx_id': self.tx_id})
+        if validate:
+            valid, error_message = self.validate()
+            if not valid:
+                send_to_channel('repair_transaction', {'tx_id': self.tx_id})
 
     @property
     def class_type(self):
@@ -77,6 +78,8 @@ class Transaction(models.Model):
 
         self.lock_time = rpc_tx.get('locktime', None)
         self.unit = rpc_tx.get('unit', None)
+
+        self.save(validate=False)
 
         # for each input in the transaction, save a TxInput
         vin_index = 0
