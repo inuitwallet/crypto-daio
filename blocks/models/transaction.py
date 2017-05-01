@@ -106,36 +106,33 @@ class Transaction(models.Model):
             if tx_id:
                 if tx_id == '0000000000000000000000000000000000000000000000000000000000000000':  # noqa
                     # grant reward
-                    tx_input.coin_base = '6772616e7420726577617264'  # 'grant reward'
+                    previous_transaction, _ = Transaction.objects.get_or_create(
+                        tx_id=tx_id
+                    )
+                    previous_output, _ = TxOutput.objects.get_or_create(
+                        transaction=previous_transaction,
+                        index=vin.get('vout')
+                    )
                 else:
                     # input is spending a previous output. Link it here
-                    try:
-                        previous_transaction = Transaction.objects.get(tx_id=tx_id)
-                    except Transaction.DoesNotExist:
-                        logger.error(
-                            'Tx {} not found for previous output'.format(tx_id[:8])
-                        )
-                        send_to_channel('repair_transaction', {'tx_id': tx_id})
-                        return
+                    previous_transaction, created = Transaction.objects.get_or_create(
+                        tx_id=tx_id
+                    )
 
-                    output_index = vin.get('vout')
-
-                    try:
-                        previous_output = TxOutput.objects.get(
-                            transaction=previous_transaction,
-                            index=output_index,
-                        )
-                    except TxOutput.DoesNotExist:
+                    previous_output, _ = TxOutput.objects.get_or_create(
+                        transaction=previous_transaction,
+                        index=vin.get('vout'),
+                    )
+                    if created:
                         logger.error(
-                            'no previous output found for {} at {}'.format(
-                                output_index,
-                                previous_transaction,
+                            'tx {} not found for previous output to {}'.format(
+                                tx_id[:8],
+                                tx_input
                             )
                         )
                         send_to_channel('repair_transaction', {'tx_id': tx_id})
-                        return
 
-                    tx_input.previous_output = previous_output
+                tx_input.previous_output = previous_output
 
             try:
                 tx_input.save()
