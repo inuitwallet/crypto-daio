@@ -109,6 +109,8 @@ class Command(BaseCommand):
                 page_invalid_blocks = []
                 for block in paginator.page(page_num):
                     total_blocks += 1
+                    if block.height == 0:
+                        continue
                     if not block.is_valid:
                         page_invalid_blocks.append(block)
                         block.save()

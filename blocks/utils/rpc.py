@@ -33,7 +33,7 @@ def send_rpc(data, retry=0):
             url=rpc_url,
             headers=headers,
             data=json.dumps(data),
-            timeout=60,
+            timeout=240,
         )
 
         try:
