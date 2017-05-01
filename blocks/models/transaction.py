@@ -106,7 +106,7 @@ class Transaction(models.Model):
             if tx_id:
                 if tx_id == '0000000000000000000000000000000000000000000000000000000000000000':  # noqa
                     # grant reward
-                    tx_input.coin_base = 'grant reward'
+                    tx_input.coin_base = '6772616e7420726577617264'  # 'grant reward'
                 else:
                     # input is spending a previous output. Link it here
                     try:
