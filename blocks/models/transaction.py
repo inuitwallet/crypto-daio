@@ -104,16 +104,9 @@ class Transaction(models.Model):
             tx_id = vin.get('txid', None)
 
             if tx_id:
-                if tx_id == '0000000000000000000000000000000000000000000000000000000000000000':  # noqa
-                    # grant reward
-                    previous_transaction, _ = Transaction.objects.get_or_create(
-                        tx_id=tx_id
-                    )
-                    previous_output, _ = TxOutput.objects.get_or_create(
-                        transaction=previous_transaction,
-                        index=vin.get('vout')
-                    )
-                else:
+                # this long tx_id indicates a grant reward.
+                # we ignore these as they are effectively coinbase inputs
+                if tx_id != '0000000000000000000000000000000000000000000000000000000000000000':  # noqa
                     # input is spending a previous output. Link it here
                     previous_transaction, created = Transaction.objects.get_or_create(
                         tx_id=tx_id
@@ -132,7 +125,7 @@ class Transaction(models.Model):
                         )
                         send_to_channel('repair_transaction', {'tx_id': tx_id})
 
-                tx_input.previous_output = previous_output
+                    tx_input.previous_output = previous_output
 
             try:
                 tx_input.save()
