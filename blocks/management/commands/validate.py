@@ -84,6 +84,22 @@ class Command(BaseCommand):
             )
             return False
 
+    def save_block(self, block):
+        try:
+            block.save()
+        except BaseChannelLayer.ChannelFull:
+            logger.warning('channel full. sleeping')
+            time.sleep(300)
+            self.save_block(block)
+
+    def save_tx(self, tx):
+        try:
+            tx.save()
+        except BaseChannelLayer.ChannelFull:
+            logger.warning('channel full. sleeping')
+            time.sleep(300)
+            self.save_tx(tx)
+
     def handle(self, *args, **options):
         """
         Parse the block chain
@@ -116,19 +132,22 @@ class Command(BaseCommand):
         try:
             for page_num in paginator.page_range:
                 page_invalid_blocks = []
+
                 for block in paginator.page(page_num):
                     total_blocks += 1
+
                     if block.height == 0:
                         continue
+
                     if not block.is_valid:
                         page_invalid_blocks.append(block)
-                        block.save()
-                        continue
+                        self.save_block(block)
+
                     for tx in block.transactions.all():
                         if not tx.is_valid:
                             if block not in page_invalid_blocks:
                                 page_invalid_blocks.append(block)
-                            tx.save()
+                            self.save_tx(tx)
 
                 logger.info(
                     '{} ({} blocks validated with {} '
