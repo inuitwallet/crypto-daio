@@ -117,7 +117,8 @@ class Command(BaseCommand):
                         continue
                     for tx in block.transactions.all():
                         if not tx.is_valid:
-                            page_invalid_blocks.append(block)
+                            if block not in page_invalid_blocks:
+                                page_invalid_blocks.append(block)
                             tx.save()
 
                 logger.info(
