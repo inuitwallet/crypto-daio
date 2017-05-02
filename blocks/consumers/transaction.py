@@ -144,6 +144,11 @@ def repair_transaction(message):
 
     logger.error('tx invalid: {}'.format(error_message))
 
+    if error_message == 'incorrect index':
+        tx.index = tx_index
+        tx.save(validate=False)
+        return
+
     tx.parse_rpc_tx(rpc_tx)
 
 
