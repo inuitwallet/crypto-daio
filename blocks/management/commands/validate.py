@@ -138,7 +138,7 @@ class Command(BaseCommand):
                         len(page_invalid_blocks),
                     )
                 )
-                If len(page_invalid_blocks) > 0:
+                if len(page_invalid_blocks) > 0:
                     time.sleep(120)  # sleep to let the channel empty a bit
 
                 invalid_blocks += page_invalid_blocks
