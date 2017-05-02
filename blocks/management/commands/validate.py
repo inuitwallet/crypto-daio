@@ -10,7 +10,6 @@ from django.utils import timezone
 import logging
 
 from blocks.utils.channels import send_to_channel
-from blocks.utils.rpc import get_block_hash
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +31,13 @@ class Command(BaseCommand):
             '--block',
             help='The block height to validate',
             dest='block',
+        )
+        parser.add_argument(
+            '-l',
+            '--limit',
+            help='limit the number of blocks to process. useful in combination with -s',
+            dest='limit',
+            default=None
         )
 
     @staticmethod
@@ -91,6 +97,9 @@ class Command(BaseCommand):
             ).order_by(
                 'height'
             )
+
+        if options['limit']:
+            blocks = blocks[:int(options['limit'])]
 
         logger.info(
             'validating {} blocks starting from {}'.format(
