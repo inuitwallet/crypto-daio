@@ -146,7 +146,7 @@ def repair_transaction(message):
 
     if error_message == 'incorrect index':
         tx.index = tx_index
-        tx.save(validate=False)
+        tx.save()
         logger.info('updated index of {}'.format(tx))
         return
 
