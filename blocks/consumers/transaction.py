@@ -1,9 +1,9 @@
 import logging
 
+from channels import Channel
 from django.db import IntegrityError
 
 from blocks.models import Transaction, Block
-from blocks.utils.channels import send_to_channel
 from blocks.utils.rpc import send_rpc
 
 logger = logging.getLogger(__name__)
@@ -67,7 +67,10 @@ def parse_transaction(message):
                 tx_index,
             )
         )
-        send_to_channel('repair_transaction', {'tx_id', tx_id})
+        Channel('repair_transaction').send(
+            {'tx_id', tx_id},
+            immediately=True
+        )
         return
 
     if not created:
@@ -174,9 +177,9 @@ def validate_transactions(message):
 
     for tx in block.transactions.all():
         if not tx.is_valid:
-            send_to_channel(
-                'parse_transaction',
-                {'tx_hash': tx.tx_id, 'block_hash': block.hash}
+            Channel('parse_transaction').send(
+                {'tx_hash': tx.tx_id, 'block_hash': block.hash},
+                immediately=True
             )
         else:
             logger.info(

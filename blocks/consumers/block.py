@@ -1,7 +1,8 @@
 import logging
 
+from channels import Channel
+
 from blocks.models import Block
-from blocks.utils.channels import send_to_channel
 from blocks.utils.rpc import send_rpc, get_block_hash
 
 logger = logging.getLogger(__name__)
@@ -51,7 +52,7 @@ def repair_block(message):
         block = Block.objects.get(hash=block_hash)
     except Block.DoesNotExist:
         logger.error('no block found with hash {}'.format(block_hash))
-        send_to_channel('parse_block', {'block_hash', block_hash})
+        Channel('parse_block').send({'block_hash', block_hash}, immediately=True)
         return
 
     valid, error_message = block.validate()
@@ -148,12 +149,13 @@ def fix_merkle_root(block):
     # add missing transactions
     for tx in list(set(transactions) - set(block_tx)):
         logger.info('adding missing tx {} to {}'.format(tx[:8], block))
-        send_to_channel(
-            'parse_transaction', {
+        Channel('parse_transaction').send(
+            {
                 'tx_id': tx,
                 'tx_index': transactions.index(tx),
                 'block_hash': block.hash
-            }
+            },
+            immediately=True
         )
 
     # remove additional transactions

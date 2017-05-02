@@ -4,10 +4,10 @@ import logging
 import time
 from datetime import datetime
 
-from django.db import models, IntegrityError
+from channels import Channel
+from django.db import models
 from django.utils.timezone import make_aware
 
-from blocks.utils.channels import send_to_channel
 
 logger = logging.getLogger(__name__)
 
@@ -108,16 +108,12 @@ class Block(models.Model):
     def save(self, *args, **kwargs):
         super(Block, self).save(*args, **kwargs)
         if not self.is_valid:
-            send_to_channel(
-                'repair_block', {
-                    'block_hash': self.hash,
-                }
-            )
+            Channel('repair_block').send({'block_hash': self.hash})
         else:
             # block is valid. validate the transactions too
             for tx in self.transactions.all():
                 if not tx.is_valid:
-                    send_to_channel('repair_transaction', {'tx_id': tx.tx_id})
+                    Channel('repair_transaction').send({'tx_id': tx.tx_id})
 
     @property
     def class_type(self):
@@ -208,8 +204,7 @@ class Block(models.Model):
         # now we do the transactions
         tx_index = 0
         for tx_id in rpc_block.get('tx', []):
-            send_to_channel(
-                'parse_transaction', {
+            Channel('parse_transaction').send({
                     'tx_id': tx_id,
                     'block_hash': self.hash,
                     'tx_index': tx_index

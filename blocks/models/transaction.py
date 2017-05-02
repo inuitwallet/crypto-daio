@@ -4,11 +4,11 @@ import logging
 import time
 from datetime import datetime
 
+from channels import Channel
 from django.db import models, IntegrityError
 from django.utils.timezone import make_aware
 
 from blocks.models import Address, Block
-from blocks.utils.channels import send_to_channel
 from blocks.utils.numbers import get_var_int_bytes, convert_to_satoshis
 
 logger = logging.getLogger(__name__)
@@ -60,7 +60,7 @@ class Transaction(models.Model):
         if validate:
             valid, error_message = self.validate()
             if not valid:
-                send_to_channel('repair_transaction', {'tx_id': self.tx_id})
+                Channel('repair_transaction').send({'tx_id': self.tx_id})
 
     @property
     def class_type(self):
@@ -126,7 +126,7 @@ class Transaction(models.Model):
                                 tx_input
                             )
                         )
-                        send_to_channel('repair_transaction', {'tx_id': tx_id})
+                        Channel('repair_transaction').send({'tx_id': tx_id})
 
                     tx_input.previous_output = previous_output
 
@@ -136,7 +136,7 @@ class Transaction(models.Model):
                 logger.error(
                     'issue saving tx_input for {}: {}'.format(self, e)
                 )
-                send_to_channel('repair_transaction', {'tx_id': tx_id})
+                Channel('repair_transaction').send({'tx_id': tx_id})
                 return
 
             vin_index += 1
