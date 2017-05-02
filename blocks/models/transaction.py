@@ -29,8 +29,7 @@ class Transaction(models.Model):
         related_query_name='transaction',
         on_delete=models.CASCADE,
     )
-    index = models.BigIntegerField(
-    )
+    index = models.BigIntegerField()
     version = models.IntegerField(
         blank=True,
         null=True,
