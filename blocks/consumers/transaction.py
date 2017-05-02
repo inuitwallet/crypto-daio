@@ -119,7 +119,7 @@ def repair_transaction(message):
 
     tx_list = rpc_block.get('tx', [])
     if not tx_list:
-        logger.error('problem getting tx list from block {}'.format(block))
+        logger.error('problem getting tx_list from block {}'.format(block))
         return
 
     tx_index = tx_list.index(tx_id)
@@ -142,11 +142,12 @@ def repair_transaction(message):
         logger.info('tx {} is valid'.format(tx))
         return
 
-    logger.error('tx invalid: {}'.format(error_message))
+    logger.error('tx {} invalid: {}'.format(tx, error_message))
 
     if error_message == 'incorrect index':
         tx.index = tx_index
         tx.save(validate=False)
+        logger.info('updated index of {}'.format(tx))
         return
 
     tx.parse_rpc_tx(rpc_tx)
