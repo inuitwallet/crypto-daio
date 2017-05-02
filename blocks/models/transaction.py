@@ -198,6 +198,9 @@ class Transaction(models.Model):
         return valid
 
     def validate(self):
+        if self.index < 0:
+            return False, 'incorrect index'
+
         for attribute in [
             'self.version',
             'self.time',
@@ -205,9 +208,6 @@ class Transaction(models.Model):
         ]:
             if eval(attribute) is None:
                 return False, 'missing attribute: {}'.format(attribute)
-
-        if self.index < 0:
-            return False, 'incorrect index'
 
         # start off  with version and number of inputs
         tx_bytes = (
