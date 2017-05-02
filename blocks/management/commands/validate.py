@@ -138,6 +138,7 @@ class Command(BaseCommand):
                         len(page_invalid_blocks),
                     )
                 )
+                time.sleep(300)  # sleep to let the channel empty a bit
 
                 invalid_blocks += page_invalid_blocks
         except KeyboardInterrupt:
