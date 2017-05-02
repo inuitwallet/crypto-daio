@@ -125,18 +125,14 @@ def repair_transaction(message):
     tx_index = tx_list.index(tx_id)
 
     # we now have tx_id, tx_index and block
-    try:
-        tx = Transaction.objects.get(
-            block=block,
-            tx_id=tx_id,
-            index=tx_index,
-        )
-    except Transaction.DoesNotExist:
-        tx = Transaction(
-            block=block,
-            tx_id=tx_id,
-            index=tx_index,
-        )
+    tx, created = Transaction.objects.get_or_create(tx_id=tx_id)
+
+    if created:
+        logger.warning('tx {} is new. saving and validating')
+        tx.block = block
+        tx.index = tx_index
+        tx.save()
+        return
 
     logger.info('repairing tx {}'.format(tx))
 
@@ -147,12 +143,6 @@ def repair_transaction(message):
         return
 
     logger.error('tx invalid: {}'.format(error_message))
-
-    # error messages can be:
-    # missing attribute,
-    # incorrect index,
-    # Input at index <index> has no previous output,
-    # incorrect hash
 
     tx.parse_rpc_tx(rpc_tx)
 
