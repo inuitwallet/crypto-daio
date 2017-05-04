@@ -8,10 +8,10 @@ class Chain(TenantMixin):
         max_length=255,
         unique=True
     )
-    rcp_user = models.CharField(max_length=255)
+    rpc_user = models.CharField(max_length=255)
     rpc_password = models.CharField(max_length=255)
     rpc_host = models.GenericIPAddressField(default='192.168.0.1')
-    rpc_port = models.PositiveIntegerField()
+    rpc_port = models.PositiveIntegerField(default=1)
 
     def __str__(self):
         return self.name
@@ -22,6 +22,7 @@ class Coin(models.Model):
     code = models.CharField(max_length=255)
     unit_code = models.CharField(max_length=255)
     chain = models.ForeignKey(Chain, related_name='coins', related_query_name='coin')
+    rpc_port = models.PositiveIntegerField(default=1)
 
     def __str__(self):
         return self.code

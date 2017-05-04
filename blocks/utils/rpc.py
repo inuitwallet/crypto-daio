@@ -3,7 +3,8 @@ import time
 import logging
 import requests
 import json
-from django.conf import settings
+
+from django.db import connection
 from requests import ReadTimeout
 from requests.exceptions import ConnectionError
 
@@ -11,7 +12,7 @@ from requests.exceptions import ConnectionError
 logger = logging.getLogger(__name__)
 
 
-def send_rpc(data, retry=0):
+def send_rpc(data, rpc_port=None, retry=0):
     """
     Return a connection to the nud  rpc  interface
     """
@@ -21,12 +22,14 @@ def send_rpc(data, retry=0):
 
     data['jsonrpc'] = "2.0"
     data['id'] = int(time.time())
+    chain = connection.tenant
     rpc_url = 'http://{}:{}@{}:{}'.format(
-        settings.RPC_USER,
-        settings.RPC_PASSWORD,
-        settings.RPC_HOST,
-        settings.RPC_PORT,
+        chain.rpc_user,
+        chain.rpc_password,
+        chain.rpc_host,
+        chain.rpc_port if not rpc_port else rpc_port,
     )
+    logger.info(rpc_url)
     headers = {'Content-Type': 'applications/json'}
     try:
         response = requests.post(
