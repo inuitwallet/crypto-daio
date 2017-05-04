@@ -60,8 +60,7 @@ def repair_block(message):
                 {
                     'chain': connection.tenant.schema_name,
                     'block_hash': block_hash
-                },
-                immediately=True
+                }
             )
             return
 
@@ -168,8 +167,7 @@ def fix_merkle_root(block):
                     'tx_id': tx,
                     'tx_index': transactions.index(tx),
                     'block_hash': block.hash
-                },
-                immediately=True
+                }
             )
 
         # remove additional transactions

@@ -1,7 +1,7 @@
 import logging
 
 from channels import Channel
-from django.db import IntegrityError
+from django.db import IntegrityError, connection
 from tenant_schemas.utils import schema_context
 
 from blocks.models import Transaction, Block
@@ -70,8 +70,10 @@ def parse_transaction(message):
                 )
             )
             Channel('repair_transaction').send(
-                {'tx_id', tx_id},
-                immediately=True
+                {
+                    'chain': connection.tenant.schema_name,
+                    'tx_id': tx_id
+                }
             )
             return
 
@@ -184,8 +186,11 @@ def validate_transactions(message):
         for tx in block.transactions.all():
             if not tx.is_valid:
                 Channel('parse_transaction').send(
-                    {'tx_hash': tx.tx_id, 'block_hash': block.hash},
-                    immediately=True
+                    {
+                        'chain': connection.tenant.schema_name,
+                        'tx_hash': tx.tx_id,
+                        'block_hash': block.hash
+                    }
                 )
             else:
                 logger.info(
