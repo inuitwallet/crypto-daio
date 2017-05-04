@@ -9,7 +9,7 @@ import hmac
 import hashlib
 import ecdsa
 import struct
-from daio_wallet.bip32utils import Base58
+from . import Base58
 
 from hashlib import sha256
 from ecdsa.curves import SECP256k1

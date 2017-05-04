@@ -1,5 +1,5 @@
-from daio_wallet.bip32utils import BIP32Key
-from daio_wallet.mnemonic import Mnemonic
+from .bip32utils import BIP32Key
+from .mnemonic import Mnemonic
 from rest_framework import serializers
 from .models import Wallet
 

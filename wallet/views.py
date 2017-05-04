@@ -1,15 +1,17 @@
 import hashlib
 from decimal import Decimal
-from blocks import pynubitools
-from blocks.models import WatchAddress, TxOutput, TxInput
-from daio_wallet.bip32utils import BIP32Key
-from daio_wallet.mnemonic import Mnemonic
+
 from django.core.exceptions import ObjectDoesNotExist
 from django.http.response import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from .models import Wallet, ClientToken
-from .forms import SendForm, WatchForm, BalanceForm
-from .utils import AddressCheck
+
+from blocks import pynubitools
+from blocks.models import TxOutput, WatchAddress
+
+from .bip32utils import BIP32Key
+from .forms import BalanceForm, SendForm, WatchForm
+from .mnemonic import Mnemonic
+from .models import ClientToken, Wallet
 
 mnemonic = Mnemonic('english')
 BIP32_HARDEN = 0x80000000  # choose from hardened set of child keys

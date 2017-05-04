@@ -1,4 +1,4 @@
-from daio_wallet.utils import AddressCheck
+from .utils import AddressCheck
 from django import forms
 from django.core.exceptions import ValidationError
 
