@@ -1,4 +1,4 @@
-from .block import Block
+from .block import Block, Info
 from .transaction import Transaction, TxInput, TxOutput
 from .address import Address, WatchAddress
 from .votes import CustodianVote, MotionVote, ParkRateVote, FeesVote, ParkRate
@@ -15,4 +15,5 @@ __all__ = [
     'ParkRateVote',
     'FeesVote',
     'ParkRate',
+    'Info',
 ]

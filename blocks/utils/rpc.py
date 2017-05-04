@@ -30,7 +30,6 @@ def send_rpc(data, rpc_port=None, retry=0):
         chain.rpc_host,
         chain.rpc_port if not rpc_port else rpc_port,
     )
-    logger.info(rpc_url)
     headers = {'Content-Type': 'applications/json'}
     try:
         response = requests.post(

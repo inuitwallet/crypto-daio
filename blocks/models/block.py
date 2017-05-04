@@ -343,3 +343,35 @@ class Block(models.Model):
                 if tx.unit == 'B':
                     total_nbt += txout.value
         return total_nbt / 10000
+
+
+class Info(models.Model):
+    unit = models.CharField(
+        max_length=255
+    )
+    max_height = models.BigIntegerField()
+    money_supply = models.DecimalField(
+        max_digits=16,
+        decimal_places=4
+    )
+    total_parked = models.DecimalField(
+        max_digits=16,
+        decimal_places=4,
+        blank=True,
+        null=True
+    )
+    connections = models.BigIntegerField()
+    difficulty = models.DecimalField(
+        max_digits=16,
+        decimal_places=10
+    )
+    pay_tx_fee = models.DecimalField(
+        max_digits=16,
+        decimal_places=4
+    )
+    time_added = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    def __str__(self):
+        return '{}:{}@{}'.format(self.unit, self.max_height, self.time_added)
