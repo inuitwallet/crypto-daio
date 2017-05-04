@@ -8,7 +8,7 @@ from channels import Channel
 from django.db import models, IntegrityError, connection
 from django.utils.timezone import make_aware
 
-from blocks.models import Address, Block
+from blocks.models import Block
 from blocks.utils.numbers import get_var_int_bytes, convert_to_satoshis
 
 logger = logging.getLogger(__name__)
@@ -185,23 +185,11 @@ class Transaction(models.Model):
 
             # save each address in the output
             for addr in script_pubkey.get('addresses', []):
-                address, created = Address.objects.get_or_create(
-                    address=addr,
-                )
-                if created:
-                    address.save()
-                tx_output.addresses.add(address)
-                tx_output.save()
-                # TODO check the address against the list of addresses to watch
-                # check_thread = Thread(
-                #     target=self.check_watch_addresses,
-                #     kwargs={
-                #         'address': address,
-                #         'value': tx_output.value,
-                #     }
-                # )
-                # check_thread.daemon = True
-                # check_thread.start()
+                Channel('parse_address').send({
+                    'chain': connection.tenant.schema_name,
+                    'address': addr,
+                    'tx_output': tx_output.pk
+                })
         self.save()
         logger.info('saved tx {}'.format(self))
         return
@@ -307,7 +295,7 @@ class TxOutput(models.Model):
         default='',
     )
     addresses = models.ManyToManyField(
-        Address,
+        'Address',
         related_name='output_addresses',
         related_query_name='tx_output',
     )

@@ -5,6 +5,7 @@ from blocks.consumers.transaction import (
     repair_transaction,
     validate_transactions,
 )
+from blocks.consumers.address import parse_address
 
 channel_routing = [
     # Blocks
@@ -15,4 +16,7 @@ channel_routing = [
     route('parse_transaction', parse_transaction),
     route('repair_transaction', repair_transaction),
     route('validate_transactions', validate_transactions),
+
+    # Addresses
+    route('parse_address', parse_address)
 ]

@@ -6,24 +6,7 @@ class BlockAdmin(admin.ModelAdmin):
     list_display = ('height', 'hash', 'time')
     search_fields = ('height', 'hash')
     ordering = ('-height',)
-
-    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-        this_block = Block.objects.get(id=request.path.split('/')[4])
-        if db_field.name == 'previous_block':
-            if this_block.previous_block:
-                kwargs["queryset"] = Block.objects.filter(id=this_block.previous_block.id)
-            else:
-                kwargs["queryset"] = Block.objects.none()
-        if db_field.name == 'next_block':
-            if this_block.next_block:
-                kwargs["queryset"] = Block.objects.filter(id=this_block.next_block.id)
-            else:
-                kwargs["queryset"] = Block.objects.none()
-        return super(BlockAdmin, self).formfield_for_foreignkey(
-            db_field,
-            request,
-            **kwargs
-        )
+    raw_id_fields = ('previous_block', 'next_block')
 
 admin.site.register(Block, BlockAdmin)
 
@@ -31,16 +14,7 @@ admin.site.register(Block, BlockAdmin)
 class TransactionAdmin(admin.ModelAdmin):
     list_display = ('tx_id', 'block')
     search_fields = ('tx_id',)
-
-    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-        if db_field.name == 'block':
-            tx = Transaction.objects.get(id=request.path.split('/')[4])
-            kwargs["queryset"] = Block.objects.filter(id=tx.block.id)
-        return super(TransactionAdmin, self).formfield_for_foreignkey(
-            db_field,
-            request,
-            **kwargs
-        )
+    raw_id_fields = ('block',)
 
 admin.site.register(Transaction, TransactionAdmin)
 
@@ -48,19 +22,7 @@ admin.site.register(Transaction, TransactionAdmin)
 class TxInputAdmin(admin.ModelAdmin):
     list_display = ('transaction', 'previous_output')
     search_fields = ('transaction', 'previous_output')
-
-    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-        if db_field.name == 'transaction':
-            tx_input = TxInput.objects.get(id=request.path.split('/')[4])
-            kwargs["queryset"] = Transaction.objects.filter(id=tx_input.transaction.id)
-        if db_field.name == 'output_transaction':
-            tx_input = TxInput.objects.get(id=request.path.split('/')[4])
-            kwargs["queryset"] = Transaction.objects.filter(id=tx_input.output_transaction.id)
-        return super(TxInputAdmin, self).formfield_for_foreignkey(
-            db_field,
-            request,
-            **kwargs
-        )
+    raw_id_fields = ('transaction',)
 
 admin.site.register(TxInput, TxInputAdmin)
 
@@ -68,26 +30,7 @@ admin.site.register(TxInput, TxInputAdmin)
 class TxOutputAdmin(admin.ModelAdmin):
     list_display = ('transaction', 'index', 'value')
     search_fields = ('transaction',)
-
-    def formfield_for_foreignkey(self, db_field, request=None, **kwargs):
-        if db_field.name == 'transaction':
-            tx_output = TxOutput.objects.get(id=request.path.split('/')[4])
-            kwargs["queryset"] = Transaction.objects.filter(id=tx_output.transaction.id)
-        return super(TxOutputAdmin, self).formfield_for_foreignkey(
-            db_field,
-            request,
-            **kwargs
-        )
-
-    def formfield_for_manytomany(self, db_field, request, **kwargs):
-        if db_field.name == "addresses":
-            tx_output = TxOutput.objects.get(id=request.path.split('/')[4])
-            kwargs["queryset"] = Address.objects.filter(tx_output=tx_output)
-        return super(TxOutputAdmin, self).formfield_for_manytomany(
-            db_field,
-            request,
-            **kwargs
-        )
+    raw_id_fields = ('transaction', 'addresses')
 
 admin.site.register(TxOutput, TxOutputAdmin)
 

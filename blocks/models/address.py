@@ -1,5 +1,9 @@
 import logging
+from decimal import Decimal
+
 from django.db import models
+
+from blocks.models import TxOutput
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +16,7 @@ class Address(models.Model):
     )
 
     def __str__(self):
-        return str(self.address)
+        return self.address
 
     @property
     def class_type(self):

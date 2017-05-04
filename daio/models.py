@@ -10,7 +10,7 @@ class Chain(TenantMixin):
     )
     rcp_user = models.CharField(max_length=255)
     rpc_password = models.CharField(max_length=255)
-    rpc_host = models.GenericIPAddressField(blank=True, null=True)
+    rpc_host = models.GenericIPAddressField(default='192.168.0.1')
     rpc_port = models.PositiveIntegerField()
 
     def __str__(self):
