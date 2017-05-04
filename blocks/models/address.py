@@ -8,6 +8,7 @@ class Address(models.Model):
     address = models.CharField(
         max_length=610,
         unique=True,
+        db_index=True,
     )
 
     def __str__(self):

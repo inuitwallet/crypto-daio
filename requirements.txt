@@ -6,6 +6,7 @@ django
 django-redis
 django-redisboard
 djangorestframework
+django-tenant-schemas
 ecdsa
 pbkdf2
 psycopg2

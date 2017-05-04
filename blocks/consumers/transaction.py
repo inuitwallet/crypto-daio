@@ -18,9 +18,9 @@ def parse_transaction(message):
     
     :param message: asgi valid message containing:
         tx_id (required) string - tx_id of transaction rto process
-        block_hash (optional) string - hash of block that transaction belongs to.
+        block_hash (required) string - hash of block that transaction belongs to.
                                        if not passed an rpc call is made to get it.
-        tx_index (optional) string - index of transaction in relation to block.
+        tx_index (required) string - index of transaction in relation to block.
                                      if not passed an rpc call is made to get it.
                                      
     :return: boolean

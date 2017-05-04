@@ -21,13 +21,16 @@ class Transaction(models.Model):
     """
     tx_id = models.CharField(
         max_length=610,
-        unique=True
+        unique=True,
+        db_index=True,
     )
     block = models.ForeignKey(
         Block,
+        blank=True,
+        null=True,
         related_name='transactions',
         related_query_name='transaction',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
     )
     index = models.BigIntegerField()
     version = models.IntegerField(
@@ -115,10 +118,6 @@ class Transaction(models.Model):
                         tx_id=tx_id
                     )
 
-                    previous_output, _ = TxOutput.objects.get_or_create(
-                        transaction=previous_transaction,
-                        index=vin.get('vout'),
-                    )
                     if created:
                         logger.error(
                             'tx {} not found for previous output to {}'.format(
@@ -127,6 +126,11 @@ class Transaction(models.Model):
                             )
                         )
                         Channel('repair_transaction').send({'tx_id': tx_id})
+
+                    previous_output, _ = TxOutput.objects.get_or_create(
+                        transaction=previous_transaction,
+                        index=vin.get('vout'),
+                    )
 
                     tx_input.previous_output = previous_output
 

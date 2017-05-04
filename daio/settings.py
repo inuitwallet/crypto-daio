@@ -30,22 +30,38 @@ ALLOWED_HOSTS = []
 
 # Application definition
 
-INSTALLED_APPS = [
+SHARED_APPS = [
+    'tenant_schemas',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sites',
+    'daio',
+]
+
+TENANT_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
-    'django.contrib.messages',
+    'django.contrib.sites',
     'django.contrib.staticfiles',
+    'django.contrib.messages',
     'django.contrib.humanize',
-    'daio_wallet.apps.DaioWalletConfig',
-    'blocks.apps.BlocksConfig',
+    'blocks',
+    'wallet',
     'rest_framework',
     'channels',
     'redisboard',
 ]
 
+INSTALLED_APPS = SHARED_APPS + list(app for app in TENANT_APPS if app not in SHARED_APPS)
+
+TENANT_MODEL = 'daio.Chain'
+
+DEFAULT_FILE_STORAGE = 'tenant_schemas.storage.TenantFileSystemStorage'
+
 MIDDLEWARE_CLASSES = [
+    'tenant_schemas.middleware.TenantMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -82,11 +98,14 @@ WSGI_APPLICATION = 'daio.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'tenant_schemas.postgresql_backend',
         'CONN_MAX_AGE': 0
     }
 }
 
+DATABASE_ROUTERS = (
+    'tenant_schemas.routers.TenantSyncRouter',
+)
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
@@ -119,6 +138,8 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+SITE_ID = 1
 
 
 # Static files (CSS, JavaScript, Images)

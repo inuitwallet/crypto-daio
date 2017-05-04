@@ -19,6 +19,7 @@ class Block(models.Model):
     hash = models.CharField(
         max_length=610,
         unique=True,
+        db_index=True,
     )
     size = models.BigIntegerField(
         blank=True,
@@ -28,6 +29,7 @@ class Block(models.Model):
         unique=True,
         blank=True,
         null=True,
+        db_index=True,
     )
     version = models.BigIntegerField(
         blank=True,

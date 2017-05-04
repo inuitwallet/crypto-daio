@@ -1,13 +1,12 @@
-from channels import Channel
+
 from django.shortcuts import get_object_or_404, render
 from django.views import View
 
 from django.http import HttpResponse
 from django.http.response import HttpResponseNotFound
-from django.views.generic import ListView, DetailView
+from django.views.generic import ListView
 from django.conf import settings
 
-from blocks.utils.channels import send_to_channel
 from .models import *
 
 

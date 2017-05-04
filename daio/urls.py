@@ -19,7 +19,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    url(r'^daio/', include('daio_wallet.urls')),
+    url(r'^daio/', include('wallet.urls')),
     url(r'^admin/', admin.site.urls),
     url(r'^', include('blocks.urls')),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
