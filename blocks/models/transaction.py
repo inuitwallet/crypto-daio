@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 
 from channels import Channel
-from django.db import models, IntegrityError
+from django.db import models, IntegrityError, connection
 from django.utils.timezone import make_aware
 
 from blocks.models import Address, Block
@@ -65,7 +65,10 @@ class Transaction(models.Model):
         if validate:
             valid, error_message = self.validate()
             if not valid:
-                Channel('repair_transaction').send({'tx_id': self.tx_id})
+                Channel('repair_transaction').send({
+                    'chain': connection.tenant.schema_name,
+                    'tx_id': self.tx_id
+                })
 
     @property
     def class_type(self):
@@ -127,7 +130,10 @@ class Transaction(models.Model):
                                 tx_input
                             )
                         )
-                        Channel('repair_transaction').send({'tx_id': tx_id})
+                        Channel('repair_transaction').send({
+                            'chain': connection.tenant.schema_name,
+                            'tx_id': tx_id
+                        })
 
                     previous_output, _ = TxOutput.objects.get_or_create(
                         transaction=previous_transaction,
@@ -142,7 +148,10 @@ class Transaction(models.Model):
                 logger.error(
                     'issue saving tx_input for {}: {}'.format(self, e)
                 )
-                Channel('repair_transaction').send({'tx_id': tx_id})
+                Channel('repair_transaction').send({
+                    'chain': connection.tenant.schema_name,
+                    'tx_id': tx_id
+                })
                 return
 
             vin_index += 1
