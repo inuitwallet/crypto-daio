@@ -5,7 +5,7 @@ import time
 from datetime import datetime
 
 from channels import Channel
-from django.db import models
+from django.db import models, connection
 from django.utils.timezone import make_aware
 
 
@@ -110,12 +110,18 @@ class Block(models.Model):
     def save(self, *args, **kwargs):
         super(Block, self).save(*args, **kwargs)
         if not self.is_valid:
-            Channel('repair_block').send({'block_hash': self.hash})
+            Channel('repair_block').send({
+                'chain': connection.tenant.schema_name,
+                'block_hash': self.hash
+            })
         else:
             # block is valid. validate the transactions too
             for tx in self.transactions.all():
                 if not tx.is_valid:
-                    Channel('repair_transaction').send({'tx_id': tx.tx_id})
+                    Channel('repair_transaction').send({
+                        'chain': connection.tenant.schema_name,
+                        'tx_id': tx.tx_id
+                    })
 
     @property
     def class_type(self):
@@ -207,11 +213,11 @@ class Block(models.Model):
         tx_index = 0
         for tx_id in rpc_block.get('tx', []):
             Channel('parse_transaction').send({
-                    'tx_id': tx_id,
-                    'block_hash': self.hash,
-                    'tx_index': tx_index
-                }
-            )
+                'chain': connection.tenant.schema_name,
+                'tx_id': tx_id,
+                'block_hash': self.hash,
+                'tx_index': tx_index
+            })
             tx_index += 1
         logger.info('saved block {}'.format(self))
 

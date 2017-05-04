@@ -1,4 +1,5 @@
 from django.core.management import BaseCommand
+from django.db import connection
 
 from django.utils import timezone
 
@@ -37,4 +38,7 @@ class Command(BaseCommand):
             )
         )
         # send the hash to the channel for parsing a block
-        send_to_channel('parse_block', {'block_hash': start_hash})
+        send_to_channel('parse_block', {
+            'chain': connection.tenant.schema_name,
+            'block_hash': start_hash
+        })

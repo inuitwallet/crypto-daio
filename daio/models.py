@@ -4,7 +4,10 @@ from tenant_schemas.models import TenantMixin
 
 class Chain(TenantMixin):
     auto_create_schema = True
-    name = models.CharField(max_length=255)
+    name = models.CharField(
+        max_length=255,
+        unique=True
+    )
 
     def __str__(self):
         return self.name

@@ -176,7 +176,7 @@ LOGGING = {
     },
     'formatters': {
         'dated': {
-            'format': '[%(schema_name)s:%(domain_url)s] %(asctime)s '
+            'format': '[%(schema_name)s] %(asctime)s '
                       '[%(levelname)s] (%(funcName)s) %(message)s',
         },
     },

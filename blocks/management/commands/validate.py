@@ -3,6 +3,7 @@ from asgiref.base_layer import BaseChannelLayer
 
 from django.core.management import BaseCommand
 from django.core.paginator import Paginator
+from django.db import connection
 
 from blocks.models import Block
 from django.utils import timezone
@@ -55,6 +56,7 @@ class Command(BaseCommand):
                 if not tx.is_valid:
                     send_to_channel(
                         'parse_transaction', {
+                            'chain': connection.tenant.schema_name,
                             'tx_hash': tx.tx_id,
                             'block_hash': block.hash,
                             'tx_index': tx.index
@@ -78,6 +80,7 @@ class Command(BaseCommand):
             logger.error('block {} is invalid: {}'.format(block.height, error_message))
             send_to_channel(
                 'repair_block', {
+                    'chain': connection.tenant.schema_name,
                     'block_hash': block.hash,
                     'error_message': error_message,
                 }
