@@ -98,7 +98,8 @@ def repair_transaction(message):
             {
                 'method': 'getrawtransaction',
                 'params': [tx_id, 1]
-            }
+            },
+            chain=message.get('chain')
         )
         if not rpc_tx:
             return

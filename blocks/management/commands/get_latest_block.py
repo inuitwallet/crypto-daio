@@ -6,6 +6,7 @@ from django.utils import timezone
 
 from blocks.utils.rpc import send_rpc
 
+
 logger = logging.getLogger(__name__)
 
 tz = timezone.get_current_timezone()
