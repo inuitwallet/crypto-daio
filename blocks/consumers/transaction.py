@@ -103,6 +103,8 @@ def repair_transaction(message):
         logger.error('no block hash found in rpc_tx')
         return
 
+    logger.info('checking block and tenant')
+
     block, created = Block.objects.get_or_create(hash=block_hash)
     if created:
         # save has triggered validation which will parse the full block with tx

@@ -169,13 +169,20 @@ CHANNEL_LAYERS = {
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
+    'filters': {
+        'tenant_context': {
+            '()': 'tenant_schemas.log.TenantContextFilter'
+        },
+    },
     'formatters': {
         'dated': {
-            'format': '%(asctime)s [%(levelname)s] (%(funcName)s) %(message)s',
+            'format': '[%(schema_name)s:%(domain_url)s] %(asctime)s '
+                      '[%(levelname)s] (%(funcName)s) %(message)s',
         },
     },
     'handlers': {
         'console': {
+            'filters': ['tenant_context'],
             'class': 'logging.StreamHandler',
             'formatter': 'dated',
         },
