@@ -109,82 +109,79 @@ def repair_block(message):
 
 
 def fix_previous_block(block):
-    with schema_context(message.get('chain')):
-        logger.info('fixing previous block')
-        prev_hash = get_block_hash(block.height - 1)
-        if not prev_hash:
-            return
-        prev_block, created = Block.objects.get_or_create(hash=prev_hash)
-        if created:
-            # save will trigger validation on new previous block
-            logger.warning('previous block of {} is new. validating'.format(block))
-            return
-        prev_block.next_block = block
-        prev_block.save()
-        block.previous_block = prev_block
-        block.save()
+    logger.info('fixing previous block')
+    prev_hash = get_block_hash(block.height - 1)
+    if not prev_hash:
+        return
+    prev_block, created = Block.objects.get_or_create(hash=prev_hash)
+    if created:
+        # save will trigger validation on new previous block
+        logger.warning('previous block of {} is new. validating'.format(block))
+        return
+    prev_block.next_block = block
+    prev_block.save()
+    block.previous_block = prev_block
+    block.save()
 
 
 def fix_next_block(block):
-    with schema_context(message.get('chain')):
-        logger.info('fixing next block')
-        next_hash = get_block_hash(block.height + 1)
-        if not next_hash:
-            return
-        next_block, created = Block.objects.get_or_create(hash=next_hash)
-        if created:
-            # save will trigger validation on new previous block
-            logger.warning('next block of {} is new. validating'.format(block))
-            return
-        next_block.previous_block = block
-        next_block.save()
-        block.next_block = next_block
-        block.save()
+    logger.info('fixing next block')
+    next_hash = get_block_hash(block.height + 1)
+    if not next_hash:
+        return
+    next_block, created = Block.objects.get_or_create(hash=next_hash)
+    if created:
+        # save will trigger validation on new previous block
+        logger.warning('next block of {} is new. validating'.format(block))
+        return
+    next_block.previous_block = block
+    next_block.save()
+    block.next_block = next_block
+    block.save()
 
 
 def fix_merkle_root(block):
-    with schema_context(message.get('chain')):
-        logger.info('fixing merkle root on block {}'.format(block))
-        rpc = send_rpc(
+    logger.info('fixing merkle root on block {}'.format(block))
+    rpc = send_rpc(
+        {
+            'method': 'getblock',
+            'params': [block.hash]
+        }
+    )
+
+    if not rpc:
+        return False
+
+    transactions = rpc.get('tx', [])
+    block_tx = block.transactions.all().values_list('tx_id', flat=True)
+
+    # add missing transactions
+    for tx in list(set(transactions) - set(block_tx)):
+        logger.info('adding missing tx {} to {}'.format(tx[:8], block))
+        Channel('parse_transaction').send(
             {
-                'method': 'getblock',
-                'params': [block.hash]
+                'chain': connection.tenant.schema_name,
+                'tx_id': tx,
+                'tx_index': transactions.index(tx),
+                'block_hash': block.hash
             }
         )
 
-        if not rpc:
-            return False
+    # remove additional transactions
+    for tx in block.transactions.all():
+        if tx.tx_id not in transactions:
+            logger.error('tx {} does not belong to block {}'.format(tx, block))
+            tx.delete()
+            continue
 
-        transactions = rpc.get('tx', [])
-        block_tx = block.transactions.all().values_list('tx_id', flat=True)
-
-        # add missing transactions
-        for tx in list(set(transactions) - set(block_tx)):
-            logger.info('adding missing tx {} to {}'.format(tx[:8], block))
-            Channel('parse_transaction').send(
-                {
-                    'chain': connection.tenant.schema_name,
-                    'tx_id': tx,
-                    'tx_index': transactions.index(tx),
-                    'block_hash': block.hash
-                }
+        # fix index
+        rpc_index = transactions.index(tx.tx_id)
+        if tx.index != rpc_index:
+            logger.error(
+                'incorrect index for tx {}: ({})'.format(tx, rpc_index)
             )
+            tx.index = rpc_index
+            tx.save(validate=False)
 
-        # remove additional transactions
-        for tx in block.transactions.all():
-            if tx.tx_id not in transactions:
-                logger.error('tx {} does not belong to block {}'.format(tx, block))
-                tx.delete()
-                continue
-
-            # fix index
-            rpc_index = transactions.index(tx.tx_id)
-            if tx.index != rpc_index:
-                logger.error(
-                    'incorrect index for tx {}: ({})'.format(tx, rpc_index)
-                )
-                tx.index = rpc_index
-                tx.save(validate=False)
-
-        # reinitialise validation
-        block.save()
+    # reinitialise validation
+    block.save()
