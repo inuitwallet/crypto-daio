@@ -8,6 +8,10 @@ class Chain(TenantMixin):
         max_length=255,
         unique=True
     )
+    rcp_user = models.CharField(max_length=255)
+    rpc_password = models.CharField(max_length=255)
+    rpc_host = models.GenericIPAddressField()
+    rpc_port = models.PositiveIntegerField()
 
     def __str__(self):
         return self.name
