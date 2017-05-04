@@ -32,7 +32,9 @@ class Transaction(models.Model):
         related_query_name='transaction',
         on_delete=models.SET_NULL,
     )
-    index = models.BigIntegerField()
+    index = models.BigIntegerField(
+        default=-1
+    )
     version = models.IntegerField(
         blank=True,
         null=True,
