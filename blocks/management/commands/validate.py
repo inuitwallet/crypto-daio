@@ -84,21 +84,21 @@ class Command(BaseCommand):
             )
             return False
 
-    def save_block(self, block):
+    def save_block(self, block, retry=1):
         try:
             block.save()
         except BaseChannelLayer.ChannelFull:
             logger.warning('channel full. sleeping')
-            time.sleep(300)
-            self.save_block(block)
+            time.sleep(60*retry)
+            self.save_block(block, retry+1)
 
-    def save_tx(self, tx):
+    def save_tx(self, tx, retry=1):
         try:
             tx.save()
         except BaseChannelLayer.ChannelFull:
             logger.warning('channel full. sleeping')
-            time.sleep(300)
-            self.save_tx(tx)
+            time.sleep(60*retry)
+            self.save_tx(tx, retry+1)
 
     def handle(self, *args, **options):
         """
@@ -157,11 +157,11 @@ class Command(BaseCommand):
                         len(page_invalid_blocks),
                     )
                 )
-                if len(page_invalid_blocks) > 0:
-                    # sleep to let the channel empty a bit
-                    # maximum of 600 seconds
-                    sleep_time = 30 * len(page_invalid_blocks)
-                    time.sleep(sleep_time if sleep_time <= 600 else 600)
+#                if len(page_invalid_blocks) > 0:
+#                    # sleep to let the channel empty a bit
+#                    # maximum of 600 seconds
+#                    sleep_time = 30 * len(page_invalid_blocks)
+#                    time.sleep(sleep_time if sleep_time <= 600 else 600)
 
                 invalid_blocks += page_invalid_blocks
         except KeyboardInterrupt:
