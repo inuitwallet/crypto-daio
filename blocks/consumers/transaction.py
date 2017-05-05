@@ -159,6 +159,12 @@ def repair_transaction(message):
             logger.info('updated index of {}'.format(tx))
             return
 
+        if error_message == 'no block':
+            tx.block = block
+            tx.save()
+            logger.info('update block on {}'.format(tx))
+            return
+
         tx.parse_rpc_tx(rpc_tx)
 
 
