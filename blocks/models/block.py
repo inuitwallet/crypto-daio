@@ -322,16 +322,13 @@ class Block(models.Model):
         if self.flags == 'proof-of-stake':
             index = 1
 
-        try:
-            tx = self.transactions.get(index=index)
-            tx_output = tx.outputs.get(index=index)
-        except Model.DoesNotExist:
-            return ''
-
-        if tx_output.addresses.all().count() < 1:
-            return ''
-
-        return tx_output.addresses.all()[0]
+        for tx in self.transactions.all():
+            if tx.index == index:
+                for tx_out in tx.outputs.all():
+                    if tx_out.index == index:
+                        if tx_out.addresses.all().count() >= 1:
+                            return tx_out.addresses.all()[0]
+        return ''
 
     @property
     def total_nsr(self):
