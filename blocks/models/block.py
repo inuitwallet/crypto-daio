@@ -9,8 +9,6 @@ from django.db import models, connection
 from django.db.models import Model
 from django.utils.timezone import make_aware
 
-from blocks.models import Transaction, TxOutput
-
 logger = logging.getLogger(__name__)
 
 
@@ -327,9 +325,7 @@ class Block(models.Model):
         try:
             tx = self.transactions.get(index=index)
             tx_output = tx.outputs.get(index=index)
-        except Transaction.DoesNotExist:
-            return ''
-        except TxOutput.DoesNotExist:
+        except Model.DoesNotExist:
             return ''
 
         if tx_output.addresses.all().count() < 1:
