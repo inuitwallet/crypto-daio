@@ -6,6 +6,7 @@ from datetime import datetime
 
 from channels import Channel
 from django.db import models, connection
+from django.db.models import Model
 from django.utils.timezone import make_aware
 
 
@@ -317,17 +318,21 @@ class Block(models.Model):
 
     @property
     def solved_by(self):
+        index = 0
+
+        if self.flags == 'proof-of-stake':
+            index = 1
+
         try:
-            if self.flags == 'proof-of-stake':
-                tx = self.transactions.get(index=1)
-                tx_output = tx.outputs.get(index=1)
-                return tx_output.addresses.all()[0]
-            else:
-                tx = self.transactions.get(index=0)
-                tx_output = tx.outputs.get(index=0)
-                return tx_output.addresses.all()[0]
-        except:
+            tx = self.transactions.get(index=index)
+            tx_output = tx.outputs.get(index=index)
+        except Model.DoesNotExist:
             return ''
+
+        if tx_output.addresses.all().count() < 1:
+            return ''
+
+        return tx_output.addresses.all()[0]
 
     @property
     def total_nsr(self):
