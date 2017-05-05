@@ -62,13 +62,14 @@ def parse_transaction(message):
             )
         except IntegrityError:
             logger.error(
-                'transaction with id {} already exists. '
+                'transaction with id {} already exists at. '
                 '{} index {} was passed'.format(
                     tx_id[:8],
                     block,
                     tx_index,
                 )
             )
+            # repair as tx obviously has different block and index
             Channel('repair_transaction').send(
                 {
                     'chain': connection.tenant.schema_name,
@@ -107,8 +108,6 @@ def repair_transaction(message):
         if not block_hash:
             logger.error('no block hash found in rpc_tx')
             return
-
-        logger.info('checking block and tenant')
 
         block, created = Block.objects.get_or_create(hash=block_hash)
         if created:

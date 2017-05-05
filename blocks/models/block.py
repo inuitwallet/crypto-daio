@@ -6,7 +6,6 @@ from datetime import datetime
 
 from channels import Channel
 from django.db import models, connection
-from django.db.models import Model
 from django.utils.timezone import make_aware
 
 logger = logging.getLogger(__name__)
@@ -234,13 +233,13 @@ class Block(models.Model):
         # first check the header attributes
 
         for attribute in [
+            'self.height',
             'self.version',
             'self.previous_block',
             'self.merkle_root',
             'self.time',
             'self.bits',
             'self.nonce',
-            'self.height',
         ]:
             if eval(attribute) is None:
                 return False, 'missing attribute: {}'.format(attribute)

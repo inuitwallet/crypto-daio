@@ -131,7 +131,7 @@ class Transaction(models.Model):
                             )
                         )
                         Channel('repair_transaction').send({
-                            'chain': connection.tenant.schema_name,
+                            'chain': connection.schema_name,
                             'tx_id': tx_id
                         })
 
@@ -149,7 +149,7 @@ class Transaction(models.Model):
                     'issue saving tx_input for {}: {}'.format(self, e)
                 )
                 Channel('repair_transaction').send({
-                    'chain': connection.tenant.schema_name,
+                    'chain': connection.schema_name,
                     'tx_id': tx_id
                 })
                 return
@@ -186,7 +186,7 @@ class Transaction(models.Model):
             # save each address in the output
             for addr in script_pubkey.get('addresses', []):
                 Channel('parse_address').send({
-                    'chain': connection.tenant.schema_name,
+                    'chain': connection.schema_name,
                     'address': addr,
                     'tx_output': tx_output.pk
                 })
@@ -265,7 +265,7 @@ class Transaction(models.Model):
             return False, 'incorrect hash'
 
         if not self.block:
-            return False, 'no attached block'
+            return False, 'no block'
 
         return True, 'Transaction is valid'
 
