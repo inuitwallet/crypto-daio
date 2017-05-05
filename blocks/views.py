@@ -1,4 +1,4 @@
-
+from django.db import connection
 from django.shortcuts import get_object_or_404, render
 from django.views import View
 
@@ -30,10 +30,16 @@ class Notify(View):
 
 class LatestBlocksList(ListView):
     model = Block
+    paginate_by = 15
     template_name = 'explorer/latest_blocks_list.html'
 
     def get_queryset(self):
-        return Block.objects.exclude(height=None).order_by('-height')[:15]
+        return Block.objects.exclude(height=None).order_by('-height')
+
+    def get_context_data(self, **kwargs):
+        context = super(LatestBlocksList, self).get_context_data(**kwargs)
+        context['chain'] = connection.schema_name
+        return context
 
 
 class BlockDetailView(View):

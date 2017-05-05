@@ -264,6 +264,9 @@ class Transaction(models.Model):
         if str.encode(self.tx_id) != calc_hash:
             return False, 'incorrect hash'
 
+        if not self.block:
+            return False, 'no attached block'
+
         return True, 'Transaction is valid'
 
 

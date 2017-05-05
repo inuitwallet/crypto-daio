@@ -317,14 +317,17 @@ class Block(models.Model):
 
     @property
     def solved_by(self):
-        if self.flags == 'proof-of-stake':
-            tx = self.transactions.get(index=1)
-            tx_output = tx.outputs.get(index=1)
-            return tx_output.addresses.all()[0]
-        else:
-            tx = self.transactions.get(index=0)
-            tx_output = tx.outputs.get(index=0)
-            return tx_output.addresses.all()[0]
+        try:
+            if self.flags == 'proof-of-stake':
+                tx = self.transactions.get(index=1)
+                tx_output = tx.outputs.get(index=1)
+                return tx_output.addresses.all()[0]
+            else:
+                tx = self.transactions.get(index=0)
+                tx_output = tx.outputs.get(index=0)
+                return tx_output.addresses.all()[0]
+        except:
+            return ''
 
     @property
     def total_nsr(self):
