@@ -61,6 +61,7 @@ class Transaction(models.Model):
 
     def save(self, *args, **kwargs):
         validate = kwargs.pop('validate', True)
+
         super(Transaction, self).save(*args, **kwargs)
         if validate:
             valid, error_message = self.validate()

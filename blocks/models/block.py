@@ -5,8 +5,10 @@ import time
 from datetime import datetime
 
 from channels import Channel
-from django.db import models, connection
+from django.db import models, connection, IntegrityError
 from django.utils.timezone import make_aware
+
+from blocks.utils.rpc import send_rpc, get_block_hash
 
 logger = logging.getLogger(__name__)
 
@@ -107,7 +109,33 @@ class Block(models.Model):
         return '{}:{}'.format(self.height, self.hash[:8])
 
     def save(self, *args, **kwargs):
-        super(Block, self).save(*args, **kwargs)
+        try:
+            super(Block, self).save(*args, **kwargs)
+        except IntegrityError as e:
+            logger.error('error saving {}: {}'.format(self, e))
+            # unique height or hash is compromised
+            if self.height is None:
+                Channel('repair_block').send({
+                    'chain': connection.tenant.schema_name,
+                    'block_hash': self.hash
+                })
+                return
+            # get the correct hash from the rpc
+            rpc_hash = get_block_hash(self.height)
+            # if we are saving a block at height x with a non-matching hash, return
+            if self.hash != rpc_hash:
+                return
+            # get the existing blocks at height x
+            block = Block.objects.get(height=self.height)
+            if block.hash != rpc_hash:
+                block.delete()
+                self.save()
+                Channel('repair_block').send({
+                    'chain': connection.tenant.schema_name,
+                    'block_hash': self.hash
+                })
+                return
+
         if not self.is_valid:
             Channel('repair_block').send({
                 'chain': connection.tenant.schema_name,
