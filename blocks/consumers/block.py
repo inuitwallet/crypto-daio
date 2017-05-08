@@ -151,7 +151,7 @@ def fix_merkle_root(block):
         tx = Transaction.objects.get_or_create(
             tx_id=tx_id
         )
-        logger.debug('block = {}'.format(block))
+        logger.info('block = {}'.format(block))
         tx.block = block
         tx.save()
 
