@@ -33,7 +33,7 @@ class TxOutputAdmin(admin.ModelAdmin):
     list_display = ('index', 'transaction', 'index', 'value')
     search_fields = ('transaction',)
     ordering = ('transaction',)
-    raw_id_fields = ('transaction', 'addresses')
+    raw_id_fields = ('transaction', 'address')
 
 admin.site.register(TxOutput, TxOutputAdmin)
 

@@ -9,7 +9,9 @@ from django.db import models, IntegrityError, connection
 from django.utils.timezone import make_aware
 
 from blocks.models import Block
+from blocks.pynubitools import bin_to_b58check
 from blocks.utils.numbers import get_var_int_bytes, convert_to_satoshis
+from daio.models import Coin
 
 logger = logging.getLogger(__name__)
 
@@ -264,8 +266,26 @@ class Transaction(models.Model):
         if str.encode(self.tx_id) != calc_hash:
             return False, 'incorrect hash'
 
+        # check for a block
         if not self.block:
             return False, 'no block'
+
+        # check the outputs for addresses
+        for tx_out in self.outputs.all():
+            if tx_out.script_pub_key_type == 'pubkey':
+                if len(tx_out.script_pub_key_hex) < 50:
+                    logger.error('output hex is too short: {}'.format(tx_out))
+                # get the unit magic byte
+                try:
+                    coin = Coin.objects.get(unit=self.unit)
+                except Coin.DoesNotExist:
+                    return False, 'coin for {} does not exist'.format(self.unit)
+                # get the output bytes
+                tx_out_bytes = codecs.decode(tx_out.script_pub_key_hex, 'hex')
+                # calculate the address from the hex
+                hex_address = bin_to_b58check(tx_out_bytes[3:23], coin.magic_byte)
+                if hex_address != tx_out.address:
+                    return False, 'output has wrong address'
 
         return True, 'Transaction is valid'
 
@@ -297,10 +317,12 @@ class TxOutput(models.Model):
         blank=True,
         default='',
     )
-    addresses = models.ManyToManyField(
+    address = models.ForeignKey(
         'Address',
         related_name='output_addresses',
-        related_query_name='tx_output',
+        related_query_name='output_address',
+        blank=True,
+        null=True,
     )
 
     def __str__(self):

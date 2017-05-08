@@ -23,6 +23,7 @@ class Coin(models.Model):
     unit_code = models.CharField(max_length=255)
     chain = models.ForeignKey(Chain, related_name='coins', related_query_name='coin')
     rpc_port = models.PositiveIntegerField(default=1)
+    magic_byte = models.IntegerField()
 
     def __str__(self):
         return self.code
