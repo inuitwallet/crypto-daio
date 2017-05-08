@@ -289,7 +289,7 @@ class Transaction(models.Model):
                     logger.error('output hex is too short: {}'.format(tx_out))
                 # get the unit magic byte
                 try:
-                    coin = Coin.objects.get(unit=self.unit)
+                    coin = Coin.objects.get(unit_code=self.unit)
                 except Coin.DoesNotExist:
                     return False, 'coin for {} does not exist'.format(self.unit)
                 # get the output bytes
