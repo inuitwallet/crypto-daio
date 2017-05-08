@@ -27,7 +27,7 @@ def parse_address(message):
         if created:
             address.save()
 
-        tx_output.addresses.add(address)
+        tx_output.address = address
         tx_output.save()
 
         # TODO check the address against the list of addresses to watch

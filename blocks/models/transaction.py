@@ -8,7 +8,6 @@ from channels import Channel
 from django.db import models, IntegrityError, connection
 from django.utils.timezone import make_aware
 
-from blocks.models import Block
 from blocks.pynubitools import bin_to_b58check
 from blocks.utils.numbers import get_var_int_bytes, convert_to_satoshis
 from daio.models import Coin
@@ -27,7 +26,7 @@ class Transaction(models.Model):
         db_index=True,
     )
     block = models.ForeignKey(
-        Block,
+        'Block',
         blank=True,
         null=True,
         related_name='transactions',

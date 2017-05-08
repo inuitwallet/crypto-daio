@@ -8,6 +8,7 @@ from channels import Channel
 from django.db import models, connection, IntegrityError
 from django.utils.timezone import make_aware
 
+from blocks.models import Transaction
 from blocks.utils.rpc import send_rpc, get_block_hash
 
 logger = logging.getLogger(__name__)
@@ -227,13 +228,10 @@ class Block(models.Model):
         # now we do the transactions
         tx_index = 0
         for tx_id in rpc_block.get('tx', []):
-            Channel('parse_transaction').send({
-                'chain': connection.tenant.schema_name,
-                'tx_id': tx_id,
-                'block_hash': self.hash,
-                'tx_index': tx_index
-            })
-            tx_index += 1
+            tx = Transaction.objects.get_or_create(tx_id=tx_id)
+            tx.block = self
+            tx.index = tx_index
+            tx.save()
         logger.info('saved block {}'.format(self))
 
     @property

@@ -4,7 +4,7 @@ from channels import Channel
 from django.db import connection
 from tenant_schemas.utils import schema_context
 
-from blocks.models import Block
+from blocks.models import Block, Transaction
 from blocks.utils.rpc import send_rpc, get_block_hash
 
 logger = logging.getLogger(__name__)
@@ -146,16 +146,13 @@ def fix_merkle_root(block):
     block_tx = block.transactions.all().values_list('tx_id', flat=True)
 
     # add missing transactions
-    for tx in list(set(transactions) - set(block_tx)):
-        logger.info('adding missing tx {} to {}'.format(tx[:8], block))
-        Channel('parse_transaction').send(
-            {
-                'chain': connection.tenant.schema_name,
-                'tx_id': tx,
-                'tx_index': transactions.index(tx),
-                'block_hash': block.hash
-            }
+    for tx_id in list(set(transactions) - set(block_tx)):
+        logger.info('adding missing tx {} to {}'.format(tx_id[:8], block))
+        tx = Transaction.objects.get_or_create(
+            tx_id=tx_id
         )
+        tx.block = block
+        tx.save()
 
     # remove additional transactions
     for tx in block.transactions.all():
@@ -171,7 +168,7 @@ def fix_merkle_root(block):
                 'incorrect index for tx {}: ({})'.format(tx, rpc_index)
             )
             tx.index = rpc_index
-            tx.save(validate=False)
+            tx.save()
 
     # reinitialise validation
     block.save()

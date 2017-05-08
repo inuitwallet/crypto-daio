@@ -1,5 +1,5 @@
-from .block import Block, Info
 from .transaction import Transaction, TxInput, TxOutput
+from .block import Block, Info
 from .address import Address, WatchAddress
 from .votes import CustodianVote, MotionVote, ParkRateVote, FeesVote, ParkRate
 
