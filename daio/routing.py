@@ -1,10 +1,6 @@
 from channels import route
 from blocks.consumers.block import parse_block, repair_block
-from blocks.consumers.transaction import (
-    parse_transaction,
-    repair_transaction,
-    validate_transactions,
-)
+from blocks.consumers.transaction import repair_transaction
 from blocks.consumers.address import parse_address
 
 channel_routing = [
@@ -13,9 +9,7 @@ channel_routing = [
     route('repair_block', repair_block),
 
     # Transactions
-    route('parse_transaction', parse_transaction),
     route('repair_transaction', repair_transaction),
-    route('validate_transactions', validate_transactions),
 
     # Addresses
     route('parse_address', parse_address)
