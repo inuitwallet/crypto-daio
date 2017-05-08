@@ -4,6 +4,7 @@ import logging
 import time
 from datetime import datetime
 
+from asgiref.base_layer import BaseChannelLayer
 from channels import Channel
 from django.db import models, connection, IntegrityError
 from django.utils.timezone import make_aware
@@ -113,18 +114,24 @@ class Block(models.Model):
         super(Block, self).save(*args, **kwargs)
 
         if not self.is_valid:
-            Channel('repair_block').send({
-                'chain': connection.tenant.schema_name,
-                'block_hash': self.hash
-            })
+            try:
+                Channel('repair_block').send({
+                    'chain': connection.tenant.schema_name,
+                    'block_hash': self.hash
+                })
+            except BaseChannelLayer.ChannelFull:
+                logger.error('CHANNEL FULL!')
         else:
             # block is valid. validate the transactions too
             for tx in self.transactions.all():
                 if not tx.is_valid:
-                    Channel('repair_transaction').send({
-                        'chain': connection.tenant.schema_name,
-                        'tx_id': tx.tx_id
-                    })
+                    try:
+                        Channel('repair_transaction').send({
+                            'chain': connection.tenant.schema_name,
+                            'tx_id': tx.tx_id
+                        })
+                    except BaseChannelLayer.ChannelFull:
+                        logger.error('CHANNEL FULL!')
 
     @property
     def class_type(self):

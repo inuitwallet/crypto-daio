@@ -1,5 +1,6 @@
 import logging
 
+from asgiref.base_layer import BaseChannelLayer
 from channels import Channel
 from django.db import connection
 from tenant_schemas.utils import schema_context
@@ -56,12 +57,15 @@ def repair_block(message):
             block = Block.objects.get(hash=block_hash)
         except Block.DoesNotExist:
             logger.error('no block found with hash {}'.format(block_hash))
-            Channel('parse_block').send(
-                {
-                    'chain': connection.tenant.schema_name,
-                    'block_hash': block_hash
-                }
-            )
+            try:
+                Channel('parse_block').send(
+                    {
+                        'chain': connection.tenant.schema_name,
+                        'block_hash': block_hash
+                    }
+                )
+            except BaseChannelLayer.ChannelFull:
+                logger.error('CHANNEL FULL!')
             return
 
         valid, error_message = block.validate()

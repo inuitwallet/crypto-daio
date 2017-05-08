@@ -4,6 +4,7 @@ import logging
 import time
 from datetime import datetime
 
+from asgiref.base_layer import BaseChannelLayer
 from channels import Channel
 from django.db import models, IntegrityError, connection
 from django.utils.timezone import make_aware
@@ -66,10 +67,13 @@ class Transaction(models.Model):
         super(Transaction, self).save(*args, **kwargs)
         if validate:
             if not self.is_valid:
-                Channel('repair_transaction').send({
-                    'chain': connection.tenant.schema_name,
-                    'tx_id': self.tx_id
-                })
+                try:
+                    Channel('repair_transaction').send({
+                        'chain': connection.tenant.schema_name,
+                        'tx_id': self.tx_id
+                    })
+                except BaseChannelLayer.ChannelFull:
+                    logger.error('CHANNEL FULL!')
 
     @property
     def class_type(self):
@@ -131,10 +135,13 @@ class Transaction(models.Model):
                                 tx_input
                             )
                         )
-                        Channel('repair_transaction').send({
-                            'chain': connection.schema_name,
-                            'tx_id': tx_id
-                        })
+                        try:
+                            Channel('repair_transaction').send({
+                                'chain': connection.schema_name,
+                                'tx_id': tx_id
+                            })
+                        except BaseChannelLayer.ChannelFull:
+                            logger.error('CHANNEL FULL!')
 
                     previous_output, _ = TxOutput.objects.get_or_create(
                         transaction=previous_transaction,
@@ -149,10 +156,13 @@ class Transaction(models.Model):
                 logger.error(
                     'issue saving tx_input for {}: {}'.format(self, e)
                 )
-                Channel('repair_transaction').send({
-                    'chain': connection.schema_name,
-                    'tx_id': tx_id
-                })
+                try:
+                    Channel('repair_transaction').send({
+                        'chain': connection.schema_name,
+                        'tx_id': tx_id
+                    })
+                except BaseChannelLayer.ChannelFull:
+                    logger.error('CHANNEL FULL!')
                 return
 
             vin_index += 1
@@ -186,11 +196,14 @@ class Transaction(models.Model):
 
             # save each address in the output
             for addr in script_pubkey.get('addresses', []):
-                Channel('parse_address').send({
-                    'chain': connection.schema_name,
-                    'address': addr,
-                    'tx_output': tx_output.pk
-                })
+                try:
+                    Channel('parse_address').send({
+                        'chain': connection.schema_name,
+                        'address': addr,
+                        'tx_output': tx_output.pk
+                    })
+                except BaseChannelLayer.ChannelFull:
+                    logger.error('CHANNEL FULL!')
         self.save()
         logger.info('saved tx {}'.format(self))
         return

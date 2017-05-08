@@ -1,5 +1,6 @@
 import logging
 
+from asgiref.base_layer import BaseChannelLayer
 from channels import Channel
 from django.core.management import BaseCommand
 from django.db import connection
@@ -52,8 +53,11 @@ class Command(BaseCommand):
 
         if max_height > current_highest_block:
             logger.info('a higher block exists at height {}. parsing'.format(max_height))
-            Channel('parse_block').send({
-                'chain': connection.tenant.schema_name,
-                'block_hash': get_block_hash(max_height)
-            })
+            try:
+                Channel('parse_block').send({
+                    'chain': connection.tenant.schema_name,
+                    'block_hash': get_block_hash(max_height)
+                })
+            except BaseChannelLayer.ChannelFull:
+                logger.error('CHANNEL FULL!')
 
