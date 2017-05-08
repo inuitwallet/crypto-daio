@@ -64,8 +64,7 @@ class Transaction(models.Model):
 
         super(Transaction, self).save(*args, **kwargs)
         if validate:
-            valid, error_message = self.validate()
-            if not valid:
+            if not self.is_valid:
                 Channel('repair_transaction').send({
                     'chain': connection.tenant.schema_name,
                     'tx_id': self.tx_id

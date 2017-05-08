@@ -109,32 +109,7 @@ class Block(models.Model):
         return '{}:{}'.format(self.height, self.hash[:8])
 
     def save(self, *args, **kwargs):
-        try:
-            super(Block, self).save(*args, **kwargs)
-        except IntegrityError as e:
-            logger.error('error saving {}: {}'.format(self, e))
-            # unique height or hash is compromised
-            if self.height is None:
-                Channel('repair_block').send({
-                    'chain': connection.tenant.schema_name,
-                    'block_hash': self.hash
-                })
-                return
-            # get the correct hash from the rpc
-            rpc_hash = get_block_hash(self.height)
-            # if we are saving a block at height x with a non-matching hash, return
-            if self.hash != rpc_hash:
-                return
-            # get the existing blocks at height x
-            block = Block.objects.get(height=self.height)
-            if block.hash != rpc_hash:
-                block.delete()
-                self.save()
-                Channel('repair_block').send({
-                    'chain': connection.tenant.schema_name,
-                    'block_hash': self.hash
-                })
-                return
+        super(Block, self).save(*args, **kwargs)
 
         if not self.is_valid:
             Channel('repair_block').send({
@@ -185,14 +160,27 @@ class Block(models.Model):
         }
 
     def parse_rpc_block(self, rpc_block):
-        if not self.height:
-            self.height = rpc_block.get('height', None)
+        proposed_height = rpc_block.get('height')
+        # check there's no existing block at this height with a different hash
+        existing_blocks = Block.objects.filter(height=proposed_height)
+        for existing_block in existing_blocks:
+            if existing_block.hash != rpc_block.get('hash'):
+                logger.warning(
+                    'found existing block at height {} with different hash: '
+                    'deleting {}'.format(
+                        proposed_height,
+                        existing_block
+                    )
+                )
+                existing_block.delete()
+
+        self.height = proposed_height
         logger.info('parsing block {}'.format(self))
         # parse the json and apply to the block we just fetched
-        self.size = rpc_block.get('size', None)
-        self.version = rpc_block.get('version', None)
-        self.merkle_root = rpc_block.get('merkleroot', None)
-        block_time = rpc_block.get('time', None)
+        self.size = rpc_block.get('size')
+        self.version = rpc_block.get('version')
+        self.merkle_root = rpc_block.get('merkleroot')
+        block_time = rpc_block.get('time')
         if block_time:
             self.time = make_aware(
                 datetime.strptime(
@@ -200,19 +188,19 @@ class Block(models.Model):
                     '%Y-%m-%d %H:%M:%S %Z'
                 )
             )
-        self.nonce = rpc_block.get('nonce', None)
-        self.bits = rpc_block.get('bits', None)
-        self.difficulty = rpc_block.get('difficulty', None)
-        self.mint = rpc_block.get('mint', None)
-        self.flags = rpc_block.get('flags', None)
-        self.proof_hash = rpc_block.get('proofhash', None)
-        self.entropy_bit = rpc_block.get('entropybit', None)
-        self.modifier = rpc_block.get('modifier', None)
-        self.modifier_checksum = rpc_block.get('modifierchecksum', None)
-        self.coinage_destroyed = rpc_block.get('coinagedestroyed', None)
+        self.nonce = rpc_block.get('nonce')
+        self.bits = rpc_block.get('bits')
+        self.difficulty = rpc_block.get('difficulty')
+        self.mint = rpc_block.get('mint')
+        self.flags = rpc_block.get('flags')
+        self.proof_hash = rpc_block.get('proofhash')
+        self.entropy_bit = rpc_block.get('entropybit')
+        self.modifier = rpc_block.get('modifier')
+        self.modifier_checksum = rpc_block.get('modifierchecksum')
+        self.coinage_destroyed = rpc_block.get('coinagedestroyed')
 
         # using the previousblockhash, get the block object to connect
-        prev_block_hash = rpc_block.get('previousblockhash', None)
+        prev_block_hash = rpc_block.get('previousblockhash')
         # genesis block has no previous block
         if prev_block_hash:
             previous_block, created = Block.objects.get_or_create(
@@ -223,7 +211,7 @@ class Block(models.Model):
             self.previous_block.save()
 
         # do the same for the next block
-        next_block_hash = rpc_block.get('nextblockhash', None)
+        next_block_hash = rpc_block.get('nextblockhash')
         if next_block_hash:
             # top block has no next block yet
             next_block, created = Block.objects.get_or_create(

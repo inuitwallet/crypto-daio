@@ -35,7 +35,7 @@ def parse_block(message):
         if not created:
             logger.info('existing block {} found'.format(block))
             # save prompts for block validation
-            block.save()
+        block.save()
 
 
 def repair_block(message):
@@ -70,16 +70,6 @@ def repair_block(message):
             return
 
         logger.info('repairing block {}: {}'.format(block, error_message))
-
-        # Possible error messages are:
-        # missing attribute: <attribute_name>
-        # no previous block hash
-        # incorrect hash
-        # incorrect previous height
-        # previous block does not point to this block
-        # incorrect next height
-        # next block does not lead on from this block
-        # merkle root incorrect
 
         # merkle root error means missing, extra or duplicate transactions
         if error_message == 'merkle root incorrect':

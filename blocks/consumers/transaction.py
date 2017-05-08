@@ -54,33 +54,33 @@ def parse_transaction(message):
             logger.warning('block {} is new when parsing tx {}'.format(block, tx_id))
             return False
 
-        try:
-            tx, created = Transaction.objects.get_or_create(
-                tx_id=tx_id,
-                block=block,
-                index=tx_index
-            )
-        except IntegrityError:
-            logger.error(
-                'transaction with id {} already exists at. '
-                '{} index {} was passed'.format(
-                    tx_id[:8],
-                    block,
-                    tx_index,
-                )
-            )
-            # repair as tx obviously has different block and index
-            Channel('repair_transaction').send(
-                {
-                    'chain': connection.tenant.schema_name,
-                    'tx_id': tx_id
-                }
-            )
-            return
+        tx, created = Transaction.objects.get_or_create(
+            tx_id=tx_id,
+        )
 
         if not created:
-            logger.info('existing tx {} found at {}'.format(tx, block))
-            tx.save()
+            logger.warning('existing tx {} found at {}'.format(tx, block))
+            if tx.index != tx_index or tx.block != block:
+                logger.error('index or block not a match. repairing {}'.format(tx))
+                Channel('repair_transaction').send(
+                    {
+                        'chain': connection.schema_name,
+                        'tx_id': tx_id
+                    }
+                )
+                return
+            logger.info('index and block match. leaving {}'.format(tx))
+            return
+
+        # tx is new
+        logger.info('new tx created {}. repairing'.format(tx))
+        Channel('repair_transaction').send(
+            {
+                'chain': connection.schema_name,
+                'tx_id': tx_id
+            }
+        )
+        return
 
 
 def repair_transaction(message):
