@@ -228,7 +228,7 @@ class Block(models.Model):
         # now we do the transactions
         tx_index = 0
         for tx_id in rpc_block.get('tx', []):
-            tx = Transaction.objects.get_or_create(tx_id=tx_id)
+            tx, _ = Transaction.objects.get_or_create(tx_id=tx_id)
             tx.block = self
             tx.index = tx_index
             tx.save()

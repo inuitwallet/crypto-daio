@@ -148,7 +148,7 @@ def fix_merkle_root(block):
     # add missing transactions
     for tx_id in list(set(transactions) - set(block_tx)):
         logger.info('adding missing tx {} to {}'.format(tx_id[:8], block))
-        tx = Transaction.objects.get_or_create(
+        tx, _ = Transaction.objects.get_or_create(
             tx_id=tx_id
         )
         logger.info('block = {}'.format(block))
