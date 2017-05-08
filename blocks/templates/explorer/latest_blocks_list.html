@@ -1,9 +1,13 @@
 {% extends 'explorer/base.html' %}
 
-{% load humanize %}
+{% load humanize static %}
 
 {% block title %}
 Nu Block Explorer
+{% endblock %}
+
+{% block head %}
+<script type="text/javascript" src='{% static 'explorer/js/latest_blocks_list.js' %}'></script>
 {% endblock %}
 
 {% block content %}
@@ -14,11 +18,9 @@ Nu Block Explorer
                     <tr>
                         <td>Height</td>
                         <td>Age</td>
-                        <td>Size</td>
                         <td>Num. Trans</td>
                         <td>Solved by</td>
-                        <td>Total Transacted (NSR)</td>
-                        <td>Total Transacted (NBT)</td>
+                        <td>Totals Transacted</td>
                         <td>Block SDD</td>
                         <td>Valid</td>
                     </tr>
@@ -28,11 +30,15 @@ Nu Block Explorer
                         <tr>
                             <td><a href="{% url 'block' block.height %}">{{ block.height }}</a></td>
                             <td>{{ block.time|timesince }}</td>
-                            <td>{{ block.size }}</td>
                             <td>{{ block.transactions.all.count }}</td>
                             <td>{{ block.solved_by.address }}</td>
-                            <td>{{ block.total_nsr|floatformat:4|intcomma }}</td>
-                            <td>{{ block.total_nbt|floatformat:4|intcomma }}</td>
+                            <td>
+                                {% for coin_total in block.totals_transacted %}
+                                    <div class="row">
+                                        {{ coin_total.value }} {{ coin_total.name }}
+                                    </div>
+                                {% endfor %}
+                            </td>
                             <td>{{ block.coinage_destroyed }}</td>
                             <td>{{ block.is_valid }}</td>
                         </tr>

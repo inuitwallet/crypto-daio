@@ -7,6 +7,7 @@ from django.http.response import HttpResponseNotFound
 from django.views.generic import ListView
 from django.conf import settings
 
+from daio.models import Chain
 from .models import *
 
 

@@ -24,6 +24,12 @@ class Coin(models.Model):
     chain = models.ForeignKey(Chain, related_name='coins', related_query_name='coin')
     rpc_port = models.PositiveIntegerField(default=1)
     magic_byte = models.IntegerField()
+    index = models.IntegerField(
+        default=0
+    )
 
     def __str__(self):
         return self.code
+
+    class Meta:
+        ordering = ['index']

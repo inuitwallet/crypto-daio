@@ -11,6 +11,7 @@ from django.utils.timezone import make_aware
 
 from blocks.models import Transaction
 from blocks.utils.rpc import send_rpc, get_block_hash
+from daio.models import Chain
 
 logger = logging.getLogger(__name__)
 
@@ -346,27 +347,21 @@ class Block(models.Model):
             if tx.index == index:
                 for tx_out in tx.outputs.all():
                     if tx_out.index == index:
-                        if tx_out.addresses.all().count() >= 1:
-                            return tx_out.addresses.all()[0]
+                        return tx_out.address
         return ''
 
     @property
-    def total_nsr(self):
-        total_nsr = 0
-        for tx in self.transactions.all():
-            for txout in tx.outputs.all():
-                if tx.unit == 'S':
-                    total_nsr += txout.value
-        return total_nsr / 10000
-
-    @property
-    def total_nbt(self):
-        total_nbt = 0
-        for tx in self.transactions.all():
-            for txout in tx.outputs.all():
-                if tx.unit == 'B':
-                    total_nbt += txout.value
-        return total_nbt / 10000
+    def totals_transacted(self):
+        chain = Chain.objects.get(schema_name=connection.schema_name)
+        totals = []
+        for coin in chain.coins.all():
+            coin_total = {'name': coin.code, 'value': 0}
+            for tx in self.transactions.all():
+                for tx_out in tx.outputs.all():
+                    if tx.unit == coin.unit_code:
+                        coin_total['value'] += tx_out.value / 10000
+            totals.append(coin_total)
+        return totals
 
 
 class Info(models.Model):
