@@ -297,7 +297,7 @@ class Transaction(models.Model):
                 # calculate the address from the hex
                 hex_address = bin_to_b58check(tx_out_bytes[3:23], coin.magic_byte)
                 if hex_address != tx_out.address:
-                    return False, 'output has wrong address'
+                    return False, 'output has wrong address: {} != {}'.format(tx_out.address, hex_address)
 
         return True, 'Transaction is valid'
 
