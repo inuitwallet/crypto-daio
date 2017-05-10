@@ -31,7 +31,7 @@ def repair_transaction(message):
 
         block_hash = rpc_tx.get('blockhash')
         if not block_hash:
-            logger.error('no block hash found in rpc_tx')
+            logger.error('no block hash found in rpc_tx: {}'.format(rpc_tx))
             return
 
         block, created = Block.objects.get_or_create(hash=block_hash)

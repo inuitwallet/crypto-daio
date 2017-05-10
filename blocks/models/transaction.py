@@ -100,7 +100,7 @@ class Transaction(models.Model):
             script_sig = vin.get('scriptSig', {})
             try:
                 tx_input = TxInput.objects.get(
-                    transaction=self,
+                    transaction__id=self.id,
                     index=vin_index,
                 )
                 tx_input.sequence = vin.get('sequence', '')
