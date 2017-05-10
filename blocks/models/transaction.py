@@ -172,7 +172,7 @@ class Transaction(models.Model):
             script_pubkey = vout.get('scriptPubKey', {})
             try:
                 tx_output = TxOutput.objects.get(
-                    transaction=self,
+                    transaction__id=self.id,
                     index=vout.get('n'),
                 )
                 tx_output.value = convert_to_satoshis(vout.get('value', 0.0))

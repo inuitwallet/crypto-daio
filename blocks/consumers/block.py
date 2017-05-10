@@ -108,14 +108,10 @@ def fix_previous_block(block):
     if not prev_hash:
         return
     prev_block, created = Block.objects.get_or_create(hash=prev_hash)
-    if created:
-        # save will trigger validation on new previous block
-        logger.warning('previous block of {} is new. validating'.format(block))
-        return
     prev_block.next_block = block
     prev_block.save()
     block.previous_block = prev_block
-    block.save()
+    block.save()[]
 
 
 def fix_next_block(block):
@@ -124,10 +120,6 @@ def fix_next_block(block):
     if not next_hash:
         return
     next_block, created = Block.objects.get_or_create(hash=next_hash)
-    if created:
-        # save will trigger validation on new previous block
-        logger.warning('next block of {} is new. validating'.format(block))
-        return
     next_block.previous_block = block
     next_block.save()
     block.next_block = next_block
