@@ -285,19 +285,8 @@ class Transaction(models.Model):
         # check the outputs for addresses
         for tx_out in self.outputs.all():
             if tx_out.script_pub_key_type == 'pubkey':
-                if len(tx_out.script_pub_key_hex) < 50:
-                    logger.error('output hex is too short: {}'.format(tx_out))
-                # get the unit magic byte
-                try:
-                    coin = Coin.objects.get(unit_code=self.unit)
-                except Coin.DoesNotExist:
-                    return False, 'coin for {} does not exist'.format(self.unit)
-                # get the output bytes
-                tx_out_bytes = codecs.decode(tx_out.script_pub_key_hex, 'hex')
-                # calculate the address from the hex
-                hex_address = bin_to_b58check(tx_out_bytes[3:23], coin.magic_byte)
-                if hex_address != tx_out.address:
-                    return False, 'output has wrong address: {} != {}'.format(tx_out.address, hex_address)
+                if not tx_out.address:
+                    return False, 'output {} has no address'.format(tx_out)
 
         return True, 'Transaction is valid'
 
