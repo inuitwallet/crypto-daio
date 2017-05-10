@@ -111,7 +111,7 @@ def fix_previous_block(block):
     prev_block.next_block = block
     prev_block.save()
     block.previous_block = prev_block
-    block.save()[]
+    block.save()
 
 
 def fix_next_block(block):
