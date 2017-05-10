@@ -34,9 +34,11 @@ Nu Block Explorer
                             <td>{{ block.solved_by.address }}</td>
                             <td>
                                 {% for coin_total in block.totals_transacted %}
-                                    <div class="row">
-                                        {{ coin_total.value }} {{ coin_total.name }}
-                                    </div>
+                                    {% if coin_total.value > 0 %}
+                                        <div class="row">
+                                            {{ coin_total.value }} {{ coin_total.name }}
+                                        </div>
+                                    {% endif %}
                                 {% endfor %}
                             </td>
                             <td>{{ block.coinage_destroyed }}</td>
