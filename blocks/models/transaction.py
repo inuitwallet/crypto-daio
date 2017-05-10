@@ -100,7 +100,7 @@ class Transaction(models.Model):
             script_sig = vin.get('scriptSig', {})
             try:
                 tx_input = TxInput.objects.get(
-                    transaction__id=self.id,
+                    transaction_id=self.id,
                     index=vin_index,
                 )
                 tx_input.sequence = vin.get('sequence', '')
@@ -172,7 +172,7 @@ class Transaction(models.Model):
             script_pubkey = vout.get('scriptPubKey', {})
             try:
                 tx_output = TxOutput.objects.get(
-                    transaction__id=self.id,
+                    transaction_id=self.id,
                     index=vout.get('n'),
                 )
                 tx_output.value = convert_to_satoshis(vout.get('value', 0.0))
