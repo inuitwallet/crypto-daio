@@ -50,8 +50,7 @@ Nu Block Explorer
                                                 None
                                             {% endif %}
                                         {% else %}
-                                            {% for output_address in tx_output.addresses.all %}
-                                                {{ output_address.address }}
+                                            {{ output_address.address }}
                                             {% endfor %}
                                         {% endif %}
                                         {{ tx_output.display_value|floatformat:4|intcomma }}

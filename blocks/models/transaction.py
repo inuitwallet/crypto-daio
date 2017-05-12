@@ -284,7 +284,7 @@ class Transaction(models.Model):
 
         # check the outputs for addresses
         for tx_out in self.outputs.all():
-            if tx_out.script_pub_key_type == 'pubkey':
+            if tx_out.script_pub_key_type in ['pubkey', 'pubkeyhash']:
                 if not tx_out.address:
                     return False, 'output {} has no address'.format(tx_out)
 
