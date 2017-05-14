@@ -163,6 +163,7 @@ class Command(BaseCommand):
                         logger.warning(
                             '{} is still invalid: {}'.format(block_tx, message)
                         )
+                        block_tx.save()
 
                 # check the block is valid
                 valid, message = block.validate()
@@ -170,3 +171,4 @@ class Command(BaseCommand):
                     logger.warning(
                         '{} is still invalid: {}'.format(block, message)
                     )
+                    block.save()
