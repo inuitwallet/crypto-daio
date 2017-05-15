@@ -5,7 +5,7 @@ from django.core.management import BaseCommand
 from django.core.paginator import Paginator
 from django.db import connection
 
-from blocks.models import Block, Address
+from blocks.models import Block, Address, Transaction, TxOutput
 from django.utils import timezone
 
 import logging
@@ -140,9 +140,21 @@ class Command(BaseCommand):
                 )
 
                 for tx in rpc_block.get('tx', []):
-                    block_tx = block.transactions.get(tx_id=tx.get('txid'))
+                    try:
+                        block_tx = block.transactions.get(tx_id=tx.get('txid'))
+                    except Transaction.DoesNotExist:
+                        logger.warning(
+                            'transaction not found {}'.format(tx.get('txid')[:8])
+                        )
+                        block.save()
+                        continue
                     for tout in tx.get('vout', []):
-                        block_tx_out = block_tx.outputs.get(index=tout.get('n'))
+                        try:
+                            block_tx_out = block_tx.outputs.get(index=tout.get('n'))
+                        except TxOutput.DoesNotExist:
+                            logger.warning('output not found: {}'.format(tout.get('n')))
+                            tx.save()
+                            continue
                         script = tout.get('scriptPubKey')
                         if not script:
                             continue
