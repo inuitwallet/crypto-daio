@@ -127,6 +127,7 @@ class Command(BaseCommand):
         paginator = Paginator(blocks, 1000)
 
         for page_num in paginator.page_range:
+            logger.info('parsing page {}'.format(page_num))
             for block in paginator.page(page_num):
                 if block.height == 0:
                     continue
