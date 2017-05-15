@@ -154,7 +154,7 @@ class Command(BaseCommand):
                             block_tx_out = block_tx.outputs.get(index=tout.get('n'))
                         except TxOutput.DoesNotExist:
                             logger.warning('output not found: {}'.format(tout.get('n')))
-                            tx.save()
+                            block_tx.save()
                             continue
                         script = tout.get('scriptPubKey')
                         if not script:
