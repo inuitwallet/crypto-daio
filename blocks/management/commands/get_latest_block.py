@@ -67,6 +67,7 @@ class Command(BaseCommand):
                 {
                     'text': json.dumps(
                         {
+                            'message_type': 'new_block',
                             'block_html': render_to_string(
                                 'explorer/fragments/block.html',
                                 {

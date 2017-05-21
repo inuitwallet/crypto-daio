@@ -1,5 +1,6 @@
 <tr>
     <td class="height"><a href="{% url 'block' block.height %}">{{ block.height }}</a></td>
+    <td>{{ block.hash|slice:":8" }}</td>
     <td>{{ block.time|timesince }}</td>
     <td>{{ block.transactions.all.count }}</td>
     <td>{{ block.coinage_destroyed }}</td>
