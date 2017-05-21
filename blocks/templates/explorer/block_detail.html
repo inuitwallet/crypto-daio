@@ -43,16 +43,7 @@ Nu Block Explorer
                             <div class="col-md-5 col-md-offset-1 outputs">
                                 {% for tx_output in tx.outputs.all %}
                                     <div class="tx-output">
-                                        {% if tx_output.addresses.all.count == 0 %}
-                                            {% if tx_output.script_pub_key_type %}
-                                                {{ tx_output.script_pub_key_type }}
-                                            {% else %}
-                                                None
-                                            {% endif %}
-                                        {% else %}
-                                            {{ output_address.address }}
-                                            {% endfor %}
-                                        {% endif %}
+                                        {{ tx_output.address.address }}
                                         {{ tx_output.display_value|floatformat:4|intcomma }}
                                     </div>
                                 {% endfor %}

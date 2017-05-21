@@ -63,7 +63,6 @@ class Command(BaseCommand):
             )
             block, _ = Block.objects.get_or_create(hash=rpc_hash)
 
-        for block in Block.objects.all().order_by('-height')[:15]:
             Group('latest_blocks_list').send(
                 {
                     'text': json.dumps(
