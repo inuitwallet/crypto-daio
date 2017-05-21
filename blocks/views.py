@@ -35,7 +35,7 @@ class LatestBlocksList(ListView):
     template_name = 'explorer/latest_blocks_list.html'
 
     def get_queryset(self):
-        return Block.objects.exclude(height=None).order_by('-height')
+        return Block.objects.exclude(height=None).order_by('-height').filter(height__lte=100)
 
     def get_context_data(self, **kwargs):
         context = super(LatestBlocksList, self).get_context_data(**kwargs)

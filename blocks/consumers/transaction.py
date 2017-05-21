@@ -2,7 +2,7 @@ import logging
 
 from tenant_schemas.utils import schema_context
 
-from blocks.models import Transaction, Block
+from blocks.models import Transaction, Block, Address, TxOutput
 from blocks.utils.rpc import send_rpc
 
 logger = logging.getLogger(__name__)
@@ -89,5 +89,27 @@ def repair_transaction(message):
             tx.save()
             logger.info('update block on {}'.format(tx))
             return
+
+        if 'has no address' in error_message:
+            for tout in rpc_tx.get('vout', []):
+                try:
+                    tx_out = tx.outputs.get(index=tout.get('n'))
+                except TxOutput.DoesNotExist:
+                    logger.warning('output not found: {}'.format(tout.get('n')))
+                    rpc_tx.save()
+                    return
+                script = tout.get('scriptPubKey')
+                if not script:
+                    return
+                addresses = script.get('addresses')
+                if not addresses:
+                    return
+                address = addresses[0]
+                address_object, _ = Address.objects.get_or_create(address=address)
+                if tx_out.address == address_object:
+                    return
+                tx_out.address = address_object
+                tx_out.save()
+                logger.info('added {} to {}'.format(address, tx_out))
 
         tx.parse_rpc_tx(rpc_tx)

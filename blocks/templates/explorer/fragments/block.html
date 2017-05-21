@@ -1,0 +1,7 @@
+<tr>
+    <td class="height"><a href="{% url 'block' block.height %}">{{ block.height }}</a></td>
+    <td>{{ block.time|timesince }}</td>
+    <td>{{ block.transactions.all.count }}</td>
+    <td>{{ block.coinage_destroyed }}</td>
+    <td>{{ block.is_valid }}</td>
+</tr>

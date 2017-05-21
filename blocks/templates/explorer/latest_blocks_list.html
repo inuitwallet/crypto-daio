@@ -6,47 +6,29 @@
 Nu Block Explorer
 {% endblock %}
 
-{% block head %}
-<script type="text/javascript" src='{% static 'explorer/js/latest_blocks_list.js' %}'></script>
-{% endblock %}
-
 {% block content %}
     <div class="row">
         <div class="col-md-10 col-md-offset-1">
-            <table class="table">
+            <table id="latest-blocks-table" class="table">
                 <thead>
                     <tr>
                         <td>Height</td>
                         <td>Age</td>
                         <td>Num. Trans</td>
-                        <td>Solved by</td>
-                        <td>Totals Transacted</td>
                         <td>Block SDD</td>
                         <td>Valid</td>
                     </tr>
                 </thead>
                 <tbody>
                     {% for block in object_list %}
-                        <tr>
-                            <td><a href="{% url 'block' block.height %}">{{ block.height }}</a></td>
-                            <td>{{ block.time|timesince }}</td>
-                            <td>{{ block.transactions.all.count }}</td>
-                            <td>{{ block.solved_by.address }}</td>
-                            <td>
-                                {% for coin_total in block.totals_transacted %}
-                                    {% if coin_total.value > 0 %}
-                                        <div class="row">
-                                            {{ coin_total.value }} {{ coin_total.name }}
-                                        </div>
-                                    {% endif %}
-                                {% endfor %}
-                            </td>
-                            <td>{{ block.coinage_destroyed }}</td>
-                            <td>{{ block.is_valid }}</td>
-                        </tr>
+                        {% include 'explorer/fragments/block.html' %}
                     {% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
+{% endblock %}
+
+{% block afterbody %}
+    <script type="text/javascript" src='{% static 'explorer/js/latest_blocks_list.js' %}'></script>
 {% endblock %}

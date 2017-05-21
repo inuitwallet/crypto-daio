@@ -1,10 +1,12 @@
+import json
 import logging
 
 from asgiref.base_layer import BaseChannelLayer
-from channels import Channel
+from channels import Channel, Group
 from django.core.management import BaseCommand
 from django.db import connection
 from django.db.models import Max
+from django.template.loader import render_to_string
 from django.utils import timezone
 
 from blocks.models import Info, Block
@@ -51,13 +53,32 @@ class Command(BaseCommand):
             'height__max'
         )
 
-        if max_height > current_highest_block:
-            logger.info('a higher block exists at height {}. parsing'.format(max_height))
-            try:
-                Channel('parse_block').send({
-                    'chain': connection.tenant.schema_name,
-                    'block_hash': get_block_hash(max_height)
-                })
-            except BaseChannelLayer.ChannelFull:
-                logger.error('CHANNEL FULL!')
+        while max_height > current_highest_block:
+            current_highest_block += 1
+            rpc_hash = send_rpc(
+                {
+                    'method': 'getblockhash',
+                    'params': [current_highest_block]
+                }
+            )
+            block, _ = Block.objects.get_or_create(hash=rpc_hash)
+
+        for block in Block.objects.all().order_by('-height')[:15]:
+            Group('latest_blocks_list').send(
+                {
+                    'text': json.dumps(
+                        {
+                            'block_html': render_to_string(
+                                'explorer/fragments/block.html',
+                                {
+                                    'block': block
+                                }
+                            )
+                        }
+                    )
+                }
+            )
+
+
+
 

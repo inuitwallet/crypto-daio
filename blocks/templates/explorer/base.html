@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="{% static 'explorer/css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'explorer/css/bootstrap-theme.min.css' %}">
     <link rel="stylesheet" href="{% static 'explorer/css/main.css' %}" />
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
     <script type="text/javascript" src='{% static "channels/js/websocketbridge.js" %}'></script>
     {% block head %}
     {% endblock %}
@@ -47,4 +48,6 @@
         {% endblock %}
     </div>
 </body>
+{% block afterbody %}
+{% endblock %}
 </html>
