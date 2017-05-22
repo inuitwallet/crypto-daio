@@ -9,6 +9,12 @@ def ws_connect(message):
             'accept': True
         })
 
+    if '/block/' in message['path']:
+        Group('update_info').add(message.reply_channel)
+        message.reply_channel.send({
+            'accept': True
+        })
+
 
 def ws_disconnect(message):
     Group('latest_blocks_list').discard(message.reply_channel)
