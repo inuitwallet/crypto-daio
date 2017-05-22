@@ -9,7 +9,6 @@ from channels import Channel
 from django.db import models, IntegrityError, connection
 from django.utils.timezone import make_aware
 
-from blocks.pynubitools import bin_to_b58check
 from blocks.utils.numbers import get_var_int_bytes, convert_to_satoshis
 from daio.models import Coin
 
@@ -260,9 +259,16 @@ class Transaction(models.Model):
                         tx_input.sequence.to_bytes(4, 'little')
                     )
                 else:  # custodial grant
+                    try:
+                        coin = Coin.objects.get(unit=self.unit)
+                    except Coin.DoesNotExist:
+                        logger.error(
+                            'coin matching unit {} does not exist'.format(self.unit)
+                        )
+                        return
                     tx_input_bytes = (
                         codecs.decode('0' * 64, 'hex')[::-1] +
-                        codecs.decode('fffffffe', 'hex')[::-1] +
+                        codecs.decode(coin.vout_n_value, 'hex')[::-1] +
                         get_var_int_bytes(len(codecs.decode(tx_input.coin_base, 'hex'))) +
                         codecs.decode(tx_input.coin_base, 'hex') +
                         tx_input.sequence.to_bytes(4, 'little')

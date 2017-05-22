@@ -24,6 +24,7 @@ class Coin(models.Model):
     chain = models.ForeignKey(Chain, related_name='coins', related_query_name='coin')
     rpc_port = models.PositiveIntegerField(default=1)
     magic_byte = models.IntegerField()
+    vout_n_value = models.CharField(max_length=255, default='ffffffff')
     index = models.IntegerField(
         default=0
     )
