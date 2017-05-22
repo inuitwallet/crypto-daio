@@ -12,39 +12,67 @@ Nu Block Explorer
             <h3>Block {{ object.height }} - {{ object.hash }}</h3>
         </div>
     </div>
+    <div class="row">
+        <div class="col-md-4 text-left">
+            <a href="{% url 'block' object.previous_block.height %}">Previous Block</a>
+        </div>
+        <div class="col-md-4 text-center">
+            <a href="{% url 'block' object.height %}">Refresh this Block</a>
+        </div>
+        <div class="col-md-4 text-right">
+            <a href="{% url 'block' object.next_block.height %}">Next Block</a>
+        </div>
+    </div>
     <div class="row transactions">
         <div class="col-md-10 col-md-offset-1">
             {% for tx in object.transactions.all %}
                 <div class="row transaction">
                     <div class="col-md-12">
-                        <div class="row tx-header">
+                        {% with valid=tx.is_valid %}
+                        <div class="row tx-header {% if not valid %}invalid{% endif %}">
                             <div class="col-md-6 tx-id">
                                 {{ tx.tx_id }}
+                                {% if not valid %}
+                                    <form method="post">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="tx_pk" value="{{ tx.pk }}" />
+                                        <button type="submit">Validate</button>
+                                    </form>
+                                {% endif %}
                             </div>
                             <div class="col-md-6 text-right tx-time">
                                 {{ tx.time }}
                             </div>
                         </div>
+                        {% endwith %}
                         <div class="row tx-body">
                             <div class="col-md-5 col-md-offset-1 inputs">
                                 {% for tx_input in tx.inputs.all %}
                                     <div class="tx-input">
-                                        {% if tx_input.coin_base %}
-                                            CoinBase
-                                        {% else %}
-                                            {% for input_address in tx_input.previous_output.addresses.all %}
-                                                {{ input_address.address }}
-                                            {% endfor %}
+                                        {% if tx_input.previous_input %}
+                                            {{ tx_input.previous_output.address.address }}
                                             {{ tx_input.previous_output.display_value|floatformat:4|intcomma }}
+                                        {% elif tx_input.coin_base %}
+                                            CoinBase {{ tx_input.coin_base }}
+                                        {% else %}
+                                            Grant Reward
                                         {% endif %}
                                     </div>
                                 {% endfor %}
                             </div>
-                            <div class="col-md-5 col-md-offset-1 outputs">
+                            <div class="col-md-5 col-md-offset-1 outputs word-wrap">
                                 {% for tx_output in tx.outputs.all %}
                                     <div class="tx-output">
-                                        {{ tx_output.address.address }}
-                                        {{ tx_output.display_value|floatformat:4|intcomma }}
+                                        {% if tx_output.script_pub_key_type == 'nonstandard' %}
+                                            {% if tx_output.script_pub_key_asm %}
+                                                <span class="output-asm">{{ tx_output.script_pub_key_asm }}</span>
+                                            {% else %}
+                                                <span class="output-non-standard">Non-standard Output</span>
+                                            {% endif %}
+                                        {% else %}
+                                            {{ tx_output.address.address }}
+                                            {{ tx_output.display_value|floatformat:4|intcomma }}
+                                        {% endif %}
                                     </div>
                                 {% endfor %}
                             </div>

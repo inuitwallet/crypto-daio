@@ -1,8 +1,14 @@
+.word-wrap {
+    white-space: normal;
+    word-break: break-all;
+}
+
 .chain-logo {
     margin: auto;
 }
 
 .coin-info {
+    padding: 10px 0 0 0;
 }
 
 .coin-code {
@@ -13,8 +19,38 @@
     display: none;
 }
 
+.previous-block-link {
+    float: left;
+}
+
+.next-block-link {
+    float: right
+}
+
+.transaction {
+    float: none;
+    padding-bottom: 20px;
+}
+
+.tx-header {
+    min-height: 30px;
+    border: 1px solid black;
+}
+
+.invalid {
+    border: darkred 2px solid;
+}
+
 .tx-input, tx-output {
     width: 100%;
+}
+
+.output-asm {
+    font-size: 75%;
+}
+
+.output-non-standard {
+    font-size: 80%;
 }
 
 

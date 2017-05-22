@@ -53,3 +53,23 @@ class BlockDetailView(View):
                 'coins': Chain.objects.get(pk=1).coins.all()
             }
         )
+
+    @staticmethod
+    def post(request, block_height):
+        # validate the given transaction and return the same page
+        if 'tx_pk' in request.POST:
+            # attempt to get the transaction if it exists
+            try:
+                tx = Transaction.objects.get(pk=request.POST['tx_pk'])
+                # save the tx to start validation
+                tx.save()
+            except Transaction.DoesNotExist:
+                pass
+        return render(
+            request,
+            'explorer/block_detail.html',
+            {
+                'object': get_object_or_404(Block, height=block_height),
+                'coins': Chain.objects.get(pk=1).coins.all()
+            }
+        )
