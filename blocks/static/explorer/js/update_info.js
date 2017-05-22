@@ -10,7 +10,15 @@ $(function() {
 
         if (message_type === "update_info") {
             var element = $("#" + data["id"]);
-            element.data(data["value"]);
+            var element_data = $("#" + data["id"] + " span.data");
+            var value = data["value"];
+
+            element_data.text(value);
+            if (value > 0) {
+                element.fadeIn();
+            } else {
+                element.fadeOut();
+            }
         }
     });
 });

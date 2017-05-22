@@ -17,24 +17,22 @@ tz = timezone.get_current_timezone()
 
 class Command(BaseCommand):
 
-    def handle(self, *args, **options):
-        """
-        Get the latest info from the coin daemon and  
-        """
-        block = Block.objects.get(height=145)
-        Group('latest_blocks_list').send(
+    @staticmethod
+    def update_info(info_id, value):
+        Group('update_info').send(
             {
                 'text': json.dumps(
                     {
-                        'message_type': 'update_block',
-                        'index': 3,
-                        'block_html': render_to_string(
-                            'explorer/fragments/block.html',
-                            {
-                                'block': block
-                            }
-                        )
+                        'message_type': 'update_info',
+                        'id': info_id,
+                        'value': value
                     }
                 )
             }
         )
+
+    def handle(self, *args, **options):
+        """
+        Get the latest info from the coin daemon and  
+        """
+        self.update_info('USNBT-fee', 456)

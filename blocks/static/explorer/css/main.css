@@ -9,9 +9,9 @@
 
 }
 
-/*.coin-data {*/
-    /*display: none;*/
-/*}*/
+.coin-data {
+    display: none;
+}
 
 .tx-input, tx-output {
     width: 100%;
