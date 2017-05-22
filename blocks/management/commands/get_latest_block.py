@@ -63,9 +63,9 @@ class Command(BaseCommand):
             )
             block, _ = Block.objects.get_or_create(hash=rpc_hash)
 
-        top_blocks = Block.objects.order_by('-height')[:15]
-
+        top_blocks = Block.objects.all().order_by('-height')[:15]
         index = 0
+
         for block in top_blocks:
             Group('latest_blocks_list').send(
                 {
