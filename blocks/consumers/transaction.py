@@ -1,5 +1,6 @@
 import logging
 
+from channels import Channel
 from tenant_schemas.utils import schema_context
 
 from blocks.models import Transaction, Block, Address, TxOutput
@@ -127,8 +128,11 @@ def repair_transaction(message):
                 if tx_in.previous_output:
                     if not tx_in.previous_output.address:
                         logger.info(
-                            're-validating {}'.format(tx_in.previous_output.transaction)
+                            're-validating {}'.format(tx_in.previous_output)
                         )
-                        tx_in.previous_output.transaction.save()
+                        Channel('repair_transaction').send({
+                            'chain': message.get('chain'),
+                            'tx_id': tx_in.previous_output.transaction.tx_id
+                        })
 
         tx.parse_rpc_tx(rpc_tx)
