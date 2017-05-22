@@ -100,11 +100,15 @@ def repair_transaction(message):
                     continue
                 script = tout.get('scriptPubKey')
                 if not script:
-                    logger.warning('no script found in rpc {}'.format(rpc_tx))
+                    logger.warning(
+                        'no script found in rpc for output {}'.format(tx_out)
+                    )
                     continue
                 addresses = script.get('addresses', [])
                 if not addresses:
-                    logger.warning('no addresses found in rpc {}'.format(rpc_tx))
+                    logger.warning(
+                        'no addresses found in rpc for output {}'.format(tx_out)
+                    )
                     continue
                 address = addresses[0]
                 address_object, _ = Address.objects.get_or_create(address=address)
