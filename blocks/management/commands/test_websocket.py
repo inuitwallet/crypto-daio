@@ -21,19 +21,20 @@ class Command(BaseCommand):
         """
         Get the latest info from the coin daemon and  
         """
-        for block in Block.objects.all().order_by('-height')[:15]:
-            Group('latest_blocks_list').send(
-                {
-                    'text': json.dumps(
-                        {
-                            'block_height': block.height,
-                            'block_html': render_to_string(
-                                'explorer/fragments/block.html',
-                                {
-                                    'block': block
-                                }
-                            )
-                        }
-                    )
-                }
-            )
+        block = Block.objects.get(height=145)
+        Group('latest_blocks_list').send(
+            {
+                'text': json.dumps(
+                    {
+                        'message_type': 'update_block',
+                        'index': 3,
+                        'block_html': render_to_string(
+                            'explorer/fragments/block.html',
+                            {
+                                'block': block
+                            }
+                        )
+                    }
+                )
+            }
+        )

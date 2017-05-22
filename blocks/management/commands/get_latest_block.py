@@ -65,14 +65,14 @@ class Command(BaseCommand):
 
         top_blocks = Block.objects.order_by('-height')[:15]
 
+        index = 0
         for block in top_blocks:
-
-
             Group('latest_blocks_list').send(
                 {
                     'text': json.dumps(
                         {
-                            'message_type': 'new_block',
+                            'message_type': 'update_block',
+                            'index': index,
                             'block_html': render_to_string(
                                 'explorer/fragments/block.html',
                                 {
@@ -83,6 +83,7 @@ class Command(BaseCommand):
                     )
                 }
             )
+            index += 1
 
 
 

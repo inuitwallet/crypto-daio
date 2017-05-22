@@ -22,7 +22,9 @@ Nu Block Explorer
                 </thead>
                 <tbody>
                     {% for block in object_list %}
-                        {% include 'explorer/fragments/block.html' %}
+                        <tr>
+                            {% include 'explorer/fragments/block.html' %}
+                        </tr>
                     {% endfor %}
                 </tbody>
             </table>

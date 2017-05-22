@@ -17,5 +17,14 @@ $(function() {
             first_row.before(block_html);
         }
 
+        if (message_type === "update_block") {
+            var index = data["index"];
+            var block_html = data["block_html"];
+            var row = latest_blocks_table_rows.eq(index);
+            row.fadeOut('fast', function(){
+                row.html(block_html).fadeIn('fast')
+            });
+        }
+
     });
 });

@@ -1,8 +1,6 @@
-<tr>
-    <td class="hash"><a href="{% url 'block' block.height %}">{{ block.hash|slice:":8" }}</a></td>
-    <td class="height">{{ block.height }}</td>
-    <td class="time">{{ block.time|timesince }}</td>
-    <td class="transactions">{{ block.transactions.all.count }}</td>
-    <td class="coinage">{{ block.coinage_destroyed }}</td>
-    <td class="valid">{{ block.is_valid }}</td>
-</tr>
+<td class="hash"><a href="{% url 'block' block.height %}">{{ block.hash|slice:":8" }}</a></td>
+<td class="height">{{ block.height }}</td>
+<td class="time">{{ block.time|timesince }}</td>
+<td class="transactions">{{ block.transactions.all.count }}</td>
+<td class="coinage">{{ block.coinage_destroyed }}</td>
+<td class="valid">{{ block.is_valid }}</td>
