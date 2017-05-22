@@ -108,8 +108,14 @@ class Transaction(models.Model):
                 tx_input.script_sig_hex = script_sig.get('hex', '')
                 vin_index += 1
             except TxInput.DoesNotExist:
+                logger.warning(
+                    'input for {} @ {} does not exist. creating'.format(
+                        vin_index,
+                        self.id
+                    )
+                )
                 tx_input = TxInput.objects.create(
-                    transaction=self,
+                    transaction_id=self.id,
                     index=vin_index,
                     sequence=vin.get('sequence', ''),
                     coin_base=vin.get('coinbase', ''),
@@ -182,7 +188,7 @@ class Transaction(models.Model):
                 tx_output.script_pub_key_req_sig = script_pubkey.get('reqSigs', '')
             except TxOutput.DoesNotExist:
                 logger.warning(
-                    'output for {} @ {} doesn;t exist. creating'.format(
+                    'output for {} @ {} does not exist. creating'.format(
                         vout.get('n'),
                         self.id
                     )
