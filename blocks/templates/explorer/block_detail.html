@@ -54,8 +54,9 @@ Nu Block Explorer
                                 {% for tx_input in tx.inputs.all %}
                                     <div class="tx-input">
                                         {% if tx_input.previous_output %}
-                                            {{ tx_input.previous_output.address.address }}
-                                            {{ tx_input.previous_output.display_value|floatformat:4|intcomma }}
+                                            <a href="{% url 'block' tx_input.previous_output.transaction.block.height %}">
+                                                {{ tx_input.previous_output.display_value|floatformat:4|intcomma }} > {{ tx_input.previous_output.address.address }}
+                                            </a>
                                         {% elif tx_input.coin_base %}
                                             CoinBase {{ tx_input.coin_base }}
                                         {% else %}
@@ -74,8 +75,7 @@ Nu Block Explorer
                                                 <span class="output-non-standard">Non-standard Output</span>
                                             {% endif %}
                                         {% else %}
-                                            {{ tx_output.address.address }}
-                                            {{ tx_output.display_value|floatformat:4|intcomma }}
+                                            {{ tx_output.address.address }} > {{ tx_output.display_value|floatformat:4|intcomma }}
                                         {% endif %}
                                     </div>
                                 {% endfor %}
