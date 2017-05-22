@@ -1,5 +1,5 @@
-<td class="hash"><a href="{% url 'block' block.height %}">{{ block.hash|slice:":8" }}</a></td>
-<td class="height">{{ block.height }}</td>
+<td class="height"><a href="{% url 'block' block.height %}">{{ block.height }}</a></td>
+<td class="hash">{{ block.hash|slice:":8" }}</td>
 <td class="time">{{ block.time|timesince }}</td>
 <td class="transactions">{{ block.transactions.all.count }}</td>
 <td class="coinage">{{ block.coinage_destroyed }}</td>
