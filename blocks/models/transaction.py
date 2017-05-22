@@ -266,7 +266,7 @@ class Transaction(models.Model):
                     )
                 else:  # custodial grant
                     try:
-                        coin = Coin.objects.get(unit=self.unit)
+                        coin = Coin.objects.get(unit_code=self.unit)
                     except Coin.DoesNotExist:
                         logger.error(
                             'coin matching unit {} does not exist'.format(self.unit)
