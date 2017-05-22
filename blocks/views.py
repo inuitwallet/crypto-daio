@@ -6,6 +6,7 @@ from django.http import HttpResponse
 from django.http.response import HttpResponseNotFound
 from django.views.generic import ListView
 from django.conf import settings
+from django_tenants.utils import schema_context
 
 from daio.models import Chain
 from .models import *
@@ -39,7 +40,7 @@ class LatestBlocksList(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(LatestBlocksList, self).get_context_data(**kwargs)
-        context['chain'] = connection.schema_name
+        context['coins'] = Chain.objects.get(pk=1).coins.all()
         return context
 
 
@@ -49,5 +50,8 @@ class BlockDetailView(View):
         return render(
             request,
             'explorer/block_detail.html',
-            {'object': get_object_or_404(Block, height=block_height)}
+            {
+                'object': get_object_or_404(Block, height=block_height),
+                'coins': Chain.objects.get(pk=1).coins.all()
+            }
         )

@@ -1,5 +1,6 @@
 import json
 import logging
+from time import sleep
 
 from asgiref.base_layer import BaseChannelLayer
 from channels import Channel, Group
@@ -19,12 +20,26 @@ tz = timezone.get_current_timezone()
 
 class Command(BaseCommand):
 
+    @staticmethod
+    def update_info(info_id, value):
+        Group('update_info').send(
+            {
+                'text': json.dumps(
+                    {
+                        'message_type': 'update_info',
+                        'id': info_id,
+                        'value': value
+                    }
+                )
+            }
+        )
+
     def handle(self, *args, **options):
         """
-        Get the latest info from the coin daemon and  
+        Get the latest info from the coin daemon and send the messages to update the UI
         """
         chain = connection.tenant
-        max_height = 0
+        max_height = connections = 0
         for coin in chain.coins.all():
             rpc = send_rpc(
                 {
@@ -33,8 +48,10 @@ class Command(BaseCommand):
                 },
                 rpc_port=coin.rpc_port
             )
+
             if not rpc:
-                return
+                continue
+
             info = Info.objects.create(
                 unit=rpc['walletunit'],
                 max_height=rpc['blocks'],
@@ -44,8 +61,18 @@ class Command(BaseCommand):
                 difficulty=rpc['difficulty'],
                 pay_tx_fee=rpc['paytxfee'],
             )
+
             logger.info('saved {}'.format(info))
+
+            self.update_info('{}-supply'.format(coin.code), info.money_supply)
+            self.update_info('{}-parked'.format(coin.code), info.total_parked)
+            self.update_info('{}-fee'.format(coin.code), info.pay_tx_fee)
+
             max_height = info.max_height
+            connections = info.connections
+
+        self.update_info('connections', connections)
+        self.update_info('height', max_height)
 
         current_highest_block = Block.objects.all().aggregate(
             Max('height')
@@ -62,6 +89,9 @@ class Command(BaseCommand):
                 }
             )
             block, _ = Block.objects.get_or_create(hash=rpc_hash)
+
+        # give a short amount of time for the block to nbe saved
+        sleep(5)
 
         top_blocks = Block.objects.exclude(height=None).order_by('-height')[:15]
         index = 0

@@ -17,37 +17,42 @@
 </head>
 <body>
     <div class="container-fluid">
-        <div class="row navigation">
-            <div class="col-md-1">
+        <div class="row">
+            <div class="col-md-1 text-center info-panel">
                 <a href="{% url 'index' %}">
-                    <img src="{% static 'explorer/images/nu-logo.png' %}" class="img-responsive" />
+                    <img src="{% static 'explorer/images/nu-logo.png' %}" class="img-responsive chain-logo" />
                 </a>
+                <div id="info-connections">Connections: <span class="data">7</span></div>
+                <div id="info-height">Height: <span class="data">7</span></div>
+                {% for coin in coins %}
+                    <div class="coin-info">
+                        <div class="coin-code">{{ coin.code }}</div>
+                        <div id="{{ coin.code }}-supply" class="coin-data">Supply: <span class="data"></span></div>
+                        <div id="{{ coin.code }}-parked" class="coin-data">Parked: <span class="data"></span></div>
+                        <div id="{{ coin.code }}-fee" class="coin-data">Fee: <span class="data"></span></div>
+                    </div>
+                {% endfor %}
             </div>
             <div class="col-md-10">
-                <nav>
-                    <a href="#">Status</a>
-                    <a href="#">Charts</a>
-                    <a href="#">Motions</a>
-                    <a href="#">Grants</a>
-                </nav>
+                <div class="row menu">
+                    <nav>
+                        <a href="#">Charts</a>
+                        <a href="#">Motions</a>
+                        <a href="#">Grants</a>
+                    </nav>
+                    <div class="search">
+                        <input type="text" name="search" />
+                    </div>
+                </div>
+                <div class="row">
+                    {% block content %}
+                    {% endblock %}
+                </div>
             </div>
         </div>
-        <div class="row">
-            <div class="col-md-1 text-center">
-                 <div id="connections">
-                     Connections: {{ chain }} &#183;
-                     Height {{s.statusDetails.blocks}} &#183;
-                     Shares Supply ~{{s.statusDetails.sSupply}} &#183; </font>
-                     Bits Supply ~{{s.statusDetails.bSupply}} &#183; </font>
-                     NSR Price {{getCF.curr.icon}}{{getCF.price}} {{getCF.curr.symbol}} &#183;
-                     NBT Price {{getCF.priceBits}} {{getCF.curr.symbol}}
-                 </div>
-            </div>
-        </div>
-        {% block content %}
-        {% endblock %}
     </div>
 </body>
+<script type="text/javascript" src='{% static 'explorer/js/update_info.js' %}'></script>
 {% block afterbody %}
 {% endblock %}
 </html>

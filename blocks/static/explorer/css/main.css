@@ -1,3 +1,20 @@
+.chain-logo {
+    margin: auto;
+}
+
+.coin-info {
+}
+
+.coin-code {
+
+}
+
+/*.coin-data {*/
+    /*display: none;*/
+/*}*/
+
 .tx-input, tx-output {
     width: 100%;
 }
+
+
