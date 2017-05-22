@@ -107,6 +107,7 @@ class Transaction(models.Model):
                 tx_input.coin_base = vin.get('coinbase', '')
                 tx_input.script_sig_asm = script_sig.get('asm', '')
                 tx_input.script_sig_hex = script_sig.get('hex', '')
+                vin_index += 1
             except TxInput.DoesNotExist:
                 tx_input = TxInput.objects.create(
                     transaction=self,
@@ -116,6 +117,7 @@ class Transaction(models.Model):
                     script_sig_asm=script_sig.get('asm', ''),
                     script_sig_hex=script_sig.get('hex', ''),
                 )
+                vin_index += 1
 
             tx_id = vin.get('txid', None)
 
@@ -164,8 +166,6 @@ class Transaction(models.Model):
                 except BaseChannelLayer.ChannelFull:
                     logger.error('CHANNEL FULL!')
                 return
-
-            vin_index += 1
 
         # save a TXOutput for each output in the Transaction
         for vout in rpc_tx.get('vout', []):
