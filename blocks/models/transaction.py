@@ -245,15 +245,22 @@ class Transaction(models.Model):
                     tx_input.sequence.to_bytes(4, 'little')
                 )
             else:
-                # coinbase or custodial grant
-                tx_input_bytes = (
-                    codecs.decode('0' * 64, 'hex')[::-1] +
-                    codecs.decode('fffffffe', 'hex')[::-1] +
-                    get_var_int_bytes(len(codecs.decode(tx_input.coin_base, 'hex'))) +
-                    codecs.decode(tx_input.coin_base, 'hex') +
-                    tx_input.sequence.to_bytes(4, 'little')
-                )
-
+                if tx_input.coin_base:
+                    tx_input_bytes = (
+                        codecs.decode('0' * 64, 'hex')[::-1] +
+                        codecs.decode('f' * 8, 'hex')[::-1] +
+                        get_var_int_bytes(len(codecs.decode(tx_input.coin_base, 'hex'))) +
+                        codecs.decode(tx_input.coin_base, 'hex') +
+                        tx_input.sequence.to_bytes(4, 'little')
+                    )
+                else:  # custodial grant
+                    tx_input_bytes = (
+                        codecs.decode('0' * 64, 'hex')[::-1] +
+                        codecs.decode('fffffffe', 'hex')[::-1] +
+                        get_var_int_bytes(len(codecs.decode(tx_input.coin_base, 'hex'))) +
+                        codecs.decode(tx_input.coin_base, 'hex') +
+                        tx_input.sequence.to_bytes(4, 'little')
+                    )
             tx_bytes += tx_input_bytes
         # add the number of outputs
         tx_bytes += get_var_int_bytes(self.outputs.all().count())
