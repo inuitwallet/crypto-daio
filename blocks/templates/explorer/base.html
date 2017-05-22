@@ -22,8 +22,8 @@
                 <a href="{% url 'index' %}">
                     <img src="{% static 'explorer/images/nu-logo.png' %}" class="img-responsive chain-logo" />
                 </a>
-                <div id="connections">Connections: <span class="data">7</span></div>
-                <div id="height">Height: <span class="data">7</span></div>
+                <div id="connections">Connections: <span class="data"></span></div>
+                <div id="height">Height: <span class="data"></span></div>
                 {% for coin in coins %}
                     <div class="coin-info">
                         <div class="coin-code">{{ coin.code }}</div>
