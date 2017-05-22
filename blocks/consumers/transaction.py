@@ -96,20 +96,26 @@ def repair_transaction(message):
                     tx_out = tx.outputs.get(index=tout.get('n'))
                 except TxOutput.DoesNotExist:
                     logger.warning('output not found: {}'.format(tout.get('n')))
-                    rpc_tx.save()
-                    return
+                    tx.save()
+                    continue
                 script = tout.get('scriptPubKey')
                 if not script:
-                    return
-                addresses = script.get('addresses')
+                    logger.warning('no script found in rpc {}'.format(rpc_tx))
+                    continue
+                addresses = script.get('addresses', [])
                 if not addresses:
-                    return
+                    logger.warning('no addresses found in rpc {}'.format(rpc_tx))
+                    continue
                 address = addresses[0]
                 address_object, _ = Address.objects.get_or_create(address=address)
                 if tx_out.address == address_object:
-                    return
+                    logger.info(
+                        'output {} already has address {}'.format(tx_out, address)
+                    )
+                    continue
                 tx_out.address = address_object
                 tx_out.save()
                 logger.info('added {} to {}'.format(address, tx_out))
+            return
 
         tx.parse_rpc_tx(rpc_tx)
