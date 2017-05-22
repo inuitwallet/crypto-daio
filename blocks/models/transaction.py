@@ -182,8 +182,14 @@ class Transaction(models.Model):
                 tx_output.script_pub_key_type = script_pubkey.get('type', '')
                 tx_output.script_pub_key_req_sig = script_pubkey.get('reqSigs', '')
             except TxOutput.DoesNotExist:
+                logger.warning(
+                    'output for {} @ {} doesn;t exist. creating'.format(
+                        vout.get('n'),
+                        self.id
+                    )
+                )
                 tx_output = TxOutput.objects.create(
-                    transaction=self,
+                    transaction_id=self.id,
                     index=vout.get('n'),
                     value=convert_to_satoshis(vout.get('value', 0.0)),
                     script_pub_key_asm=script_pubkey.get('asm', ''),
