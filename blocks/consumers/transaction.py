@@ -124,15 +124,21 @@ def repair_transaction(message):
             return
 
         if error_message == 'address missing from previous output':
+            scanned_transactions = []
             for tx_in in tx.inputs.all():
                 if tx_in.previous_output:
                     if not tx_in.previous_output.address:
+                        previous_tx_id = tx_in.previous_output.transaction.tx_id
+                        if previous_tx_id in scanned_transactions:
+                            continue
+
                         logger.info(
-                            're-validating {}'.format(tx_in.previous_output)
+                            're-validating {}'.format(previous_tx_id)
                         )
                         Channel('repair_transaction').send({
                             'chain': message.get('chain'),
                             'tx_id': tx_in.previous_output.transaction.tx_id
                         })
+                        scanned_transactions.append(previous_tx_id)
 
         tx.parse_rpc_tx(rpc_tx)
