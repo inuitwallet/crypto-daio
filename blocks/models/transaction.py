@@ -248,7 +248,7 @@ class Transaction(models.Model):
                 # coinbase or custodial grant
                 tx_input_bytes = (
                     codecs.decode('0' * 64, 'hex')[::-1] +
-                    codecs.decode('f' * 8, 'hex')[::-1] +
+                    codecs.decode('fffffffe', 'hex')[::-1] +
                     get_var_int_bytes(len(codecs.decode(tx_input.coin_base, 'hex'))) +
                     codecs.decode(tx_input.coin_base, 'hex') +
                     tx_input.sequence.to_bytes(4, 'little')
@@ -262,7 +262,8 @@ class Transaction(models.Model):
             tx_output_bytes = (
                 tx_output.value.to_bytes(8, 'little') +
                 get_var_int_bytes(
-                    len(codecs.decode(tx_output.script_pub_key_hex, 'hex'))) +  # noqa
+                    len(codecs.decode(tx_output.script_pub_key_hex, 'hex'))
+                ) +
                 codecs.decode(tx_output.script_pub_key_hex, 'hex')
             )
             tx_bytes += tx_output_bytes
@@ -271,7 +272,6 @@ class Transaction(models.Model):
         # add the unit
         tx_bytes += codecs.encode(self.unit)
 
-        # get the he
         # hash the header and fail if it doesn't match the one on record
         header_hash = hashlib.sha256(hashlib.sha256(tx_bytes).digest()).digest()
         calc_hash = codecs.encode(header_hash[::-1], 'hex')
