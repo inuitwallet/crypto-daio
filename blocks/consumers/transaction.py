@@ -90,7 +90,7 @@ def repair_transaction(message):
             logger.info('update block on {}'.format(tx))
             return
 
-        if 'has no address' in error_message:
+        if error_message == 'output has no address':
             for tout in rpc_tx.get('vout', []):
                 try:
                     tx_out = tx.outputs.get(index=tout.get('n'))
@@ -121,5 +121,14 @@ def repair_transaction(message):
                 tx_out.save()
                 logger.info('added {} to {}'.format(address, tx_out))
             return
+
+        if error_message == 'address missing from previous output':
+            for tx_in in tx.inputs.all():
+                if tx_in.previous_output:
+                    if not tx_in.previous_output.address:
+                        logger.info(
+                            're-validating {}'.format(tx_in.previous_output.transaction)
+                        )
+                        tx_in.previous_output.transaction.save()
 
         tx.parse_rpc_tx(rpc_tx)

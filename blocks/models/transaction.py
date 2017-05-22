@@ -309,7 +309,13 @@ class Transaction(models.Model):
         for tx_out in self.outputs.all():
             if tx_out.script_pub_key_type in ['pubkey', 'pubkeyhash']:
                 if not tx_out.address:
-                    return False, 'output {} has no address'.format(tx_out)
+                    return False, 'output has no address'
+
+        # check the inputs, previous outputs for addresses
+        for tx_in in self.inputs.all():
+            if tx_in.previous_output:
+                if not tx_in.previous_output.address:
+                    return False, 'address missing from previous output'
 
         return True, 'Transaction is valid'
 
