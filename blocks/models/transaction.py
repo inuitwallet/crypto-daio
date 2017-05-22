@@ -354,7 +354,7 @@ class TxOutput(models.Model):
 
     class Meta:
         unique_together = ('transaction', 'index')
-        ordering = ['-index']
+        ordering = ['index']
 
     @property
     def display_value(self):
@@ -401,5 +401,5 @@ class TxInput(models.Model):
         return '{}@{}'.format(self.index, self.transaction)
 
     class Meta:
-        ordering = ['-index']
+        ordering = ['index']
         unique_together = ('transaction', 'index')
