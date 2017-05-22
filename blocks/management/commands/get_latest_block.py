@@ -63,7 +63,7 @@ class Command(BaseCommand):
             )
             block, _ = Block.objects.get_or_create(hash=rpc_hash)
 
-        top_blocks = Block.objects.all().order_by('-height')[:15]
+        top_blocks = Block.objects.exclude(height=None).order_by('-height')[:15]
         index = 0
 
         for block in top_blocks:
