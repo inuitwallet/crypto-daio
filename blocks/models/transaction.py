@@ -98,31 +98,36 @@ class Transaction(models.Model):
         for vin in rpc_tx.get('vin', []):
             script_sig = vin.get('scriptSig', {})
             try:
-                tx_input = TxInput.objects.get(
-                    transaction_id=self.id,
-                    index=vin_index,
-                )
-                tx_input.sequence = vin.get('sequence', '')
-                tx_input.coin_base = vin.get('coinbase', '')
-                tx_input.script_sig_asm = script_sig.get('asm', '')
-                tx_input.script_sig_hex = script_sig.get('hex', '')
-                vin_index += 1
-            except TxInput.DoesNotExist:
-                logger.warning(
-                    'input for {} @ {} does not exist. creating'.format(
-                        vin_index,
-                        self.id
+                try:
+                    tx_input = TxInput.objects.get(
+                        transaction_id=self.id,
+                        index=vin_index,
+                        )
+                    tx_input.sequence = vin.get('sequence', '')
+                    tx_input.coin_base = vin.get('coinbase', '')
+                    tx_input.script_sig_asm = script_sig.get('asm', '')
+                    tx_input.script_sig_hex = script_sig.get('hex', '')
+                    vin_index += 1
+                except TxInput.DoesNotExist:
+                    logger.warning(
+                        'input for {} @ {} does not exist. creating'.format(
+                            vin_index,
+                            self.id
+                        )
                     )
-                )
-                tx_input = TxInput.objects.create(
-                    transaction_id=self.id,
-                    index=vin_index,
-                    sequence=vin.get('sequence', ''),
-                    coin_base=vin.get('coinbase', ''),
-                    script_sig_asm=script_sig.get('asm', ''),
-                    script_sig_hex=script_sig.get('hex', ''),
-                )
+                    tx_input = TxInput.objects.create(
+                        transaction_id=self.id,
+                        index=vin_index,
+                        sequence=vin.get('sequence', ''),
+                        coin_base=vin.get('coinbase', ''),
+                        script_sig_asm=script_sig.get('asm', ''),
+                        script_sig_hex=script_sig.get('hex', ''),
+                    )
+                    vin_index += 1
+            except IntegrityError:
+                logger.warning('Integrity Error')
                 vin_index += 1
+                continue
 
             tx_id = vin.get('txid', None)
 
@@ -157,55 +162,47 @@ class Transaction(models.Model):
 
                     tx_input.previous_output = previous_output
 
-            try:
-                tx_input.save()
-            except IntegrityError as e:
-                logger.error(
-                    'issue saving tx_input for {}: {}'.format(self, e)
-                )
-                try:
-                    Channel('repair_transaction').send({
-                        'chain': connection.schema_name,
-                        'tx_id': tx_id
-                    })
-                except BaseChannelLayer.ChannelFull:
-                    logger.error('CHANNEL FULL!')
-                return
+            tx_input.save()
 
         # save a TXOutput for each output in the Transaction
         for vout in rpc_tx.get('vout', []):
             script_pubkey = vout.get('scriptPubKey', {})
             try:
-                tx_output = TxOutput.objects.get(
-                    transaction_id=self.id,
-                    index=vout.get('n'),
-                )
-                tx_output.value = convert_to_satoshis(vout.get('value', 0.0))
-                # convert to satoshis
-                tx_output.script_pub_key_asm = script_pubkey.get('asm', '')
-                tx_output.script_pub_key_hex = script_pubkey.get('hex', '')
-                tx_output.script_pub_key_type = script_pubkey.get('type', '')
-                tx_output.script_pub_key_req_sig = script_pubkey.get('reqSigs', '')
-            except TxOutput.DoesNotExist:
-                logger.warning(
-                    'output for {} @ {} does not exist. creating'.format(
-                        vout.get('n'),
-                        self.id
+                try:
+                    tx_output = TxOutput.objects.get(
+                        transaction_id=self.id,
+                        index=vout.get('n'),
                     )
-                )
-                tx_output = TxOutput.objects.create(
-                    transaction_id=self.id,
-                    index=vout.get('n'),
-                    value=convert_to_satoshis(vout.get('value', 0.0)),
-                    script_pub_key_asm=script_pubkey.get('asm', ''),
-                    script_pub_key_hex=script_pubkey.get('hex', ''),
-                    script_pub_key_type=script_pubkey.get('type', ''),
-                    script_pub_key_req_sig=script_pubkey.get('reqSigs', ''),
-                )
+                    tx_output.value = convert_to_satoshis(vout.get('value', 0.0))
+                    # convert to satoshis
+                    tx_output.script_pub_key_asm = script_pubkey.get('asm', '')
+                    tx_output.script_pub_key_hex = script_pubkey.get('hex', '')
+                    tx_output.script_pub_key_type = script_pubkey.get('type', '')
+                    tx_output.script_pub_key_req_sig = script_pubkey.get('reqSigs', '')
+                except TxOutput.DoesNotExist:
+                    logger.warning(
+                        'output for {} @ {} does not exist. creating'.format(
+                            vout.get('n'),
+                            self.id
+                        )
+                    )
+                    tx_output = TxOutput.objects.create(
+                        transaction_id=self.id,
+                        index=vout.get('n'),
+                        value=convert_to_satoshis(vout.get('value', 0.0)),
+                        script_pub_key_asm=script_pubkey.get('asm', ''),
+                        script_pub_key_hex=script_pubkey.get('hex', ''),
+                        script_pub_key_type=script_pubkey.get('type', ''),
+                        script_pub_key_req_sig=script_pubkey.get('reqSigs', ''),
+                    )
 
-            tx_output.save()
+                tx_output.save()
 
-            # save each address in the output
+            except IntegrityError:
+                logger.warning('Integrity Error')
+                continue
+
+            # attach the address to the output
             for addr in script_pubkey.get('addresses', []):
                 try:
                     Channel('parse_address').send({
@@ -215,6 +212,7 @@ class Transaction(models.Model):
                     })
                 except BaseChannelLayer.ChannelFull:
                     logger.error('CHANNEL FULL!')
+
         self.save()
         logger.info('saved tx {}'.format(self))
         return
