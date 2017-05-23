@@ -129,16 +129,57 @@ def repair_transaction(message):
                 if tx_in.previous_output:
                     if not tx_in.previous_output.address:
                         previous_tx_id = tx_in.previous_output.transaction.tx_id
+
                         if previous_tx_id in scanned_transactions:
                             continue
 
-                        logger.info(
-                            're-validating {}'.format(previous_tx_id)
+                        rpc_prev_tx = send_rpc(
+                            {
+                                'method': 'getrawtransaction',
+                                'params': [previous_tx_id, 1]
+                            }
                         )
-                        Channel('repair_transaction').send({
-                            'chain': message.get('chain'),
-                            'tx_id': tx_in.previous_output.transaction.tx_id
-                        })
+
+                        for tout in rpc_prev_tx.get('vout', []):
+                            if tout.get('n') != tx_in.previous_output.index:
+                                continue
+                            script = tout.get('scriptPubKey')
+
+                            if not script:
+                                logger.warning(
+                                    'no script found in rpc for output {}'.format(
+                                        tx_in.previous_output
+                                    )
+                                )
+                                continue
+                            addresses = script.get('addresses', [])
+
+                            if not addresses:
+                                logger.warning(
+                                    'no addresses found in rpc for output {}'.format(
+                                        tx_in.previous_output
+                                    )
+                                )
+                                continue
+                            address = addresses[0]
+                            address_object, _ = Address.objects.get_or_create(
+                                address=address
+                            )
+                            if tx_in.previous_output.address == address_object:
+                                logger.info(
+                                    'output {} already has address {}'.format(
+                                        tx_in.previous_output,
+                                        address
+                                    )
+                                )
+                                continue
+                            tx_in.previous_output.address = address_object
+                            tx_in.previous_output.save()
+                            logger.info(
+                                'added {} to {}'.format(address, tx_in.previous_output)
+                            )
+
                         scanned_transactions.append(previous_tx_id)
+            return
 
         tx.parse_rpc_tx(rpc_tx)
