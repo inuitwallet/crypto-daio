@@ -34,7 +34,7 @@ def display_info(message):
     with schema_context(schema_name):
         max_height = 0
         connections = 0
-        chain = Chain.objects.get(schema_name=schema_name)
+        chain = Chain.objects.get(pk=1)
         for coin in chain.coins.all():
             info = Info.objects.get(unit=coin.unit_code).order_by('-max_height').first()
             update_info('{}-supply'.format(coin.code), info.money_supply)
