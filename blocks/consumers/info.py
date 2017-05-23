@@ -36,7 +36,7 @@ def display_info(message):
         max_height = 0
         connections = 0
         for coin in chain.coins.all():
-            info = Info.objects.get(unit=coin.unit_code).order_by('-max_height').first()
+            info = Info.objects.filter(unit=coin.unit_code).order_by('-max_height').first()
             update_info('{}-supply'.format(coin.code), info.money_supply)
             update_info('{}-parked'.format(coin.code), info.total_parked)
             update_info('{}-fee'.format(coin.code), info.pay_tx_fee)
