@@ -1,4 +1,5 @@
-from channels import Group
+from channels import Group, Channel
+from django.db import connection
 
 
 def ws_connect(message):
@@ -8,12 +9,14 @@ def ws_connect(message):
         message.reply_channel.send({
             'accept': True
         })
+        Channel('display_info').send({'chain': connection.tenant.schema_name})
 
     if '/block/' in message['path']:
         Group('update_info').add(message.reply_channel)
         message.reply_channel.send({
             'accept': True
         })
+        Channel('display_info').send({'chain': connection.tenant.schema_name})
 
 
 def ws_disconnect(message):

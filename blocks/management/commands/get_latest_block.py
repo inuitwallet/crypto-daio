@@ -2,8 +2,7 @@ import json
 import logging
 from time import sleep
 
-from asgiref.base_layer import BaseChannelLayer
-from channels import Channel, Group
+from channels import Group
 from django.core.management import BaseCommand
 from django.db import connection
 from django.db.models import Max
@@ -11,7 +10,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 
 from blocks.models import Info, Block
-from blocks.utils.rpc import send_rpc, get_block_hash
+from blocks.utils.rpc import send_rpc
 
 logger = logging.getLogger(__name__)
 

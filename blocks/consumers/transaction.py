@@ -1,6 +1,5 @@
 import logging
 
-from channels import Channel
 from tenant_schemas.utils import schema_context
 
 from blocks.models import Transaction, Block, Address, TxOutput
