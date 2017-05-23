@@ -119,11 +119,14 @@ def repair_transaction(message):
                     )
                     continue
                 tx_out.address = address_object
+                # update the value too
+                tx_out.value = tout.get('value', 0)
                 tx_out.save()
                 logger.info('added {} to {}'.format(address, tx_out))
             return
 
-        if error_message == 'address missing from previous output':
+        if error_message == 'address missing from previous output' \
+                or error_message == 'previous output value is 0':
             scanned_transactions = []
             for tx_in in tx.inputs.all():
                 if tx_in.previous_output:
@@ -174,6 +177,8 @@ def repair_transaction(message):
                                 )
                                 continue
                             tx_in.previous_output.address = address_object
+                            # update the value too
+                            tx_in.previous_output.value = tout.get('value', 0)
                             tx_in.previous_output.save()
                             logger.info(
                                 'added {} to {}'.format(address, tx_in.previous_output)

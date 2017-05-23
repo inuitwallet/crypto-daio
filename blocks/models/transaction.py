@@ -316,6 +316,8 @@ class Transaction(models.Model):
             if tx_in.previous_output:
                 if not tx_in.previous_output.address:
                     return False, 'address missing from previous output'
+                if tx_in.previous_output.value == 0:
+                    return False, 'previous output value is 0'
 
         return True, 'Transaction is valid'
 
