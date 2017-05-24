@@ -60,7 +60,7 @@ def repair_block(message):
             try:
                 Channel('parse_block').send(
                     {
-                        'chain': connection.tenant.schema_name,
+                        'chain': message.get('chain'),
                         'block_hash': block_hash
                     }
                 )
@@ -77,7 +77,7 @@ def repair_block(message):
 
         # merkle root error means missing, extra or duplicate transactions
         if error_message == 'merkle root incorrect':
-            fix_merkle_root(block)
+            fix_merkle_root(block, message.get('chain'))
             return
 
         if 'previous' in message:
@@ -94,7 +94,8 @@ def repair_block(message):
             {
                 'method': 'getblock',
                 'params': [block_hash]
-            }
+            },
+            schema_name=message.get('chain')
         )
         if not rpc:
             return False
@@ -126,13 +127,14 @@ def fix_next_block(block):
     block.save()
 
 
-def fix_merkle_root(block):
+def fix_merkle_root(block, chain):
     logger.info('fixing merkle root on block {}'.format(block))
     rpc = send_rpc(
         {
             'method': 'getblock',
-            'params': [block.hash]
-        }
+            'params': [block.hash],
+        },
+        schema_name=chain
     )
 
     if not rpc:

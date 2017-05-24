@@ -13,7 +13,7 @@ from daio.models import Chain
 logger = logging.getLogger(__name__)
 
 
-def send_rpc(data, rpc_port=None, retry=0):
+def send_rpc(data, schema_name=connection.tenant.schema_name, rpc_port=None, retry=0):
     """
     Return a connection to the nud  rpc  interface
     """
@@ -23,7 +23,7 @@ def send_rpc(data, rpc_port=None, retry=0):
 
     data['jsonrpc'] = "2.0"
     data['id'] = int(time.time())
-    chain = connection.tenant
+    chain = Chain.objects.get(schema_name=schema_name)
     rpc_url = 'http://{}:{}@{}:{}'.format(
         chain.rpc_user,
         chain.rpc_password,

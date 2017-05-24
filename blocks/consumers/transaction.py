@@ -24,7 +24,8 @@ def repair_transaction(message):
             {
                 'method': 'getrawtransaction',
                 'params': [tx_id, 1]
-            }
+            },
+            schema_name=message.get('chain')
         )
         if not rpc_tx:
             return
@@ -45,7 +46,8 @@ def repair_transaction(message):
             {
                 'method': 'getblock',
                 'params': [block_hash]
-            }
+            },
+            schema_name=message.get('chain')
         )
 
         if not rpc_block:
@@ -139,7 +141,8 @@ def repair_transaction(message):
                             {
                                 'method': 'getrawtransaction',
                                 'params': [previous_tx_id, 1]
-                            }
+                            },
+                            schema_name=message.get('chain')
                         )
 
                         for tout in rpc_prev_tx.get('vout', []):
