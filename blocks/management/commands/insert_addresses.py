@@ -137,7 +137,8 @@ class Command(BaseCommand):
                     {
                         'method': 'getblock',
                         'params': [block.hash, True, True]
-                    }
+                    },
+                    schema_name=connection.schema_name,
                 )
 
                 for tx in rpc_block.get('tx', []):

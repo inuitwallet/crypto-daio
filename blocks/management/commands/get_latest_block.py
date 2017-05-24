@@ -45,6 +45,7 @@ class Command(BaseCommand):
                     'method': 'getinfo',
                     'params': []
                 },
+                schema_name=chain.schema_name,
                 rpc_port=coin.rpc_port
             )
 
@@ -85,7 +86,8 @@ class Command(BaseCommand):
                 {
                     'method': 'getblockhash',
                     'params': [current_highest_block]
-                }
+                },
+                schema_name=chain.schema_name
             )
             block, _ = Block.objects.get_or_create(hash=rpc_hash)
 

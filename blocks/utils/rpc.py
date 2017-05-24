@@ -13,7 +13,7 @@ from daio.models import Chain
 logger = logging.getLogger(__name__)
 
 
-def send_rpc(data, schema_name=connection.tenant.schema_name, rpc_port=None, retry=0):
+def send_rpc(data, schema_name, rpc_port=None, retry=0):
     """
     Return a connection to the nud  rpc  interface
     """
@@ -59,10 +59,13 @@ def send_rpc(data, schema_name=connection.tenant.schema_name, rpc_port=None, ret
 
     except ReadTimeout:
         logger.warning('rpc error sending {}: {}'.format(data, 'daemon timeout'))
-        send_rpc(data, retry + 1)
+        send_rpc(data, schema_name=schema_name, retry=retry + 1)
         return False
 
 
-def get_block_hash(height):
-    return send_rpc({'method': 'getblockhash', 'params': [int(height)]})
+def get_block_hash(height, schema_name):
+    return send_rpc(
+        {'method': 'getblockhash', 'params': [int(height)]},
+        schema_name=schema_name
+    )
 
