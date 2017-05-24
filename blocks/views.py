@@ -1,3 +1,4 @@
+from django.db import connection
 from django.shortcuts import get_object_or_404, render
 from django.views import View
 
@@ -38,7 +39,7 @@ class LatestBlocksList(ListView):
 
     def get_context_data(self, **kwargs):
         context = super(LatestBlocksList, self).get_context_data(**kwargs)
-        context['coins'] = Chain.objects.get(pk=1).coins.all()
+        context['coins'] = connection.tenant.coins.all()
         return context
 
 
@@ -50,7 +51,7 @@ class BlockDetailView(View):
             'explorer/block_detail.html',
             {
                 'object': get_object_or_404(Block, height=block_height),
-                'coins': Chain.objects.get(pk=1).coins.all()
+                'coins': connection.tenant.coins.all()
             }
         )
 
@@ -70,6 +71,6 @@ class BlockDetailView(View):
             'explorer/block_detail.html',
             {
                 'object': get_object_or_404(Block, height=block_height),
-                'coins': Chain.objects.get(pk=1).coins.all()
+                'coins': connection.tenant.coins.all()
             }
         )

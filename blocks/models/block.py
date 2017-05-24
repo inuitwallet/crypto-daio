@@ -352,7 +352,7 @@ class Block(models.Model):
 
     @property
     def totals_transacted(self):
-        chain = Chain.objects.get(schema_name=connection.schema_name)
+        chain = connection.tenant
         totals = []
         for coin in chain.coins.all():
             coin_total = {'name': coin.code, 'value': 0}

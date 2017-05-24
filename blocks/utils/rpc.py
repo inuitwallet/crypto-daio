@@ -23,7 +23,7 @@ def send_rpc(data, rpc_port=None, retry=0):
 
     data['jsonrpc'] = "2.0"
     data['id'] = int(time.time())
-    chain = Chain.objects.get(schema_name=connection.schema_name)
+    chain = connection.tenant
     rpc_url = 'http://{}:{}@{}:{}'.format(
         chain.rpc_user,
         chain.rpc_password,
