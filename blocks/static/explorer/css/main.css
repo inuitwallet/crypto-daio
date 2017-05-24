@@ -3,6 +3,10 @@
     word-break: break-all;
 }
 
+.spacer {
+    margin-top: 15px;
+}
+
 .chain-logo {
     margin: auto;
 }
@@ -43,6 +47,10 @@
 
 .tx-input, tx-output {
     width: 100%;
+}
+
+.index {
+    font-size: 80%;
 }
 
 .output-asm {

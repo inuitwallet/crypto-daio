@@ -1,0 +1,25 @@
+{% load humanize %}
+
+<div class="tx-output">
+    <span class="index">{{ tx_output.index }} : </span>
+    {% if tx_output.script_pub_key_type == 'nonstandard' %}
+        {% if tx_output.script_pub_key_asm %}
+            <span class="output-asm">{{ tx_output.script_pub_key_asm }}</span>
+        {% else %}
+            <span class="output-non-standard">Non-standard Output</span>
+        {% endif %}
+    {% else %}
+        <a href="{% url 'address' tx_output.address.address %}" class="output-address">
+            {{ tx_output.address.address }}
+        </a>
+        <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>
+        {{ tx_output.display_value|floatformat:4|intcomma }}
+        {% if tx_output.input %}
+            <a href="{% url 'block' tx_output.input.transaction.block.height %}" data-toggle="tooltip" title="Input {{ tx_output.input.index }} of Transaction {{ tx_output.input.transaction.index }} found at Block height {{ tx_output.input.transaction.block.height }}">
+                (spent in {{ tx_output.input.index }}:{{ tx_output.input.transaction.index }}@{{ tx_output.input.transaction.block.height }})
+            </a>
+        {% else %}
+            (unspent)
+        {% endif %}
+    {% endif %}
+</div>

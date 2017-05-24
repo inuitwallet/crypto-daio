@@ -1,11 +1,11 @@
 {% load humanize %}
 
-<div class="row transaction">
+<div class="row transaction spacer">
     <div class="col-md-12">
         {% with valid=tx.is_valid %}
         <div class="row tx-header {% if not valid %}invalid{% endif %}">
             <div class="col-md-6 tx-id">
-                {{ tx.tx_id }}
+                {{ tx.index }} : {{ tx.tx_id }}
                 {% if not valid %}
                     <form method="post">
                         {% csrf_token %}
@@ -19,44 +19,35 @@
             </div>
         </div>
         {% endwith %}
-        <div class="row tx-info">
+        <div class="row tx-info spacer">
             <div class="col-md-10 col-md-offset-1">
                 <div class="row">
-                    <div class="col-md-4 coin">
-
-                    </div>
+                    {% if not tx.is_coinbase %}
+                        <div class="col-md-3 coin">
+                            Coin: {{ tx.coin.name }}
+                        </div>
+                        <div class="col-md-3 total-input">
+                            Total Input: {{ tx.total_input|floatformat:4|intcomma }} {{ tx.coin.code }}
+                        </div>
+                        <div class="col-md-3 total-input">
+                            Total Output: {{ tx.total_output|floatformat:4|intcomma }} {{ tx.coin.code }}
+                        </div>
+                        <div class="col-md-3 balance">
+                            Balance: {{ tx.balance|floatformat:4|intcomma }} {{ tx.coin.code }}
+                        </div>
+                    {% endif %}
                 </div>
             </div>
         </div>
-        <div class="row tx-body">
-            <div class="col-md-5 col-md-offset-1 inputs">
+        <div class="row tx-body spacer">
+            <div class="col-md-6 inputs">
                 {% for tx_input in tx.inputs.all %}
-                    <div class="tx-input">
-                        {% if tx_input.previous_output %}
-                            <a href="{% url 'block' tx_input.previous_output.transaction.block.height %}">
-                                {{ tx_input.previous_output.display_value|floatformat:4|intcomma }} > {{ tx_input.previous_output.address.address }}
-                            </a>
-                        {% elif tx_input.coin_base %}
-                            CoinBase {{ tx_input.coin_base }}
-                        {% else %}
-                            Grant Reward
-                        {% endif %}
-                    </div>
+                    {% include 'explorer/fragments/tx_input.html' %}
                 {% endfor %}
             </div>
-            <div class="col-md-5 col-md-offset-1 outputs word-wrap">
+            <div class="col-md-6 outputs word-wrap">
                 {% for tx_output in tx.outputs.all %}
-                    <div class="tx-output">
-                        {% if tx_output.script_pub_key_type == 'nonstandard' %}
-                            {% if tx_output.script_pub_key_asm %}
-                                <span class="output-asm">{{ tx_output.script_pub_key_asm }}</span>
-                            {% else %}
-                                <span class="output-non-standard">Non-standard Output</span>
-                            {% endif %}
-                        {% else %}
-                            {{ tx_output.address.address }} > {{ tx_output.display_value|floatformat:4|intcomma }}
-                        {% endif %}
-                    </div>
+                    {% include 'explorer/fragments/tx_output.html' %}
                 {% endfor %}
             </div>
         </div>

@@ -74,3 +74,16 @@ class BlockDetailView(View):
                 'coins': connection.tenant.coins.all()
             }
         )
+
+
+class AddressDetailView(View):
+    @staticmethod
+    def get(request, address):
+        return render(
+            request,
+            'explorer/address_detail.html',
+            {
+                'object': get_object_or_404(Address, address=address),
+                'coins': connection.tenant.coins.all()
+            }
+        )

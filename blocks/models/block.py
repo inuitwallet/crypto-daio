@@ -357,9 +357,9 @@ class Block(models.Model):
         for coin in chain.coins.all():
             coin_total = {'name': coin.code, 'value': 0}
             for tx in self.transactions.all():
-                for tx_out in tx.outputs.all():
-                    if tx.unit == coin.unit_code:
-                        coin_total['value'] += tx_out.value / 10000
+                if tx.coin != coin:
+                    continue
+                coin_total['value'] += tx.balance
             totals.append(coin_total)
         return totals
 

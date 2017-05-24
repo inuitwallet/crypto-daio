@@ -1,0 +1,21 @@
+{% load humanize %}
+
+<div class="tx-input">
+    <span class="index">{{ tx_input.index }} : </span>
+    {% if tx_input.previous_output %}
+        {% if tx_input.previous_output.transaction.block %}
+            <a href="{% url 'block' tx_input.previous_output.transaction.block.height %}" class="previous-output" data-toggle="tooltip" title="Output {{ tx_input.previous_output.index }} of Transaction {{ tx_input.previous_output.transaction.index }} found at Block height {{ tx_input.previous_output.transaction.block.height }}">
+                ({{ tx_input.previous_output.index }}:{{ tx_input.previous_output.transaction.index }}@{{ tx_input.previous_output.transaction.block.height }})
+            </a>
+        {% endif %}
+        {{ tx_input.previous_output.display_value|floatformat:4|intcomma }}
+        <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>
+        <a href="{% url 'address' tx_input.previous_output.address.address %}" class="previous-address">
+            {{ tx_input.previous_output.address.address }}
+        </a>
+    {% elif tx_input.coin_base %}
+        CoinBase {{ tx_input.coin_base }}
+    {% else %}
+        Grant Reward
+    {% endif %}
+</div>

@@ -1,5 +1,7 @@
 {% extends 'explorer/base.html' %}
 
+{% load humanize %}
+
 {% block title %}
 Nu Block Explorer
 {% endblock %}
@@ -10,22 +12,64 @@ Nu Block Explorer
             <h3>Block {{ object.height }} - {{ object.hash }}</h3>
         </div>
     </div>
-    <div class="row">
+    <div class="row block-navigation">
         <div class="col-md-4 text-left">
             {% if object.previous_block %}
-                <a href="{% url 'block' object.previous_block.height %}">Previous Block</a>
+                <a href="{% url 'block' object.previous_block.height %}" class="btn btn-default">
+                    <span class="glyphicon glyphicon glyphicon-backward" aria-hidden="true"></span>
+                    Previous Block
+                </a>
             {% endif %}
         </div>
         <div class="col-md-4 text-center">
-            <a href="{% url 'block' object.height %}">Refresh this Block</a>
+            <a href="{% url 'block' object.height %}" class="btn btn-default">
+                <span class="glyphicon glyphicon glyphicon glyphicon-refresh" aria-hidden="true"></span>
+            </a>
         </div>
         <div class="col-md-4 text-right">
             {% if object.next_block %}
-                <a href="{% url 'block' object.next_block.height %}">Next Block</a>
+                <a href="{% url 'block' object.next_block.height %}" class="btn btn-default">
+                    Next Block
+                    <span class="glyphicon glyphicon glyphicon-forward" aria-hidden="true"></span>
+                </a>
             {% endif %}
         </div>
     </div>
-    <div class="row transactions">
+    <div class="row block-info spacer">
+        <div class="col-md-10 col-md-offset-1">
+            <div class="row">
+                <div class="col-md-4 block-date text-center">
+                    Date: {{ object.time }}
+                </div>
+                <div class="col-md-4 solved-by text-center">
+                    Solved By: {{ object.solved_by }}
+                </div>
+                <div class="col-md-4 block-size text-center">
+                    Size: {{ object.size }}
+                </div>
+                <div class="col-md-4 block-merkle-root text-center">
+                    Merkle Root: {{ object.merkle_root }}
+                </div>
+            </div>
+            <div class="row spacer">
+                <div class="row">
+                    <div class="col-md-12 text-center">
+                        Total Amounts Transacted
+                    </div>
+                </div>
+                <div class="row">
+                    {% for total in object.totals_transacted %}
+                        {% if total.value > 0 %}
+                            <div class="col-md-3 text-center">
+                                {{ total.value|floatformat:4|intcomma }} {{ total.name }}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row transactions spacer">
         <div class="col-md-10 col-md-offset-1">
             {% for tx in object.transactions.all %}
                 {% include 'explorer/fragments/transaction.html' %}

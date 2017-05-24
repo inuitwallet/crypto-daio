@@ -334,6 +334,32 @@ class Transaction(models.Model):
 
         return True, 'Transaction is valid'
 
+    @property
+    def total_input(self):
+        total_in = 0
+        for tin in self.inputs.all():
+            if tin.previous_output:
+                total_in += tin.previous_output.display_value
+        return total_in
+
+    @property
+    def total_output(self):
+        total_out = 0
+        for tout in self.outputs.all():
+            total_out += tout.display_value
+        return total_out
+
+    @property
+    def balance(self):
+        return self.total_output - self.total_input
+
+    @property
+    def is_coinbase(self):
+        for tin in self.inputs.all():
+            if tin.coin_base:
+                return True
+        return False
+
 
 class TxOutput(models.Model):
     transaction = models.ForeignKey(
@@ -364,7 +390,7 @@ class TxOutput(models.Model):
     )
     address = models.ForeignKey(
         'Address',
-        related_name='output_addresses',
+        related_name='outputs',
         related_query_name='output_address',
         blank=True,
         null=True,
@@ -398,7 +424,7 @@ class TxInput(models.Model):
         TxOutput,
         blank=True,
         null=True,
-        related_name='previous_output',
+        related_name='input',
         on_delete=models.SET_NULL,
     )
     coin_base = models.CharField(

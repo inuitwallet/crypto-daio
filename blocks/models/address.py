@@ -1,9 +1,7 @@
 import logging
-from decimal import Decimal
 
 from django.db import models
-
-from blocks.models import TxOutput
+from django.db.models import Sum, F
 
 logger = logging.getLogger(__name__)
 
@@ -24,14 +22,10 @@ class Address(models.Model):
 
     @property
     def balance(self):
-        value = Decimal(0.0)
-        # get the outputs for the address
-        outputs = TxOutput.objects.filter(
-            addresses__address=self.address,
+        outputs = self.outputs.all().aggregate(
+            balance=Sum('value')
         )
-        for output in outputs:
-            value += Decimal(output.value)
-        return value
+        return outputs['balance'] / 10000
 
 
 class WatchAddress(models.Model):
