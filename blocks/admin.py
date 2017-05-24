@@ -12,10 +12,10 @@ admin.site.register(Block, BlockAdmin)
 
 
 class TransactionAdmin(admin.ModelAdmin):
-    list_display = ('index', 'tx_id', 'block')
+    list_display = ('index', 'tx_id', 'block', 'coin')
     search_fields = ('tx_id',)
     ordering = ('block',)
-    raw_id_fields = ('block',)
+    raw_id_fields = ('block', 'coin')
 
 admin.site.register(Transaction, TransactionAdmin)
 

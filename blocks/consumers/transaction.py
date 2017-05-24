@@ -188,8 +188,8 @@ def repair_transaction(message):
                             logger.info(
                                 'added {} to {}'.format(address, tx_in.previous_output)
                             )
-                            # re-validate block too
-                            tx_in.previous_output.transaction.block.save()
+                            # re-validate transaction too
+                            tx_in.previous_output.transaction.save()
 
                         scanned_transactions.append(previous_tx_id)
             return

@@ -1,7 +1,5 @@
 {% extends 'explorer/base.html' %}
 
-{% load humanize %}
-
 {% block title %}
 Nu Block Explorer
 {% endblock %}
@@ -30,59 +28,7 @@ Nu Block Explorer
     <div class="row transactions">
         <div class="col-md-10 col-md-offset-1">
             {% for tx in object.transactions.all %}
-                <div class="row transaction">
-                    <div class="col-md-12">
-                        {% with valid=tx.is_valid %}
-                        <div class="row tx-header {% if not valid %}invalid{% endif %}">
-                            <div class="col-md-6 tx-id">
-                                {{ tx.tx_id }}
-                                {% if not valid %}
-                                    <form method="post">
-                                        {% csrf_token %}
-                                        <input type="hidden" name="tx_pk" value="{{ tx.pk }}" />
-                                        <button type="submit">Validate</button>
-                                    </form>
-                                {% endif %}
-                            </div>
-                            <div class="col-md-6 text-right tx-time">
-                                {{ tx.time }}
-                            </div>
-                        </div>
-                        {% endwith %}
-                        <div class="row tx-body">
-                            <div class="col-md-5 col-md-offset-1 inputs">
-                                {% for tx_input in tx.inputs.all %}
-                                    <div class="tx-input">
-                                        {% if tx_input.previous_output %}
-                                            <a href="{% url 'block' tx_input.previous_output.transaction.block.height %}">
-                                                {{ tx_input.previous_output.display_value|floatformat:4|intcomma }} > {{ tx_input.previous_output.address.address }}
-                                            </a>
-                                        {% elif tx_input.coin_base %}
-                                            CoinBase {{ tx_input.coin_base }}
-                                        {% else %}
-                                            Grant Reward
-                                        {% endif %}
-                                    </div>
-                                {% endfor %}
-                            </div>
-                            <div class="col-md-5 col-md-offset-1 outputs word-wrap">
-                                {% for tx_output in tx.outputs.all %}
-                                    <div class="tx-output">
-                                        {% if tx_output.script_pub_key_type == 'nonstandard' %}
-                                            {% if tx_output.script_pub_key_asm %}
-                                                <span class="output-asm">{{ tx_output.script_pub_key_asm }}</span>
-                                            {% else %}
-                                                <span class="output-non-standard">Non-standard Output</span>
-                                            {% endif %}
-                                        {% else %}
-                                            {{ tx_output.address.address }} > {{ tx_output.display_value|floatformat:4|intcomma }}
-                                        {% endif %}
-                                    </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                {% include 'explorer/fragments/transaction.html' %}
             {% endfor %}
         </div>
     </div>

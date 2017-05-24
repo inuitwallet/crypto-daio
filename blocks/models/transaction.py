@@ -53,6 +53,14 @@ class Transaction(models.Model):
         blank=True,
         null=True,
     )
+    coin = models.ForeignKey(
+        Coin,
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        related_name='coin',
+        related_query_name='coins'
+    )
 
     def __str__(self):
         return '{}:{}@{}'.format(self.index, self.tx_id[:8], self.block)
@@ -90,6 +98,7 @@ class Transaction(models.Model):
 
         self.lock_time = rpc_tx.get('locktime', None)
         self.unit = rpc_tx.get('unit', None)
+        self.coin = Coin.objects.get(unit_code=rpc_tx.get('unit', None))
 
         self.save(validate=False)
 
@@ -110,9 +119,9 @@ class Transaction(models.Model):
                     vin_index += 1
                 except TxInput.DoesNotExist:
                     logger.warning(
-                        'input for {} @ {} does not exist. creating'.format(
+                        'input for {}@{} does not exist. creating'.format(
                             vin_index,
-                            self.id
+                            self
                         )
                     )
                     tx_input = TxInput.objects.create(
@@ -181,9 +190,9 @@ class Transaction(models.Model):
                     tx_output.script_pub_key_req_sig = script_pubkey.get('reqSigs', '')
                 except TxOutput.DoesNotExist:
                     logger.warning(
-                        'output for {} @ {} does not exist. creating'.format(
+                        'output for {}@{} does not exist. creating'.format(
                             vout.get('n'),
-                            self.id
+                            self
                         )
                     )
                     tx_output = TxOutput.objects.create(
@@ -318,6 +327,10 @@ class Transaction(models.Model):
                     return False, 'address missing from previous output'
                 if tx_in.previous_output.value == 0:
                     return False, 'previous output value is 0'
+
+        # check for unit/coin
+        if not self.unit or not self.coin:
+            return False, 'no associated coin'
 
         return True, 'Transaction is valid'
 
