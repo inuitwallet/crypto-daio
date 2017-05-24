@@ -27,7 +27,10 @@ class Command(BaseCommand):
         """
         Parse the block chain
         """
-        start_hash = get_block_hash(options['start_height'])
+        start_hash = get_block_hash(
+            options['start_height'],
+            schema_name=connection.schema_name
+        )
         if not start_hash:
             logger.error('could not get start hash. check rpc connection')
             return

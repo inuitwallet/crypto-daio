@@ -2,7 +2,6 @@ import logging
 
 from asgiref.base_layer import BaseChannelLayer
 from channels import Channel
-from django.db import connection
 from tenant_schemas.utils import schema_context
 
 from blocks.models import Block, Transaction
@@ -81,11 +80,11 @@ def repair_block(message):
             return
 
         if 'previous' in message:
-            fix_previous_block(block)
+            fix_previous_block(block, message.get('chain'))
             return
 
         if 'next' in message:
-            fix_next_block(block)
+            fix_next_block(block, message.get('chain'))
             return
 
         # all other errors with the block can be solved by re-parsing it
@@ -103,9 +102,9 @@ def repair_block(message):
         block.parse_rpc_block(rpc)
 
 
-def fix_previous_block(block):
+def fix_previous_block(block, chain):
     logger.info('fixing previous block')
-    prev_hash = get_block_hash(block.height - 1)
+    prev_hash = get_block_hash(block.height - 1, schema_name=chain)
     if not prev_hash:
         return
     prev_block, created = Block.objects.get_or_create(hash=prev_hash)
@@ -115,9 +114,9 @@ def fix_previous_block(block):
     block.save()
 
 
-def fix_next_block(block):
+def fix_next_block(block, chain):
     logger.info('fixing next block')
-    next_hash = get_block_hash(block.height + 1)
+    next_hash = get_block_hash(block.height + 1, schema_name=chain)
     if not next_hash:
         return
     next_block, created = Block.objects.get_or_create(hash=next_hash)
