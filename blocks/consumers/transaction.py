@@ -3,6 +3,7 @@ import logging
 from tenant_schemas.utils import schema_context
 
 from blocks.models import Transaction, Block, Address, TxOutput
+from blocks.utils.numbers import convert_to_satoshis
 from blocks.utils.rpc import send_rpc
 
 logger = logging.getLogger(__name__)
@@ -121,7 +122,7 @@ def repair_transaction(message):
                     continue
                 tx_out.address = address_object
                 # update the value too
-                tx_out.value = tout.get('value', 0)
+                tx_out.value = convert_to_satoshis(tout.get('value', 0.0))
                 tx_out.save()
                 logger.info('added {} to {}'.format(address, tx_out))
             return
@@ -180,11 +181,15 @@ def repair_transaction(message):
                                 continue
                             tx_in.previous_output.address = address_object
                             # update the value too
-                            tx_in.previous_output.value = tout.get('value', 0)
+                            tx_in.previous_output.value = convert_to_satoshis(
+                                tout.get('value', 0.0)
+                            )
                             tx_in.previous_output.save()
                             logger.info(
                                 'added {} to {}'.format(address, tx_in.previous_output)
                             )
+                            # re-validate block too
+                            tx_in.previous_output.transaction.block.save()
 
                         scanned_transactions.append(previous_tx_id)
             return
