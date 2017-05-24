@@ -5,7 +5,7 @@ import requests
 import json
 
 from django.db import connection
-from django_tenants.utils import schema_context
+from tenant_schemas.utils import schema_context
 from requests import ReadTimeout
 from requests.exceptions import ConnectionError
 
