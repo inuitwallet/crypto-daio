@@ -46,11 +46,13 @@ class LatestBlocksList(ListView):
 class BlockDetailView(View):
     @staticmethod
     def get(request, block_height):
+        block = get_object_or_404(Block, height=block_height)
+        block.save()
         return render(
             request,
             'explorer/block_detail.html',
             {
-                'object': get_object_or_404(Block, height=block_height),
+                'object': block,
                 'coins': connection.tenant.coins.all()
             }
         )
