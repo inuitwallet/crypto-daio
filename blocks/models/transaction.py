@@ -169,7 +169,7 @@ class Transaction(models.Model):
                         index=vin.get('vout'),
                     )
 
-                    tx_input.previous_output = previous_output
+                    tx_input.previous_output_id = previous_output_id
 
             tx_input.save()
 
