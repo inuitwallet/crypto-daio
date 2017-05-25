@@ -91,7 +91,7 @@ class Command(BaseCommand):
             )
             block, _ = Block.objects.get_or_create(hash=rpc_hash)
 
-        # give a short amount of time for the block to nbe saved
+        # give a short amount of time for the block to be saved
         sleep(5)
 
         top_blocks = Block.objects.exclude(height=None).order_by('-height')[:100]

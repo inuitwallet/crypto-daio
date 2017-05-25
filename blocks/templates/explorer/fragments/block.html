@@ -3,4 +3,10 @@
 <td class="time">{{ block.time|timesince }}</td>
 <td class="transactions">{{ block.transactions.all.count }}</td>
 <td class="coinage">{{ block.coinage_destroyed }}</td>
-<td class="valid">{{ block.is_valid }}</td>
+<td class="valid">
+    {% if block.is_valid %}
+        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+    {% else %}
+        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+    {% endif %}
+</td>
