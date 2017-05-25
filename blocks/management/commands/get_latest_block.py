@@ -98,6 +98,7 @@ class Command(BaseCommand):
         index = 0
 
         for block in top_blocks:
+            block.save()
             Group('latest_blocks_list').send(
                 {
                     'text': json.dumps(
