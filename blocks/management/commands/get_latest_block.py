@@ -94,7 +94,7 @@ class Command(BaseCommand):
         # give a short amount of time for the block to nbe saved
         sleep(5)
 
-        top_blocks = Block.objects.exclude(height=None).order_by('-height')[:15]
+        top_blocks = Block.objects.exclude(height=None).order_by('-height')[:100]
         index = 0
 
         for block in top_blocks:
