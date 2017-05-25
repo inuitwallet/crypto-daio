@@ -165,7 +165,7 @@ class Transaction(models.Model):
                             logger.error('CHANNEL FULL!')
 
                     previous_output, _ = TxOutput.objects.get_or_create(
-                        transaction=previous_transaction,
+                        transaction_id=previous_transaction.id,
                         index=vin.get('vout'),
                     )
 
