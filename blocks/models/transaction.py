@@ -6,7 +6,8 @@ from datetime import datetime
 
 from asgiref.base_layer import BaseChannelLayer
 from channels import Channel
-from django.db import models, IntegrityError, connection
+from django.db import models, connection
+from django.db.utils import IntegrityError
 from django.utils.timezone import make_aware
 
 from blocks.utils.numbers import get_var_int_bytes, convert_to_satoshis
