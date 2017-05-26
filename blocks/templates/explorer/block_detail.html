@@ -50,6 +50,14 @@ Nu Block Explorer
                 <div class="col-md-4 block-merkle-root text-center">
                     Merkle Root: {{ object.merkle_root }}
                 </div>
+                <div class="col-md-4 valid text-center">
+                    Valid:
+                    {% if object.is_valid %}
+                        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                    {% else %}
+                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                    {% endif %}
+                </div>
             </div>
             <div class="row spacer">
                 <div class="row">
