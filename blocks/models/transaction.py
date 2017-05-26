@@ -138,6 +138,8 @@ class Transaction(models.Model):
                 vin_index += 1
                 continue
 
+            tx_input.save()
+
             tx_id = vin.get('txid', None)
 
             if tx_id:
@@ -171,7 +173,23 @@ class Transaction(models.Model):
 
                     tx_input.previous_output_id = previous_output.id
 
-            tx_input.save()
+                    try:
+                        tx_input.save()
+                    except IntegrityError:
+                        logger.error('output is already used as a previous input')
+                        # find the t_in that links this t_out
+                        try:
+                            t_in = TxInput.objects.get(previous_output=previous_output)
+                            t_in.previous_output = None
+                        except TxInput.DoesNotExist:
+                            # no input found. Just delete the tou instead
+                            previous_output.delete()
+                            previous_output, _ = TxOutput.objects.get_or_create(
+                                transaction_id=previous_transaction.id,
+                                index=vin.get('vout'),
+                            )
+                        tx_input.previous_output_id = previous_output.id
+                        tx_input.save()
 
         # save a TXOutput for each output in the Transaction
         for vout in rpc_tx.get('vout', []):
