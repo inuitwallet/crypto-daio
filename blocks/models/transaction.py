@@ -6,8 +6,7 @@ from datetime import datetime
 
 from asgiref.base_layer import BaseChannelLayer
 from channels import Channel
-from django.db import models, connection
-from django.db.utils import IntegrityError
+from django.db import models, connection, IntegrityError
 from django.utils.timezone import make_aware
 
 from blocks.utils.numbers import get_var_int_bytes, convert_to_satoshis
@@ -182,6 +181,7 @@ class Transaction(models.Model):
                         try:
                             t_in = TxInput.objects.get(previous_output=previous_output)
                             t_in.previous_output = None
+                            t_in.save()
                         except TxInput.DoesNotExist:
                             # no input found. Just delete the tou instead
                             previous_output.delete()
