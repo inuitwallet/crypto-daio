@@ -23,6 +23,15 @@
     display: none;
 }
 
+.latest-blocks-container {
+    height: 600px;
+    overflow-y: scroll;
+    border: 1px solid #a9a9a9;
+    border-radius: 5px;
+    margin: 5px;
+    padding: 5px;
+}
+
 .previous-block-link {
     float: left;
 }

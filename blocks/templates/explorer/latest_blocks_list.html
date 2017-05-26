@@ -8,8 +8,8 @@ Nu Block Explorer
 
 {% block content %}
     <div class="row">
-        <div class="col-md-6">
-            <table id="latest-blocks-table" class="table">
+        <div class="col-md-6 latest-blocks-container">
+            <table id="latest-blocks-table" class="table table-striped table-bordered table-hover table-condensed">
                 <thead>
                     <tr>
                         <td>Height</td>
@@ -22,7 +22,7 @@ Nu Block Explorer
                 </thead>
                 <tbody>
                     {% for block in object_list %}
-                        <tr>
+                        <tr class="{% if not block.is_valid %}warning{% endif %}">
                             {% include 'explorer/fragments/block.html' %}
                         </tr>
                     {% endfor %}
