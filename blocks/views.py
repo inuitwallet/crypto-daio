@@ -31,7 +31,7 @@ class Notify(View):
 
 class LatestBlocksList(ListView):
     model = Block
-    paginate_by = 100
+    paginate_by = 50
     template_name = 'explorer/latest_blocks_list.html'
 
     def get_queryset(self):
