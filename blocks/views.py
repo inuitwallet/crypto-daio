@@ -40,7 +40,7 @@ class LatestBlocksList(ListView):
     def get_context_data(self, **kwargs):
         context = super(LatestBlocksList, self).get_context_data(**kwargs)
         context['coins'] = connection.tenant.coins.all()
-        context['chain'] = connection.tenant.name
+        context['chain'] = connection.tenant
         return context
 
 
@@ -55,7 +55,7 @@ class BlockDetailView(View):
             {
                 'object': block,
                 'coins': connection.tenant.coins.all(),
-                'chain': connection.tenant.name,
+                'chain': connection.tenant,
             }
         )
 
@@ -76,7 +76,7 @@ class BlockDetailView(View):
             {
                 'object': get_object_or_404(Block, height=block_height),
                 'coins': connection.tenant.coins.all(),
-                'chain': connection.tenant.name,
+                'chain': connection.tenant,
             }
         )
 
@@ -90,6 +90,6 @@ class AddressDetailView(View):
             {
                 'object': get_object_or_404(Address, address=address),
                 'coins': connection.tenant.coins.all(),
-                'chain': connection.tenant.name,
+                'chain': connection.tenant,
             }
         )
