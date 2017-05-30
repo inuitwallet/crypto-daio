@@ -1,7 +1,5 @@
 from channels import Group, Channel
 
-from daio.models import Chain
-
 
 def get_schema_from_host(message):
     host = None
@@ -10,8 +8,8 @@ def get_schema_from_host(message):
             host = str(header[1])
     if not host:
         return ''
-    chain = Chain.objects.get(domain_url=str(host))
-    return chain.schema_name
+    host_parts = host.split('.')
+    return host_parts[0].replace('-', '_').replace('b\'', '').lower()
 
 
 def ws_connect(message):
