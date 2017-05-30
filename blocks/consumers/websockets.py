@@ -10,7 +10,7 @@ def get_schema_from_host(message):
             host = str(header[1])
     if not host:
         return ''
-    chain = Chain.objects.get(domain_url=host)
+    chain = Chain.objects.get(domain_url=str(host))
     return chain.schema_name
 
 
