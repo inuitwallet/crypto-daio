@@ -16,8 +16,8 @@ def send_rpc(data, schema_name, rpc_port=None, retry=0):
     """
     Return a connection to the nud  rpc  interface
     """
-    if retry == 5:
-        logger.error('5 retries have failed')
+    if retry == 3:
+        logger.error('3 retries have failed')
         return
 
     data['jsonrpc'] = "2.0"
@@ -35,7 +35,7 @@ def send_rpc(data, schema_name, rpc_port=None, retry=0):
             url=rpc_url,
             headers=headers,
             data=json.dumps(data),
-            timeout=240,
+            timeout=60,
         )
 
         try:
