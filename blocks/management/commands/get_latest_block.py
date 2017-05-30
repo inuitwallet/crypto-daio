@@ -2,7 +2,7 @@ import json
 import logging
 from time import sleep
 
-from channels import Group
+from channels import Group, Channel
 from django.core.management import BaseCommand
 from django.db import connection
 from django.db.models import Max
@@ -21,7 +21,7 @@ class Command(BaseCommand):
 
     @staticmethod
     def update_info(info_id, value):
-        Group('update_info').send(
+        Group('{}_update_info'.format(connection.schema_name)).send(
             {
                 'text': json.dumps(
                     {
@@ -64,15 +64,7 @@ class Command(BaseCommand):
 
             logger.info('saved {}'.format(info))
 
-            self.update_info('{}-supply'.format(coin.code), info.money_supply)
-            self.update_info('{}-parked'.format(coin.code), info.total_parked)
-            self.update_info('{}-fee'.format(coin.code), info.pay_tx_fee)
-
-            max_height = info.max_height
-            connections = info.connections
-
-        self.update_info('connections', connections)
-        self.update_info('height', max_height)
+        Channel('display_info').send({'chain': connection.schema_name})
 
         current_highest_block = Block.objects.all().aggregate(
             Max('height')
@@ -99,7 +91,7 @@ class Command(BaseCommand):
 
         for block in top_blocks:
             block.save()
-            Group('latest_blocks_list').send(
+            Group('{}_latest_blocks_list'.format(connection.schema_name)).send(
                 {
                     'text': json.dumps(
                         {

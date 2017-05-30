@@ -1,5 +1,7 @@
 from channels import Group, Channel
 
+from daio.models import Chain
+
 
 def get_schema_from_host(message):
     host = None
@@ -8,30 +10,36 @@ def get_schema_from_host(message):
             host = str(header[1])
     if not host:
         return ''
-    host_parts = host.split('.')
-    return host_parts[0].replace('-', '_').replace('b\'', '').lower()
+    chain = Chain.objects.get(domain_url=host)
+    return chain.schema_name
 
 
 def ws_connect(message):
+    schema = get_schema_from_host(message)
     if message['path'] == '/latest_blocks_list/':
-        Group('latest_blocks_list').add(message.reply_channel)
-        Group('update_info').add(message.reply_channel)
+        Group('{}_latest_blocks_list'.format(schema)).add(message.reply_channel)
+        Group('{}_update_info'.format(schema)).add(message.reply_channel)
         message.reply_channel.send({
             'accept': True
         })
-        Channel('display_info').send({'chain': get_schema_from_host(message)})
+        Channel('display_info').send({'chain': schema})
 
     if '/block/' in message['path']:
-        Group('update_info').add(message.reply_channel)
+        Group('{}_update_info'.format(schema)).add(message.reply_channel)
         message.reply_channel.send({
             'accept': True
         })
-        Channel('display_info').send({'chain': get_schema_from_host(message)})
+        Channel('display_info').send({'chain': schema})
 
 
 def ws_disconnect(message):
-    Group('latest_blocks_list').discard(message.reply_channel)
-    Group('update_info').discard(message.reply_channel)
+    for chain in Chain.objects.all():
+        Group(
+            '{}_latest_blocks_list'.format(chain.schema_name)
+        ).discard(message.reply_channel)
+        Group(
+            '{}_update_info'.format(chain.schema_name)
+        ).discard(message.reply_channel)
     message.reply_channel.send({
         'close': True
     })

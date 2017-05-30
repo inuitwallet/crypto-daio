@@ -10,8 +10,8 @@ from daio.models import Chain
 logger = logging.getLogger(__name__)
 
 
-def update_info(info_id, value):
-    Group('update_info').send(
+def update_info(info_id, value, schema):
+    Group('{}_update_info'.format(schema)).send(
         {
             'text': json.dumps(
                 {
@@ -30,20 +30,27 @@ def display_info(message):
     :param message: 
     :return: 
     """
-    chain = Chain.objects.get(schema_name=str(message.get('chain')))
-    with schema_context(message.get('chain')):
+    schema = str(message.get('chain'))
+    chain = Chain.objects.get(schema_name=schema)
+    with schema_context(schema):
         max_height = 0
         connections = 0
 
         for coin in chain.coins.all():
-            info = Info.objects.filter(unit=coin.unit_code).order_by('-max_height').first()
-            update_info('{}-supply'.format(coin.code), str(info.money_supply))
-            update_info('{}-parked'.format(coin.code), str(info.total_parked))
-            update_info('{}-fee'.format(coin.code), str(info.pay_tx_fee))
+            info = Info.objects.filter(
+                unit=coin.unit_code
+            ).order_by(
+                '-max_height'
+            ).first()
+            if not info:
+                continue
+            update_info('{}-supply'.format(coin.code), str(info.money_supply), schema)
+            update_info('{}-parked'.format(coin.code), str(info.total_parked), schema)
+            update_info('{}-fee'.format(coin.code), str(info.pay_tx_fee), schema)
 
             max_height = str(info.max_height)
             connections = str(info.connections)
 
-        update_info('connections', connections)
-        update_info('height', max_height)
+        update_info('connections', connections, schema)
+        update_info('height', max_height, schema)
 
