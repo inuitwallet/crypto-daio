@@ -14,7 +14,7 @@ Nu Block Explorer
     </div>
     <div class="row block-navigation">
         <div class="col-md-4 text-left">
-            {% if object.previous_block %}
+            {% if object.previous_block.height %}
                 <a href="{% url 'block' object.previous_block.height %}" class="btn btn-default">
                     <span class="glyphicon glyphicon glyphicon-backward" aria-hidden="true"></span>
                     Previous Block
@@ -27,7 +27,7 @@ Nu Block Explorer
             </a>
         </div>
         <div class="col-md-4 text-right">
-            {% if object.next_block %}
+            {% if object.next_block.height %}
                 <a href="{% url 'block' object.next_block.height %}" class="btn btn-default">
                     Next Block
                     <span class="glyphicon glyphicon glyphicon-forward" aria-hidden="true"></span>
