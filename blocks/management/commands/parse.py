@@ -44,15 +44,19 @@ class Command(BaseCommand):
         max_height = rpc['blocks']
 
         for height in range(max_height):
-            hash = get_block_hash(height=height, schema_name=chain.schema_name)
-            if not hash:
+            block_hash = get_block_hash(height=height, schema_name=chain.schema_name)
+            if not block_hash:
                 continue
             try:
-                block = Block.objects.get(hash=hash)
+                block = Block.objects.get(hash=block_hash)
             except Block.DoesNotExist:
-                block = Block(hash=hash, height=height)
+                block = Block(hash=block_hash, height=height)
 
             block.save(validate=False)
 
-        for block in Block.objects.all():
+            logger.info('created block {}'.format(block))
+
+        for block in Block.objects.all().order_by('height'):
             block.save()
+
+            logger.info('saved block {}'.format(block))
