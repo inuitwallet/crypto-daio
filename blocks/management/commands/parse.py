@@ -47,14 +47,14 @@ class Command(BaseCommand):
             try:
                 block = Block.objects.get(height=height)
                 logger.info('existing block {}'.format(block))
+                continue
             except Block.DoesNotExist:
                 block_hash = get_block_hash(height=height, schema_name=chain.schema_name)
                 if not block_hash:
                     continue
-                block = Block(hash=block_hash, height=height)
+                block = Block(hash=block_hash)
+                block.save(validate=False)
                 logger.info('created block {}'.format(block))
-
-            block.save(validate=False)
 
         for block in Block.objects.all().order_by('height'):
             block.save()
