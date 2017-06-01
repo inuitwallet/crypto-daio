@@ -3,11 +3,10 @@ from django.db import connection
 
 from django.utils import timezone
 
-from blocks.utils.channels import send_to_channel
 from blocks.utils.rpc import get_block_hash, send_rpc
 import logging
 
-from models import Block
+from blocks.models import Block
 
 logger = logging.getLogger(__name__)
 
@@ -45,19 +44,13 @@ class Command(BaseCommand):
         max_height = rpc['blocks']
 
         for height in range(max_height):
-            rpc = send_rpc(
-                {
-                    'method': 'getblockhash',
-                    'params': [height]
-                },
-                schema_name=chain
-            )
-            if not rpc:
+            hash = get_block_hash()
+            if not hash:
                 continue
             try:
-                block = Block.objects.get(hash=rpc)
+                block = Block.objects.get(hash=hash)
             except Block.DoesNotExist:
-                block = Block(hash=rpc, height=height)
+                block = Block(hash=hash, height=height)
 
             block.save(validate=False)
 
