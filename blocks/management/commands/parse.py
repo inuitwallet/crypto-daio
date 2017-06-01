@@ -67,7 +67,7 @@ class Command(BaseCommand):
                         continue
                     pre_block.height = height
                     pre_block.save(validate=False)
-                    logger.info('updated bock {}'.format(pre_block))
+                    logger.info('updated block {}'.format(pre_block))
                     continue
 
                 logger.info('created block {}'.format(block))
