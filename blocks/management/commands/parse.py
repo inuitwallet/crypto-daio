@@ -44,7 +44,7 @@ class Command(BaseCommand):
         max_height = rpc['blocks']
 
         for height in range(max_height):
-            hash = get_block_hash()
+            hash = get_block_hash(height=height, schema_name=chain)
             if not hash:
                 continue
             try:
