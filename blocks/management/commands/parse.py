@@ -57,12 +57,17 @@ class Command(BaseCommand):
                     block.save(validate=False)
                 except IntegrityError:
                     pre_block = Block.objects.get(hash=block_hash)
-                    logger.error(
-                        'block with hash {} already exists: {}'.format(
-                            block_hash[:8],
-                            pre_block
+                    if pre_block.height:
+                        logger.error(
+                            'block with hash {} already exists: {}'.format(
+                                block_hash[:8],
+                                pre_block
+                            )
                         )
-                    )
+                        continue
+                    pre_block.height = height
+                    pre_block.save(validate=False)
+
                 logger.info('created block {}'.format(block))
 
         for block in Block.objects.all().order_by('height'):
