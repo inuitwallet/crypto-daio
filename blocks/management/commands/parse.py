@@ -1,5 +1,5 @@
 from django.core.management import BaseCommand
-from django.db import connection
+from django.db import connection, IntegrityError
 
 from django.utils import timezone
 
@@ -53,7 +53,16 @@ class Command(BaseCommand):
                 if not block_hash:
                     continue
                 block = Block(hash=block_hash)
-                block.save(validate=False)
+                try:
+                    block.save(validate=False)
+                except IntegrityError:
+                    pre_block = Block.objects.get(hash=block_hash)
+                    logger.error(
+                        'block with hash {} already exists: {}'.format(
+                            block_hash[:8],
+                            pre_block
+                        )
+                    )
                 logger.info('created block {}'.format(block))
 
         for block in Block.objects.all().order_by('height'):
