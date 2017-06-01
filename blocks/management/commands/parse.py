@@ -4,8 +4,10 @@ from django.db import connection
 from django.utils import timezone
 
 from blocks.utils.channels import send_to_channel
-from blocks.utils.rpc import get_block_hash
+from blocks.utils.rpc import get_block_hash, send_rpc
 import logging
+
+from models import Block
 
 logger = logging.getLogger(__name__)
 
@@ -27,21 +29,37 @@ class Command(BaseCommand):
         """
         Parse the block chain
         """
-        start_hash = get_block_hash(
-            options['start_height'],
-            schema_name=connection.schema_name
+        chain = connection.tenant
+        rpc = send_rpc(
+            {
+                'method': 'getinfo',
+                'params': []
+            },
+            schema_name=chain.schema_name
         )
-        if not start_hash:
-            logger.error('could not get start hash. check rpc connection')
+
+        if not rpc:
+            logger.error('no RPC connection')
             return
-        logger.info(
-            'starting block chain parse at height {} with block {}'.format(
-                options['start_height'],
-                start_hash
+
+        max_height = rpc['blocks']
+
+        for height in range(max_height):
+            rpc = send_rpc(
+                {
+                    'method': 'getblockhash',
+                    'params': [height]
+                },
+                schema_name=chain
             )
-        )
-        # send the hash to the channel for parsing a block
-        send_to_channel('parse_block', {
-            'chain': connection.tenant.schema_name,
-            'block_hash': start_hash
-        })
+            if not rpc:
+                continue
+            try:
+                block = Block.objects.get(hash=rpc)
+            except Block.DoesNotExist:
+                block = Block(hash=rpc, height=height)
+
+            block.save(validate=False)
+
+        for block in Block.objects.all():
+            block.save()

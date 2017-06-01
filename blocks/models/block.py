@@ -112,27 +112,30 @@ class Block(models.Model):
         return '{}:{}'.format(self.height, self.hash[:8])
 
     def save(self, *args, **kwargs):
+        validate = kwargs.pop('validate', True)
+
         super(Block, self).save(*args, **kwargs)
 
-        if not self.is_valid:
-            try:
-                Channel('repair_block').send({
-                    'chain': connection.tenant.schema_name,
-                    'block_hash': self.hash
-                })
-            except BaseChannelLayer.ChannelFull:
-                logger.error('CHANNEL FULL!')
-        else:
-            # block is valid. validate the transactions too
-            for tx in self.transactions.all():
-                if not tx.is_valid:
-                    try:
-                        Channel('repair_transaction').send({
-                            'chain': connection.tenant.schema_name,
-                            'tx_id': tx.tx_id
-                        })
-                    except BaseChannelLayer.ChannelFull:
-                        logger.error('CHANNEL FULL!')
+        if validate:
+            if not self.is_valid:
+                try:
+                    Channel('repair_block').send({
+                        'chain': connection.tenant.schema_name,
+                        'block_hash': self.hash
+                    })
+                except BaseChannelLayer.ChannelFull:
+                    logger.error('CHANNEL FULL!')
+            else:
+                # block is valid. validate the transactions too
+                for tx in self.transactions.all():
+                    if not tx.is_valid:
+                        try:
+                            Channel('repair_transaction').send({
+                                'chain': connection.tenant.schema_name,
+                                'tx_id': tx.tx_id
+                            })
+                        except BaseChannelLayer.ChannelFull:
+                            logger.error('CHANNEL FULL!')
 
     @property
     def class_type(self):
