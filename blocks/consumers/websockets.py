@@ -1,5 +1,7 @@
 from channels import Group, Channel
 
+from daio.models import Chain
+
 
 def get_schema_from_host(message):
     host = None

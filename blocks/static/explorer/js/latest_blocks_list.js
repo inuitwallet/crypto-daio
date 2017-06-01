@@ -20,10 +20,17 @@ $(function() {
         if (message_type === "update_block") {
             var index = data["index"];
             var block_html = data["block_html"];
+            var block_is_valid = data["block_is_valid"];
             var row = latest_blocks_table_rows.eq(index);
             row.fadeOut('fast', function(){
+                if (block_is_valid) {
+                    row.removeClass("warning")
+                } else {
+                    row.addClass("warning")
+                }
                 row.html(block_html).fadeIn('fast')
             });
+
         }
 
     });

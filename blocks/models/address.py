@@ -22,11 +22,22 @@ class Address(models.Model):
 
     @property
     def balance(self):
-        outputs = self.outputs.all().aggregate(
-            balance=Sum('value')
-        )
-        return outputs['balance'] / 10000
+        balance = 0
+        for output in self.outputs.all():
+            if output.input:
+                # if output has associated input it is spent
+                continue
+            balance += output.display_value
+        return balance
 
+    @property
+    def transactions(self):
+        transactions = []
+        for output in self.outputs.all():
+            if output.transaction in transactions:
+                continue
+            transactions.append(output.transaction)
+        return transactions
 
 class WatchAddress(models.Model):
     address = models.ForeignKey(

@@ -15,4 +15,11 @@ Address Details
     <div class="row">
         {{ object.balance|floatformat:4|intcomma }}
     </div>
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1">
+            {% for tx in object.transactions %}
+                {% include 'explorer/fragments/transaction.html' %}
+            {% endfor %}
+        </div>
+    </div>
 {% endblock %}

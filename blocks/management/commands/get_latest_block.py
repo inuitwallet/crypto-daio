@@ -102,7 +102,8 @@ class Command(BaseCommand):
                                 {
                                     'block': block
                                 }
-                            )
+                            ),
+                            'block_is_valid': block.is_valid
                         }
                     )
                 }
