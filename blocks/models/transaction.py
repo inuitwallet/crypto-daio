@@ -71,6 +71,7 @@ class Transaction(models.Model):
         if validate:
             if not self.is_valid:
                 try:
+                    logger.info('REPAIRING TRANSACTION')
                     Channel('repair_transaction').send({
                         'chain': connection.tenant.schema_name,
                         'tx_id': self.tx_id
