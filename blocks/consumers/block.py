@@ -166,7 +166,8 @@ def fix_merkle_root(block, chain):
                 'incorrect index for tx {}: ({})'.format(tx, rpc_index)
             )
             tx.index = rpc_index
-            tx.save()
+
+        tx.save()
 
     # reinitialise validation
     block.save()
