@@ -238,10 +238,27 @@ class Block(models.Model):
 
         # now we do the transactions
         tx_index = 0
-        for tx_id in rpc_block.get('tx', []):
-            tx, _ = Transaction.objects.get_or_create(tx_id=tx_id)
+        for rpc_tx in rpc_block.get('tx', []):
+            try:
+                tx = Transaction.objects.get(tx_id=rpc_tx.get('txid'))
+            except Transaction.DoesNotExist:
+                tx = Transaction(tx_id=rpc_tx.get('txid'))
+
             tx.block = self
             tx.index = tx_index
+            tx.version = rpc_tx.get('version')
+            tx.lock_time = rpc_tx.get('lock_time')
+
+            tx.save(validate=False)
+
+            input_index = 0
+            for rpc_input in rpc_tx.get('vin', []):
+                tx.parse_input(rpc_input, input_index)
+                input_index += 1
+
+            for rpc_output in rpc_tx.get('vout', []):
+                tx.parse_output(rpc_output)
+
             tx.save()
         logger.info('saved block {}'.format(self))
 

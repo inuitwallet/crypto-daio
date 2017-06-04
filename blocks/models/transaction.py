@@ -47,11 +47,7 @@ class Transaction(models.Model):
     lock_time = models.IntegerField(
         blank=True,
         null=True,
-    )
-    unit = models.CharField(
-        max_length=15,
-        blank=True,
-        null=True,
+        default=0
     )
     coin = models.ForeignKey(
         Coin,
@@ -86,6 +82,141 @@ class Transaction(models.Model):
     def class_type(self):
         return 'Transaction'
 
+    def parse_input(self, vin, vin_index):
+        script_sig = vin.get('scriptSig', {})
+        try:
+            try:
+                tx_input = TxInput.objects.get(
+                    transaction_id=self.id,
+                    index=vin_index,
+                )
+                tx_input.sequence = vin.get('sequence', '')
+                tx_input.coin_base = vin.get('coinbase', '')
+                tx_input.script_sig_asm = script_sig.get('asm', '')
+                tx_input.script_sig_hex = script_sig.get('hex', '')
+            except TxInput.DoesNotExist:
+                logger.warning(
+                    'input for {}@{} does not exist. creating'.format(
+                        vin_index,
+                        self
+                    )
+                )
+                tx_input = TxInput.objects.create(
+                    transaction_id=self.id,
+                    index=vin_index,
+                    sequence=vin.get('sequence', ''),
+                    coin_base=vin.get('coinbase', ''),
+                    script_sig_asm=script_sig.get('asm', ''),
+                    script_sig_hex=script_sig.get('hex', ''),
+                )
+        except IntegrityError:
+            logger.warning('Integrity Error')
+            return
+
+        tx_input.save()
+
+        tx_id = vin.get('txid', None)
+
+        if tx_id:
+            # this long tx_id indicates a grant reward.
+            # we ignore these as they are effectively coinbase inputs
+            if tx_id != \
+                    '0000000000000000000000000000000000000000000000000000000000000000':
+                # noqa
+                # input is spending a previous output. Link it here
+                previous_transaction, created = Transaction.objects.get_or_create(
+                    tx_id=tx_id
+                )
+
+                if created:
+                    logger.error(
+                        'tx {} not found for previous output to {}'.format(
+                            tx_id[:8],
+                            tx_input
+                        )
+                    )
+                    try:
+                        Channel('repair_transaction').send({
+                            'chain': connection.schema_name,
+                            'tx_id': tx_id
+                        })
+                    except BaseChannelLayer.ChannelFull:
+                        logger.error('CHANNEL FULL!')
+
+                previous_output, _ = TxOutput.objects.get_or_create(
+                    transaction_id=previous_transaction.id,
+                    index=vin.get('vout'),
+                )
+
+                tx_input.previous_output_id = previous_output.id
+
+                try:
+                    tx_input.save()
+                except IntegrityError:
+                    logger.error('output is already used as a previous input')
+                    # find the t_in that links this t_out
+                    try:
+                        t_in = TxInput.objects.get(previous_output=previous_output)
+                        t_in.previous_output = None
+                        t_in.save()
+                    except TxInput.DoesNotExist:
+                        # no input found. Just delete the tou instead
+                        previous_output.delete()
+                        previous_output, _ = TxOutput.objects.get_or_create(
+                            transaction_id=previous_transaction.id,
+                            index=vin.get('vout'),
+                        )
+                    tx_input.previous_output_id = previous_output.id
+                    tx_input.save()
+
+    def parse_output(self, vout):
+        script_pubkey = vout.get('scriptPubKey', {})
+        try:
+            try:
+                tx_output = TxOutput.objects.get(
+                    transaction_id=self.id,
+                    index=vout.get('n'),
+                )
+                tx_output.value = convert_to_satoshis(vout.get('value', 0.0))
+                # convert to satoshis
+                tx_output.script_pub_key_asm = script_pubkey.get('asm', '')
+                tx_output.script_pub_key_hex = script_pubkey.get('hex', '')
+                tx_output.script_pub_key_type = script_pubkey.get('type', '')
+                tx_output.script_pub_key_req_sig = script_pubkey.get('reqSigs', '')
+            except TxOutput.DoesNotExist:
+                logger.warning(
+                    'output for {}@{} does not exist. creating'.format(
+                        vout.get('n'),
+                        self
+                    )
+                )
+                tx_output = TxOutput.objects.create(
+                    transaction_id=self.id,
+                    index=vout.get('n'),
+                    value=convert_to_satoshis(vout.get('value', 0.0)),
+                    script_pub_key_asm=script_pubkey.get('asm', ''),
+                    script_pub_key_hex=script_pubkey.get('hex', ''),
+                    script_pub_key_type=script_pubkey.get('type', ''),
+                    script_pub_key_req_sig=script_pubkey.get('reqSigs', ''),
+                )
+
+            tx_output.save()
+
+        except IntegrityError:
+            logger.warning('Integrity Error')
+            return
+
+        # attach the address to the output
+        for addr in script_pubkey.get('addresses', []):
+            try:
+                Channel('parse_address').send({
+                    'chain': connection.schema_name,
+                    'address': addr,
+                    'tx_output': tx_output.pk
+                })
+            except BaseChannelLayer.ChannelFull:
+                logger.error('CHANNEL FULL!')
+
     def parse_rpc_tx(self, rpc_tx):
         logger.info('parsing tx {}'.format(self))
         self.version = rpc_tx.get('version', None)
@@ -97,7 +228,6 @@ class Transaction(models.Model):
             self.time = None
 
         self.lock_time = rpc_tx.get('locktime', None)
-        self.unit = rpc_tx.get('unit', None)
         self.coin = Coin.objects.get(unit_code=rpc_tx.get('unit', None))
 
         self.save(validate=False)
@@ -105,141 +235,12 @@ class Transaction(models.Model):
         # for each input in the transaction, save a TxInput
         vin_index = 0
         for vin in rpc_tx.get('vin', []):
-            script_sig = vin.get('scriptSig', {})
-            try:
-                try:
-                    tx_input = TxInput.objects.get(
-                        transaction_id=self.id,
-                        index=vin_index,
-                        )
-                    tx_input.sequence = vin.get('sequence', '')
-                    tx_input.coin_base = vin.get('coinbase', '')
-                    tx_input.script_sig_asm = script_sig.get('asm', '')
-                    tx_input.script_sig_hex = script_sig.get('hex', '')
-                    vin_index += 1
-                except TxInput.DoesNotExist:
-                    logger.warning(
-                        'input for {}@{} does not exist. creating'.format(
-                            vin_index,
-                            self
-                        )
-                    )
-                    tx_input = TxInput.objects.create(
-                        transaction_id=self.id,
-                        index=vin_index,
-                        sequence=vin.get('sequence', ''),
-                        coin_base=vin.get('coinbase', ''),
-                        script_sig_asm=script_sig.get('asm', ''),
-                        script_sig_hex=script_sig.get('hex', ''),
-                    )
-                    vin_index += 1
-            except IntegrityError:
-                logger.warning('Integrity Error')
-                vin_index += 1
-                continue
-
-            tx_input.save()
-
-            tx_id = vin.get('txid', None)
-
-            if tx_id:
-                # this long tx_id indicates a grant reward.
-                # we ignore these as they are effectively coinbase inputs
-                if tx_id != '0000000000000000000000000000000000000000000000000000000000000000':  # noqa
-                    # input is spending a previous output. Link it here
-                    previous_transaction, created = Transaction.objects.get_or_create(
-                        tx_id=tx_id
-                    )
-
-                    if created:
-                        logger.error(
-                            'tx {} not found for previous output to {}'.format(
-                                tx_id[:8],
-                                tx_input
-                            )
-                        )
-                        try:
-                            Channel('repair_transaction').send({
-                                'chain': connection.schema_name,
-                                'tx_id': tx_id
-                            })
-                        except BaseChannelLayer.ChannelFull:
-                            logger.error('CHANNEL FULL!')
-
-                    previous_output, _ = TxOutput.objects.get_or_create(
-                        transaction_id=previous_transaction.id,
-                        index=vin.get('vout'),
-                    )
-
-                    tx_input.previous_output_id = previous_output.id
-
-                    try:
-                        tx_input.save()
-                    except IntegrityError:
-                        logger.error('output is already used as a previous input')
-                        # find the t_in that links this t_out
-                        try:
-                            t_in = TxInput.objects.get(previous_output=previous_output)
-                            t_in.previous_output = None
-                            t_in.save()
-                        except TxInput.DoesNotExist:
-                            # no input found. Just delete the tou instead
-                            previous_output.delete()
-                            previous_output, _ = TxOutput.objects.get_or_create(
-                                transaction_id=previous_transaction.id,
-                                index=vin.get('vout'),
-                            )
-                        tx_input.previous_output_id = previous_output.id
-                        tx_input.save()
+            self.parse_input(vin, vin_index)
+            vin_index += 1
 
         # save a TXOutput for each output in the Transaction
         for vout in rpc_tx.get('vout', []):
-            script_pubkey = vout.get('scriptPubKey', {})
-            try:
-                try:
-                    tx_output = TxOutput.objects.get(
-                        transaction_id=self.id,
-                        index=vout.get('n'),
-                    )
-                    tx_output.value = convert_to_satoshis(vout.get('value', 0.0))
-                    # convert to satoshis
-                    tx_output.script_pub_key_asm = script_pubkey.get('asm', '')
-                    tx_output.script_pub_key_hex = script_pubkey.get('hex', '')
-                    tx_output.script_pub_key_type = script_pubkey.get('type', '')
-                    tx_output.script_pub_key_req_sig = script_pubkey.get('reqSigs', '')
-                except TxOutput.DoesNotExist:
-                    logger.warning(
-                        'output for {}@{} does not exist. creating'.format(
-                            vout.get('n'),
-                            self
-                        )
-                    )
-                    tx_output = TxOutput.objects.create(
-                        transaction_id=self.id,
-                        index=vout.get('n'),
-                        value=convert_to_satoshis(vout.get('value', 0.0)),
-                        script_pub_key_asm=script_pubkey.get('asm', ''),
-                        script_pub_key_hex=script_pubkey.get('hex', ''),
-                        script_pub_key_type=script_pubkey.get('type', ''),
-                        script_pub_key_req_sig=script_pubkey.get('reqSigs', ''),
-                    )
-
-                tx_output.save()
-
-            except IntegrityError:
-                logger.warning('Integrity Error')
-                continue
-
-            # attach the address to the output
-            for addr in script_pubkey.get('addresses', []):
-                try:
-                    Channel('parse_address').send({
-                        'chain': connection.schema_name,
-                        'address': addr,
-                        'tx_output': tx_output.pk
-                    })
-                except BaseChannelLayer.ChannelFull:
-                    logger.error('CHANNEL FULL!')
+            self.parse_output(vout)
 
         self.save()
         logger.info('saved tx {}'.format(self))
@@ -291,16 +292,9 @@ class Transaction(models.Model):
                         tx_input.sequence.to_bytes(4, 'little')
                     )
                 else:  # custodial grant
-                    try:
-                        coin = Coin.objects.get(unit_code=self.unit)
-                    except Coin.DoesNotExist:
-                        logger.error(
-                            'coin matching unit {} does not exist'.format(self.unit)
-                        )
-                        return
                     tx_input_bytes = (
                         codecs.decode('0' * 64, 'hex')[::-1] +
-                        codecs.decode(coin.vout_n_value, 'hex')[::-1] +
+                        codecs.decode(self.coin.vout_n_value, 'hex')[::-1] +
                         get_var_int_bytes(len(codecs.decode(tx_input.coin_base, 'hex'))) +
                         codecs.decode(tx_input.coin_base, 'hex') +
                         tx_input.sequence.to_bytes(4, 'little')
@@ -319,9 +313,10 @@ class Transaction(models.Model):
             )
             tx_bytes += tx_output_bytes
         # add the locktime
+
         tx_bytes += self.lock_time.to_bytes(4, 'little')
         # add the unit
-        tx_bytes += codecs.encode(self.unit)
+        tx_bytes += codecs.encode(self.coin.unit_code)
 
         # hash the header and fail if it doesn't match the one on record
         header_hash = hashlib.sha256(hashlib.sha256(tx_bytes).digest()).digest()
@@ -348,7 +343,7 @@ class Transaction(models.Model):
                     return False, 'previous output value is 0'
 
         # check for unit/coin
-        if not self.unit or not self.coin:
+        if not self.coin:
             return False, 'no associated coin'
 
         return True, 'Transaction is valid'

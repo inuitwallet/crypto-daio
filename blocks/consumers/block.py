@@ -92,7 +92,7 @@ def repair_block(message):
         rpc = send_rpc(
             {
                 'method': 'getblock',
-                'params': [block_hash]
+                'params': [block_hash, True, True]
             },
             schema_name=message.get('chain')
         )
