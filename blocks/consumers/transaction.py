@@ -20,8 +20,6 @@ def repair_transaction(message):
         if not tx_id:
             logger.error('no tx_id passed')
 
-        tx, tx_created = Transaction.objects.get_or_create(tx_id=tx_id)
-
         # get the raw transaction
         rpc_tx = send_rpc(
             {
@@ -35,7 +33,7 @@ def repair_transaction(message):
 
         block_hash = rpc_tx.get('blockhash')
         if not block_hash:
-            logger.error('no block hash found in rpc_tx: {}'.format(tx))
+            logger.error('no block hash found in rpc_tx: {}'.format(tx_id[:8]))
             return
 
         block, block_created = Block.objects.get_or_create(hash=block_hash)
@@ -63,12 +61,12 @@ def repair_transaction(message):
 
         tx_index = tx_list.index(tx_id)
 
-        if tx_created:
-            logger.warning('tx {} is new. saving and validating')
-            tx.block = block
-            tx.index = tx_index
-            tx.save()
-            return
+        try:
+            tx = Transaction.objects.get(tx_id=tx_id)
+        except Transaction.DoesNotExist:
+            logger.warning('tx {} is new.'.format(tx_id[:8]))
+            tx = Transaction(tx_id=tx_id, block=block, index=tx_index)
+            tx.save(validate=False)
 
         logger.info('repairing tx {}'.format(tx))
 
