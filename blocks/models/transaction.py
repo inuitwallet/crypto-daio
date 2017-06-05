@@ -258,7 +258,8 @@ class Transaction(models.Model):
         for attribute in [
             'self.version',
             'self.time',
-            'self.index'
+            'self.index',
+            'self.lock_time'
         ]:
             if eval(attribute) is None:
                 return False, 'missing attribute: {}'.format(attribute)
