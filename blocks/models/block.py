@@ -244,7 +244,7 @@ class Block(models.Model):
             except Transaction.DoesNotExist:
                 tx = Transaction(tx_id=rpc_tx.get('txid'))
 
-            tx.block = self
+            tx.block_id = self.id
             tx.index = tx_index
             tx.version = rpc_tx.get('version')
             tx.lock_time = rpc_tx.get('lock_time')
