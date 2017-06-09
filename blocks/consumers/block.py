@@ -107,9 +107,12 @@ def fix_previous_block(block, chain):
     prev_hash = get_block_hash(block.height - 1, schema_name=chain)
     if not prev_hash:
         return
-    prev_block, created = Block.objects.get_or_create(hash=prev_hash)
+    try:
+        prev_block = Block.objects.get(hash=prev_hash)
+    except Block.DoesNotExist:
+        prev_block = Block(hash=prev_hash)
     prev_block.next_block = block
-    prev_block.save()
+    prev_block.save(validate=False)
     block.previous_block = prev_block
     block.save()
 
@@ -119,9 +122,12 @@ def fix_next_block(block, chain):
     next_hash = get_block_hash(block.height + 1, schema_name=chain)
     if not next_hash:
         return
-    next_block, created = Block.objects.get_or_create(hash=next_hash)
+    try:
+        next_block = Block.objects.get(hash=next_hash)
+    except Block.DoesNotExist:
+        next_block = Block(hash=next_hash)
     next_block.previous_block = block
-    next_block.save()
+    next_block.save(validate=False)
     block.next_block = next_block
     block.save()
 
