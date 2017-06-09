@@ -79,11 +79,18 @@ def repair_block(message):
             fix_merkle_root(block, message.get('chain'))
             return
 
-        if 'previous' in message:
+        if(
+            message == 'no previous block hash'
+            or message == 'missing attribute: self.previous_block'
+            or message == 'previous block does not point to this block'
+        ):
             fix_previous_block(block, message.get('chain'))
             return
 
-        if 'next' in message:
+        if(
+            message == 'incorrect next height'
+            or message == 'next block does not lead on from this block'
+        ):
             fix_next_block(block, message.get('chain'))
             return
 
