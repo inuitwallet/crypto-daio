@@ -1,6 +1,6 @@
 {% extends 'explorer/base.html' %}
 
-{% load humanize %}
+{% load humanize static %}
 
 {% block title %}
 Block Detail: {{ object.height }}
@@ -9,7 +9,7 @@ Block Detail: {{ object.height }}
 {% block content %}
     <div class="row">
         <div class="col-md-10 col-md-offset-1">
-            <h3>Block {{ object.height }} - {{ object.hash }}</h3>
+            <h3>Block {{ object.height }} - <span id="block-hash">{{ object.hash }}</span></h3>
         </div>
     </div>
     <div class="row block-navigation">
@@ -78,10 +78,12 @@ Block Detail: {{ object.height }}
         </div>
     </div>
     <div class="row transactions spacer">
-        <div class="col-md-10 col-md-offset-1">
-            {% for tx in object.transactions.all %}
-                {% include 'explorer/fragments/transaction.html' %}
-            {% endfor %}
+        <div id="transactions" class="col-md-10 col-md-offset-1">
+
         </div>
     </div>
+{% endblock %}
+
+{% block afterbody %}
+    <script type="text/javascript" src='{% static 'explorer/js/get_block_transactions.js' %}'></script>
 {% endblock %}

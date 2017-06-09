@@ -1,6 +1,6 @@
 {% extends 'explorer/base.html' %}
 
-{% load humanize %}
+{% load humanize static %}
 
 {% block title %}
 Address Details
@@ -9,17 +9,19 @@ Address Details
 {% block content %}
     <div class="row">
         <div class="col-md-10 col-md-offset-1">
-            <h3>Address {{ object.address }}</h3>
+            <h3>Address <span id="address">{{ object.address }}</span></h3>
         </div>
     </div>
     <div class="row">
         {{ object.balance|floatformat:4|intcomma }}
     </div>
     <div class="row">
-        <div class="col-md-10 col-md-offset-1">
-            {% for tx in object.transactions %}
-                {% include 'explorer/fragments/transaction.html' %}
-            {% endfor %}
+        <div id="transactions" class="col-md-10 col-md-offset-1">
+
         </div>
     </div>
+{% endblock %}
+
+{% block afterbody %}
+    <script type="text/javascript" src='{% static 'explorer/js/get_address_transactions.js' %}'></script>
 {% endblock %}

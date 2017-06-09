@@ -1,6 +1,11 @@
+import json
+
 from channels import Group, Channel
+from django.template.loader import render_to_string
+from django_tenants.utils import tenant_context, get_tenant_model
 
 from daio.models import Chain
+from blocks.models import Block, Address
 
 
 def get_schema_from_host(message):
@@ -16,20 +21,59 @@ def get_schema_from_host(message):
 
 def ws_connect(message):
     schema = get_schema_from_host(message)
+    message.reply_channel.send({
+        'accept': True
+    })
     if message['path'] == '/latest_blocks_list/':
         Group('{}_latest_blocks_list'.format(schema)).add(message.reply_channel)
         Group('{}_update_info'.format(schema)).add(message.reply_channel)
-        message.reply_channel.send({
-            'accept': True
-        })
         Channel('display_info').send({'chain': schema})
 
     if '/block/' in message['path']:
         Group('{}_update_info'.format(schema)).add(message.reply_channel)
-        message.reply_channel.send({
-            'accept': True
-        })
         Channel('display_info').send({'chain': schema})
+
+
+def ws_receive(message):
+    message_dict = json.loads(message['text'])
+    print(message_dict)
+    tenant = get_tenant_model().objects.get(domain_url=message_dict['payload']['host'])
+    with tenant_context(tenant):
+        if message['path'] == '/get_block_transactions/':
+            block_hash = message_dict['stream']
+            block = Block.objects.get(hash=block_hash)
+            for tx in block.transactions.all():
+                message.reply_channel.send({
+                    'text': json.dumps(
+                        {
+                            'html': render_to_string(
+                                'explorer/fragments/transaction.html',
+                                {
+                                    'tx': tx
+                                }
+                            )
+                        }
+                    )
+                })
+            return
+
+        if message['path'] == '/get_address_transactions/':
+            address = message_dict['stream']
+            address_object = Address.objects.get(address=address)
+            for tx in address_object.transactions:
+                message.reply_channel.send({
+                    'text': json.dumps(
+                        {
+                            'html': render_to_string(
+                                'explorer/fragments/transaction.html',
+                                {
+                                    'tx': tx
+                                }
+                            )
+                        }
+                    )
+                })
+            return
 
 
 def ws_disconnect(message):

@@ -3,6 +3,8 @@ import logging
 from django.db import models
 from django.db.models import Sum, F
 
+from blocks.models import Transaction
+
 logger = logging.getLogger(__name__)
 
 
@@ -33,11 +35,12 @@ class Address(models.Model):
     @property
     def transactions(self):
         transactions = []
-        for output in self.outputs.all():
-            if output.transaction in transactions:
+        for output in self.outputs.all().values_list('transaction', flat=True):
+            if output in transactions:
                 continue
-            transactions.append(output.transaction)
-        return transactions
+            transactions.append(output)
+        return [Transaction.objects.get(id=tx_pk) for tx_pk in transactions]
+
 
 class WatchAddress(models.Model):
     address = models.ForeignKey(
