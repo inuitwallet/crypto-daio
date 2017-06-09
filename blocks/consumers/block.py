@@ -105,14 +105,19 @@ def repair_block(message):
 def fix_previous_block(block, chain):
     logger.info('fixing previous block')
     prev_hash = get_block_hash(block.height - 1, schema_name=chain)
+
     if not prev_hash:
         return
+
     try:
         prev_block = Block.objects.get(hash=prev_hash)
     except Block.DoesNotExist:
         prev_block = Block(hash=prev_hash)
+
+    prev_block.height = block.height -1
     prev_block.next_block = block
     prev_block.save(validate=False)
+
     block.previous_block = prev_block
     block.save()
 
@@ -120,14 +125,19 @@ def fix_previous_block(block, chain):
 def fix_next_block(block, chain):
     logger.info('fixing next block')
     next_hash = get_block_hash(block.height + 1, schema_name=chain)
+
     if not next_hash:
         return
+
     try:
         next_block = Block.objects.get(hash=next_hash)
     except Block.DoesNotExist:
         next_block = Block(hash=next_hash)
+
+    next_block.height = block.height + 1
     next_block.previous_block = block
     next_block.save(validate=False)
+
     block.next_block = next_block
     block.save()
 
