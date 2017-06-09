@@ -2,7 +2,7 @@ import json
 
 from channels import Group, Channel
 from django.template.loader import render_to_string
-from django_tenants.utils import tenant_context, get_tenant_model
+from tenant_schemas.utils import get_tenant_model, tenant_context
 
 from daio.models import Chain
 from blocks.models import Block, Address
