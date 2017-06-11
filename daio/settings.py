@@ -201,6 +201,7 @@ LOGGING = {
 }
 
 STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
     'djangobower.finders.BowerFinder',
 ]
 

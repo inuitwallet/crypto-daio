@@ -1,56 +1,49 @@
-import datetime
-import random
 import time
 
 from django.db import connection
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.views import View
 
 from blocks.models import Info
 
 
-class Charts(View):
+class CirculatingChart(View):
     @staticmethod
     def get(request):
-        # get circulating currency
-        x_data = []
-        coin_data = {}
-
-        for coin in connection.tenant.coins.all():
-            coin_data[coin.unit_code] = []
-
-        for info_object in Info.objects.all().order_by('time_added'):
-            info_date = int(time.mktime(info_object.time_added.timetuple())*1000)
-            x_data.append(info_date)
-            coin_data[info_object.unit].append(float(info_object.money_supply))
-
-        print(x_data)
-        print(coin_data)
-
-        tooltip_date = "%d %b %Y %H:%M:%S %p"
-        extra_serie = {
+        coin_data = {'coins': []}
+        extra_data = {
             "tooltip": {
                 "y_start": "There are ",
                 "y_end": " circulating"
             },
-            "date_format": tooltip_date
+            "date_format": "%d %b %Y %H:%M:%S %p"
         }
-        chart_data = {
-            'x': x_data
-        }
-        index = 1
-        for coin in connection.tenant.coins.all():
-            chart_data['name{}'.format(index)] = 'Circulating {}'.format(coin.name)
-            chart_data['y{}'.format(index)] = coin_data[coin.unit_code]
-            chart_data['extra{}'.format(index)] = extra_serie
-            index += 1
-        data = {
-            'charttype': "lineWithFocusChart",
-            'chartdata': chart_data,
-            'extra': {
-                'x_is_date': True,
 
-            }
-        }
-        return render_to_response('charts/linewithfocuschart.html', data)
+        for coin in connection.tenant.coins.all():
+            info_objects = Info.objects.filter(unit=coin.unit_code).order_by('time_added')
+            coin_data['coins'].append(
+                {
+                    'type': "lineWithFocusChart",
+                    'name': 'Circulating {}'.format(coin.name),
+                    'extra': {
+                        'x_is_date': True,
+                    },
+                    'container': '{}_container'.format(coin.unit_code),
+                    'data': {
+                        'x': [
+                            int(time.mktime(info_object.time_added.timetuple()) * 1000)
+                            for info_object in info_objects
+                        ],
+                        'y1': [
+                            float(info_object.money_supply)
+                            for info_object in info_objects
+                        ],
+                        'name1': 'Circulating {}'.format(coin.name),
+                        'extra1': extra_data,
+                        'color_category': 'category10'
+                    }
+                }
+            )
+
+        return render(request, 'charts/circulating_currency.html', coin_data)
 
