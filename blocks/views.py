@@ -1,9 +1,11 @@
 from django.db import connection
 from django.shortcuts import get_object_or_404, render
+from django.utils.decorators import method_decorator
 from django.views import View
 
 from django.http import HttpResponse
 from django.http.response import HttpResponseNotFound
+from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView
 from django.conf import settings
 
@@ -45,6 +47,10 @@ class LatestBlocksList(ListView):
 
 
 class BlockDetailView(View):
+    @csrf_exempt
+    def dispatch(self, request, *args, **kwargs):
+        return super(BlockDetailView, self).dispatch(request, *args, **kwargs)
+
     @staticmethod
     def get(request, block_height):
         block = get_object_or_404(Block, height=block_height)

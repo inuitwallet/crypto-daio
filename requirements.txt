@@ -3,6 +3,8 @@ bitstring
 bpython
 channels
 django
+django-bower
+django-nvd3
 django-redis
 django-redisboard
 djangorestframework

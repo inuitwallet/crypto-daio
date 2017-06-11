@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 
+APPLICATION_DIR = os.path.dirname(globals()['__file__'])
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -35,6 +37,8 @@ SHARED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sites',
+    'django_nvd3',
+    'djangobower',
     'daio',
 ]
 
@@ -48,6 +52,7 @@ TENANT_APPS = [
     'django.contrib.messages',
     'django.contrib.humanize',
     'blocks',
+    'charts',
     'wallet',
     'rest_framework',
     'channels',
@@ -194,3 +199,16 @@ LOGGING = {
         },
     },
 }
+
+STATICFILES_FINDERS = [
+    'djangobower.finders.BowerFinder',
+]
+
+BOWER_COMPONENTS_ROOT = os.path.join(APPLICATION_DIR, 'components')
+
+BOWER_PATH = '/usr/local/bin/bower'
+
+BOWER_INSTALLED_APPS = (
+    'd3#3.5.5',
+    'nvd3#1.7.1',
+)

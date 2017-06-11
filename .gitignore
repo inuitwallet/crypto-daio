@@ -102,3 +102,6 @@ test_conn.py
 *.log.*
 
 
+static_files/
+
+daio/components/
