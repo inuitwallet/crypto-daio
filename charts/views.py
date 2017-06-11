@@ -31,6 +31,7 @@ class CirculatingChart(View):
             y_data = []
             y_value = 0.0
 
+            day_count = 0
             for info_object in info_objects:
                 day = int(
                     time.mktime(
@@ -49,13 +50,15 @@ class CirculatingChart(View):
                     x_data.append(day)
 
                 if day not in x_data:
-                    y_data.append(y_value)
+                    y_data.append(y_value / day_count)
                     x_data.append(day)
                     y_value = 0.0
+                    day_count = 0
 
                 y_value += float(info_object.money_supply)
+                day_count += 1
 
-            y_data.append(y_value)
+            y_data.append(y_value / day_count)
 
             coin_data['coins'].append(
                 {
