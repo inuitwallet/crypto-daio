@@ -20,7 +20,11 @@ class CirculatingChart(View):
         }
 
         for coin in connection.tenant.coins.all():
-            info_objects = Info.objects.filter(unit=coin.unit_code).order_by('time_added')
+            info_objects = Info.objects.filter(
+                unit=coin.unit_code
+            ).order_by(
+                'time_added'
+            )[2628000]
             coin_data['coins'].append(
                 {
                     'type': "lineWithFocusChart",
