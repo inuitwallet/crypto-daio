@@ -48,10 +48,18 @@ class CirculatingChart(View):
             for coin in coins:
                 info = Info.objects.filter(
                     unit=coin.unit_code
+                ).filter(
+                    time_added__gte=midnight
+                ).filter(
+                    time_added__lt=tomorrow
                 ).aggregate(
                     Avg('money_supply')
                 )
-                y_data[coin.unit_code].append(info['money_supply__avg'])
+                y_data[coin.unit_code].append(
+                    info['money_supply__avg']
+                    if info ['money_supply__avg'] is not None
+                    else 0
+                )
 
             low_date = tomorrow
 
