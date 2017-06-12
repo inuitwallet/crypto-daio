@@ -1,16 +1,12 @@
 {% load nvd3_tags static %}
 <head>
     {% include_chart_jscss %}
-    {% for coin_data in coins %}
-        {% load_chart coin_data.type coin_data.data coin_data.container coin_data.extra %}
-    {% endfor %}
+    {% load_chart chart_type series_data 'circulating_currency' extra %}
     <!-- main stylesheet -->
     <link rel="stylesheet" href="{% static 'charts/css/main.css' %}" />
 </head>
 <body>
-    {% for coin_data in coins %}
-        <div class="graph">
-            {% include_container coin_data.container 500 '100%' %}
-        </div>
-    {% endfor %}
+    <div class="graph">
+        {% include_container 'circulating_currency' 500 '100%' %}
+    </div>
 </body>
