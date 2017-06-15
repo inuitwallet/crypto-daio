@@ -38,7 +38,7 @@ class Command(BaseCommand):
         Get the latest info from the coin daemon and send the messages to update the UI
         """
         chain = connection.tenant
-        max_height = connections = 0
+        max_height = 0
         for coin in chain.coins.all():
             rpc = send_rpc(
                 {
@@ -64,6 +64,8 @@ class Command(BaseCommand):
 
             logger.info('saved {}'.format(info))
 
+            max_height = info.max_height
+
         Channel('display_info').send({'chain': connection.schema_name})
 
         current_highest_block = Block.objects.all().aggregate(
@@ -82,8 +84,9 @@ class Command(BaseCommand):
                 schema_name=chain.schema_name
             )
             block, _ = Block.objects.get_or_create(hash=rpc_hash)
+            logger.info('saved block {}'.format(block))
 
-        # give a short amount of time for the block to be saved
+        # give a short amount of time for the block(s) to be saved
         sleep(5)
 
         top_blocks = Block.objects.exclude(height=None).order_by('-height')[:50]
