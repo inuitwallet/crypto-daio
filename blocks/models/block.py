@@ -335,7 +335,7 @@ class Block(models.Model):
 
         # check the indexes on transactions are incremental
         for x in range(self.transactions.all().count()):
-            if self.transactions.get(index=x).count() != 1:
+            if self.transactions.filter(index=x).count() != 1:
                 return False, 'incorrect tx indexing'
 
         return True, 'Block is valid'
