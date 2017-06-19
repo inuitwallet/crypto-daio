@@ -43,7 +43,7 @@ admin.site.register(Balance, BalanceAdmin)
 
 
 class TradeAdmin(admin.ModelAdmin):
-    list_display = ('order_id', 'pair', 'date_time')
+    list_display = ('order_id', 'pair', 'date_time', 'order_type', 'amount', 'rate')
     search_fields = ('order_id', 'pair')
     raw_id_fields = ('pair',)
 
