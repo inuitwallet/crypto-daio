@@ -333,6 +333,11 @@ class Block(models.Model):
         if merkle_root != self.merkle_root:
             return False, 'merkle root incorrect'
 
+        # check the indexes on transactions are incremental
+        for x in range(self.transactions.all().count()):
+            if self.transactions.get(index=x).count() != 1:
+                return False, 'incorrect tx indexing'
+
         return True, 'Block is valid'
 
     def _calculate_merkle_root(self, hash_list):

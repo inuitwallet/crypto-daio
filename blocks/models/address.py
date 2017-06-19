@@ -1,8 +1,5 @@
 import logging
-
 from django.db import models
-from django.db.models import Sum, F
-
 from blocks.models import Transaction
 
 logger = logging.getLogger(__name__)
