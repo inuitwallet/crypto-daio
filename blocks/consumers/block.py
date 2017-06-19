@@ -79,6 +79,10 @@ def repair_block(message):
             fix_merkle_root(block, message.get('chain'))
             return
 
+        if error_message == 'incorrect tx indexing':
+            fix_merkle_root(block, message.get('chain'))
+            return
+
         if 'previous' in error_message:
             fix_previous_block(block, message.get('chain'))
             return
