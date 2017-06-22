@@ -22,8 +22,11 @@ class TradeValueTable(ListView):
         context = super(TradeValueTable, self).get_context_data(**kwargs)
         new_object_list = []
         for trade in context['object_list']:
+            if not trade.date_time:
+                continue
+
             trade.adjusted_amount = trade.amount
-            if trade.pair.quote_currency.get_usd_value and trade.date_time:
+            if trade.pair.quote_currency.get_usd_value:
                 closest_value = CurrencyValue.objects.get_closest_to(
                     trade.pair.quote_currency,
                     trade.date_time
@@ -33,7 +36,7 @@ class TradeValueTable(ListView):
 
             trade.adjusted_rate = trade.rate
             trade.adjusted_total = trade.total
-            if trade.pair.base_currency.get_usd_value and trade.date_time:
+            if trade.pair.base_currency.get_usd_value:
                 closest_value = CurrencyValue.objects.get_closest_to(
                     trade.pair.base_currency,
                     trade.date_time
