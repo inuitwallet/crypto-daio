@@ -51,7 +51,7 @@ class TradeValueTable(ListView):
             new_object_list.append(trade)
 
         context['object_list'] = new_object_list
-        context['chain'] = connection.schema_name
+        context['chain'] = connection.tenant
         return context
 
 
