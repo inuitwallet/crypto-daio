@@ -24,14 +24,11 @@ def ws_connect(message):
     message.reply_channel.send({
         'accept': True
     })
+    Group('{}_update_info'.format(schema)).add(message.reply_channel)
+    Channel('display_info').send({'chain': schema})
+
     if message['path'] == '/latest_blocks_list/':
         Group('{}_latest_blocks_list'.format(schema)).add(message.reply_channel)
-        Group('{}_update_info'.format(schema)).add(message.reply_channel)
-        Channel('display_info').send({'chain': schema})
-
-    if '/block/' in message['path']:
-        Group('{}_update_info'.format(schema)).add(message.reply_channel)
-        Channel('display_info').send({'chain': schema})
 
 
 def ws_receive(message):
