@@ -77,7 +77,7 @@ class Command(BaseCommand):
                 )
                 trade.order_type = 'SELL' if row[2] == 'LIMIT_SELL' else 'BUY'
                 trade.amount = Decimal(row[3])
-                trade.rate = Decimal(row[6])
+                trade.rate = Decimal(row[4])
                 trade.fee = Decimal(row[5])
                 trade.date_time = make_aware(
                     datetime.datetime.strptime(row[8], '%m/%d/%Y %I:%M:%S %p')
@@ -139,4 +139,4 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.do_cryptopia()
         self.do_bittrex()
-        self.get_2017_bitcoin_prices()
+        #self.get_2017_bitcoin_prices()
