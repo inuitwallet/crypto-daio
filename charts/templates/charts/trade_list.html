@@ -32,7 +32,7 @@
             </li>
         </ul>
     </nav>
-    <table class="table table-responsive table-bordered table-compact">
+    <table class="table table-responsive table-bordered table-compact table-striped table-hover">
         <thead>
             <tr>
                 <td>Pair</td>
@@ -58,7 +58,12 @@
                     <td>{{ trade.rate }}</td>
                     <td>{{ trade.total }}</td>
                     <td>{{ trade.adjusted_amount }}</td>
-                    <td>{{ trade.adjusted_rate }}</td>
+                    <td {% if 1.1 < trade.adjusted_rate %}
+                            class="danger"
+                        {% endif %}
+                        {% if 0.9 > trade.adjusted_rate %}
+                            class="danger"
+                        {% endif %}>{{ trade.adjusted_rate }}</td>
                     <td>{{ trade.adjusted_total }}</td>
                 </tr>
             {% endfor %}
