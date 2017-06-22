@@ -31,6 +31,7 @@ class TradeValueTable(ListView):
                     trade.pair.quote_currency,
                     trade.date_time
                 ).usd_value
+                trade.quote_price = closest_value
                 if trade.amount and closest_value:
                     trade.adjusted_amount = trade.amount * closest_value
 
@@ -41,6 +42,7 @@ class TradeValueTable(ListView):
                     trade.pair.base_currency,
                     trade.date_time
                 ).usd_value
+                trade.base_price = closest_value
                 if trade.rate and closest_value:
                     trade.adjusted_rate = trade.rate * closest_value
                 if trade.total and closest_value:

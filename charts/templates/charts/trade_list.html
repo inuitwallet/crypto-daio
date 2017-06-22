@@ -35,24 +35,26 @@
     <table class="table table-responsive table-bordered table-compact table-striped table-hover">
         <thead>
             <tr>
-                <td>Pair</td>
-                <td>ID</td>
                 <td>Date/Time</td>
+                <td>Quote</td>
+                <td>Base</td>
                 <td>Type</td>
                 <td>Amount</td>
                 <td>Rate</td>
                 <td>Total</td>
-                <td>Adjusted USD Amount</td>
-                <td>Adjusted USD Rate</td>
-                <td>Adjusted USD Total</td>
+                <td>Amount USD</td>
+                <td>Rate USD</td>
+                <td>Total USD</td>
+                <td>Quote USD Price</td>
+                <td>Base USD Price</td>
             </tr>
         </thead>
         <tbody>
             {% for trade in object_list %}
                 <tr>
-                    <td>{{ trade.pair }}</td>
-                    <td>{{ trade.order_id }}</td>
                     <td>{{ trade.date_time }}</td>
+                    <td>{{ trade.pair.quote_currency.code }}</td>
+                    <td>{{ trade.pair.base_currency.code }}</td>
                     <td>{{ trade.order_type }}</td>
                     <td>{{ trade.amount }}</td>
                     <td>{{ trade.rate }}</td>
@@ -65,6 +67,8 @@
                             class="danger"
                         {% endif %}>{{ trade.adjusted_rate }}</td>
                     <td>{{ trade.adjusted_total }}</td>
+                    <td>{% if trade.quote_price %}1 {{ trade.pair.quote_currency.code }} = ${{ trade.quote_price }}{% endif %}</td>
+                    <td>{% if trade.base_price %}1 {{ trade.pair.base_currency.code }} = ${{ trade.base_price }}{% endif %}</td>
                 </tr>
             {% endfor %}
         </tbody>
