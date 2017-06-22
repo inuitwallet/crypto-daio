@@ -137,6 +137,6 @@ class Command(BaseCommand):
             logger.info('saved {}'.format(currency_value))
 
     def handle(self, *args, **options):
-        #self.do_cryptopia()
-        #self.do_bittrex()
+        self.do_cryptopia()
+        self.do_bittrex()
         self.get_2017_bitcoin_prices()
