@@ -72,7 +72,7 @@ class CurrencyValueManager(models.Manager):
 
 
 class CurrencyValue(models.Model):
-    date_time = models.DateTimeField(auto_now=True)
+    date_time = models.DateTimeField(unique=True)
     currency = models.ForeignKey(
         Currency,
         related_name='values',
