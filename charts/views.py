@@ -52,6 +52,7 @@ class TradeValueTable(ListView):
 
         context['object_list'] = new_object_list
         context['chain'] = connection.tenant
+        context['coins'] = connection.tenant.coins.all()
         return context
 
 
