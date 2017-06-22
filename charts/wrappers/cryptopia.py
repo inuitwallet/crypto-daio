@@ -115,3 +115,9 @@ class Cryptopia(object):
                 trade.total = Decimal(historic_trade.get('Total'))
                 trade.save()
                 logger.info('saved {}'.format(trade))
+
+    def get_withdrawals(self, pair):
+        pass
+
+    def get_deposits(self, pair):
+        pass

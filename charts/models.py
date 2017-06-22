@@ -32,6 +32,45 @@ class Currency(models.Model):
         verbose_name_plural = 'currencies'
 
 
+class CurrencyValueManager(models.Manager):
+    def get_closest_to(self, currency, target):
+        closest_greater_qs = self.filter(
+            currency=currency
+        ).filter(
+            date_time__gt=target
+        ).order_by(
+            'date_time'
+        )
+
+        closest_less_qs = self.filter(
+            currency=currency
+        ).filter(
+            date_time__lt=target
+        ).order_by(
+            '-date_time'
+        )
+
+        try:
+            try:
+                closest_greater = closest_greater_qs[0]
+            except IndexError:
+                return closest_less_qs[0]
+
+            try:
+                closest_less = closest_less_qs[0]
+            except IndexError:
+                return closest_greater_qs[0]
+        except IndexError:
+            raise self.model.DoesNotExist(
+                "There is no closest value because there are no values."
+            )
+
+        if closest_greater.date_time - target > target - closest_less.date_time:
+            return closest_less
+        else:
+            return closest_greater
+
+
 class CurrencyValue(models.Model):
     date_time = models.DateTimeField(auto_now=True)
     currency = models.ForeignKey(
@@ -40,6 +79,8 @@ class CurrencyValue(models.Model):
         related_query_name='value'
     )
     usd_value = models.DecimalField(max_digits=16, decimal_places=2)
+
+    objects = CurrencyValueManager()
 
     def __str__(self):
         return '{} {} = USD {}'.format(self.date_time, self.currency.code, self.usd_value)
@@ -83,14 +124,14 @@ class Balance(models.Model):
     )
     date_time = models.DateTimeField(auto_now=True)
     base_amount = models.DecimalField(
-        max_digits=16,
-        decimal_places=4,
+        max_digits=26,
+        decimal_places=10,
         blank=True,
         null=True
     )
     quote_amount = models.DecimalField(
-        max_digits=16,
-        decimal_places=4,
+        max_digits=26,
+        decimal_places=10,
         blank=True,
         null=True
     )
@@ -121,9 +162,9 @@ class Trade(models.Model):
         blank=True,
         null=True
     )
-    amount = models.DecimalField(max_digits=16, decimal_places=4, blank=True, null=True)
-    rate = models.DecimalField(max_digits=16, decimal_places=4, blank=True, null=True)
-    total = models.DecimalField(max_digits=16, decimal_places=4, blank=True, null=True)
+    amount = models.DecimalField(max_digits=26, decimal_places=10, blank=True, null=True)
+    rate = models.DecimalField(max_digits=26, decimal_places=10, blank=True, null=True)
+    total = models.DecimalField(max_digits=26, decimal_places=10, blank=True, null=True)
     fee = models.DecimalField(max_digits=26, decimal_places=10, blank=True, null=True)
 
     def __str__(self):

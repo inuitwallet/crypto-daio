@@ -36,7 +36,6 @@ def ws_connect(message):
 
 def ws_receive(message):
     message_dict = json.loads(message['text'])
-    print(message_dict)
     tenant = get_tenant_model().objects.get(domain_url=message_dict['payload']['host'])
     with tenant_context(tenant):
         if message['path'] == '/get_block_transactions/':
