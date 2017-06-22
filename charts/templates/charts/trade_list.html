@@ -36,6 +36,7 @@
         <thead>
             <tr>
                 <td>Date/Time</td>
+                <td>Exchange</td>
                 <td>Quote</td>
                 <td>Base</td>
                 <td>Type</td>
@@ -53,6 +54,7 @@
             {% for trade in object_list %}
                 <tr>
                     <td>{{ trade.date_time }}</td>
+                    <td>{{ trade.pair.exchange }}</td>
                     <td>{{ trade.pair.quote_currency.code }}</td>
                     <td>{{ trade.pair.base_currency.code }}</td>
                     <td>{{ trade.order_type }}</td>
