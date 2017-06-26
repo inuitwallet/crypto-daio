@@ -23,8 +23,12 @@ class Command(BaseCommand):
             for pair in exchange.pairs.all():
                 logger.info('getting trade history for {}'.format(pair))
                 wrapper.get_trade_history(pair)
+
                 logger.info('getting balance for {}'.format(pair))
                 wrapper.get_balances(pair)
+
+                logger.info('getting open orders for {}'.format(pair))
+                wrapper.get_open_orders(pair)
 
         # get the usd values of currencies that need it
         logger.info('fetching usd values for currencies')

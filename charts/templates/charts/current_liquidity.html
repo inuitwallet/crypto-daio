@@ -1,0 +1,96 @@
+{% extends 'charts/base.html' %}
+
+{% load nvd3_tags static %}
+
+{% block title %}
+    Current Liquidity
+{% endblock %}
+
+{% block head %}
+    {% include_chart_jscss %}
+    {% load_chart chart_type series_data 'current_liquidity' extra %}
+    <!-- main stylesheet -->
+    <link rel="stylesheet" href="{% static 'charts/css/main.css' %}" />
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="graph">
+                {% include_container 'current_liquidity' 500 '100%' %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    Buy Orders
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <table class="table table-responsive table-bordered table-compact table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <td>Exchange</td>
+                                <td>Quote</td>
+                                <td>Base</td>
+                                <td>Type</td>
+                                <td>Amount</td>
+                                <td>Rate</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in buy_orders %}
+                                <tr>
+                                    <td>{{ order.pair.exchange }}</td>
+                                    <td>{{ order.pair.quote_currency.code }}</td>
+                                    <td>{{ order.pair.base_currency.code }}</td>
+                                    <td>{{ order.order_type }}</td>
+                                    <td>{{ order.amount }}</td>
+                                    <td>{{ order.rate }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    Sell Orders
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <table class="table table-responsive table-bordered table-compact table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <td>Exchange</td>
+                                <td>Quote</td>
+                                <td>Base</td>
+                                <td>Type</td>
+                                <td>Amount</td>
+                                <td>Rate</td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in sell_orders %}
+                                <tr>
+                                    <td>{{ order.pair.exchange }}</td>
+                                    <td>{{ order.pair.quote_currency.code }}</td>
+                                    <td>{{ order.pair.base_currency.code }}</td>
+                                    <td>{{ order.order_type }}</td>
+                                    <td>{{ order.amount }}</td>
+                                    <td>{{ order.rate }}</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

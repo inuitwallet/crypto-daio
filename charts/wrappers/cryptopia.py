@@ -13,7 +13,7 @@ import time
 from decimal import Decimal
 from django.utils.timezone import make_aware
 
-from charts.models import Trade, Balance
+from charts.models import Trade, Balance, Pair, Exchange, Order
 
 logger = logging.getLogger(__name__)
 
@@ -121,3 +121,39 @@ class Cryptopia(object):
 
     def get_deposits(self, pair):
         pass
+
+    def get_open_orders(self, pair):
+        # close all open orders for the pair
+        for open_order in Order.objects.filter(pair=pair, open=True):
+            open_order.open = False
+            open_order.save()
+
+        open_orders = self.make_request(
+            'GetOpenOrders',
+            {
+                'Market': '{}/{}'.format(
+                    pair.quote_currency.code,
+                    pair.base_currency.code
+                ),
+                'Count': 1000
+            }
+        )
+
+        for open_order in open_orders.get('Data', []):
+            order, _ = Order.objects.get_or_create(
+                pair=pair,
+                order_id=open_order.get('OrderId')
+            )
+            order.order_type = 'BUY' if open_order.get('Type') == 'Buy' else 'SELL'
+            order.amount = open_order.get('Amount')
+            order.rate = open_order.get('Rate')
+            order.date_time = make_aware(
+                datetime.strptime(
+                    open_order.get('TimeStamp')[:-1],
+                    '%Y-%m-%dT%H:%M:%S.%f'
+                )
+            )
+            order.Total = open_order.get('Total')
+            order.open = True
+            order.Remaining = open_order.get('Remaining')
+            order.save()

@@ -175,3 +175,11 @@ class Trade(models.Model):
         ordering = ('-date_time',)
 
 
+class Order(Trade):
+    open = models.BooleanField(default=True)
+    remaining = models.DecimalField(
+        max_digits=26,
+        decimal_places=10,
+        blank=True,
+        null=True
+    )

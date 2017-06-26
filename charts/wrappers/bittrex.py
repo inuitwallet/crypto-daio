@@ -10,7 +10,7 @@ from decimal import Decimal
 
 from django.utils.timezone import make_aware
 
-from charts.models import Balance, Trade
+from charts.models import Balance, Trade, Order
 
 logger = logging.getLogger(__name__)
 
@@ -92,3 +92,45 @@ class Bittrex(object):
                     historic_trade.get('Quantity') * historic_trade.get('PricePerUnit')
                 )
                 trade.save()
+
+    def get_withdrawals(self, pair):
+        pass
+
+    def get_deposits(self, pair):
+        pass
+
+    def get_open_orders(self, pair):
+        # close all open orders for the pair
+        for open_order in Order.objects.filter(pair=pair, open=True):
+            open_order.open = False
+            open_order.save()
+
+        open_orders = self.make_request(
+            'market/getopenorders',
+            {
+                'market': '{}-{}'.format(
+                    pair.base_currency.code,
+                    pair.quote_currency.code
+                )
+            }
+        )
+
+        for open_order in open_orders.get('result', []):
+            order, _ = Order.objects.get_or_create(
+                pair=pair,
+                order_id=open_order.get('OrderUuid')
+            )
+            order.order_type = 'BUY' if open_order.get('OrderType') == 'LIMIT_BUY' else 'SELL'  # noqa
+            order.amount = open_order.get('Quantity')
+            order.rate = open_order.get('Limit')
+            order.date_time = make_aware(
+                datetime.strptime(
+                    open_order.get('Opened'),
+                    '%Y-%m-%dT%H:%M:%S.%f'
+                )
+            )
+            order.Remaining = open_order.get('QuantityRemaining')
+            order.Total = open_order.get('Quantity') * open_order.get('Limit')
+            order.open = True
+            order.save()
+

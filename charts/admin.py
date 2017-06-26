@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 # Register your models here.
-from charts.models import Exchange, Currency, Pair, Balance, Trade, CurrencyValue
+from charts.models import Exchange, Currency, Pair, Balance, Trade, CurrencyValue, Order
 
 
 class ExchangeAdmin(admin.ModelAdmin):
@@ -48,3 +48,11 @@ class TradeAdmin(admin.ModelAdmin):
     raw_id_fields = ('pair',)
 
 admin.site.register(Trade, TradeAdmin)
+
+
+class OrderAdmin(admin.ModelAdmin):
+    list_display = ('open', 'order_id', 'pair', 'date_time', 'order_type', 'amount', 'rate')  # noqa
+    search_fields = ('order_id', 'pair')
+    raw_id_fields = ('pair',)
+
+admin.site.register(Order, OrderAdmin)
