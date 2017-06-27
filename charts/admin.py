@@ -60,7 +60,7 @@ admin.site.register(Order, OrderAdmin)
 
 
 class WithdrawalAdmin(admin.ModelAdmin):
-    list_display = ('complete', 'exchange_tx_id', 'date_time', 'currency', 'amount', 'address')  # noqa
+    list_display = ('complete', 'pair', 'exchange_tx_id', 'date_time', 'currency', 'amount', 'address')  # noqa
     search_fields = ('order_id', 'pair')
     raw_id_fields = ('currency', 'pair')
 
@@ -68,7 +68,7 @@ admin.site.register(Withdrawal, WithdrawalAdmin)
 
 
 class DepositAdmin(admin.ModelAdmin):
-    list_display = ('complete', 'exchange_tx_id', 'date_time', 'currency', 'amount')
+    list_display = ('complete', 'pair', 'exchange_tx_id', 'date_time', 'currency', 'amount')  # noqa
     search_fields = ('order_id', 'pair')
     raw_id_fields = ('currency', 'pair')
 
