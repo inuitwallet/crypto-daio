@@ -33,7 +33,7 @@ class Address(models.Model):
     def transactions(self):
         transactions = []
         for output in self.outputs.all().order_by(
-            'block'
+            'transaction__block'
         ).values_list(
             'transaction',
             flat=True
