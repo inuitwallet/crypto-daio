@@ -1,7 +1,8 @@
 from django.contrib import admin
 
 # Register your models here.
-from charts.models import Exchange, Currency, Pair, Balance, Trade, CurrencyValue, Order
+from charts.models import Exchange, Currency, Pair, Balance, Trade, CurrencyValue, Order, \
+    Withdrawal, Deposit
 
 
 class ExchangeAdmin(admin.ModelAdmin):
@@ -56,3 +57,19 @@ class OrderAdmin(admin.ModelAdmin):
     raw_id_fields = ('pair',)
 
 admin.site.register(Order, OrderAdmin)
+
+
+class WithdrawalAdmin(admin.ModelAdmin):
+    list_display = ('complete', 'exchange_tx_id', 'date_time', 'currency', 'amount', 'address')  # noqa
+    search_fields = ('order_id', 'pair')
+    raw_id_fields = ('currency', 'pair')
+
+admin.site.register(Withdrawal, WithdrawalAdmin)
+
+
+class DepositAdmin(admin.ModelAdmin):
+    list_display = ('complete', 'exchange_tx_id', 'date_time', 'currency', 'amount')
+    search_fields = ('order_id', 'pair')
+    raw_id_fields = ('currency', 'pair')
+
+admin.site.register(Deposit, DepositAdmin)
