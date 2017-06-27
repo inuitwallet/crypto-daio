@@ -59,7 +59,10 @@ class Command(BaseCommand):
 
             transactions = addr.transactions
             for transaction in transactions:
-                print(transaction)
+                for input in transaction.inputs.all():
+                    print(input)
+                for output in transaction.outputs.all():
+                    print(output)
 
 
 
