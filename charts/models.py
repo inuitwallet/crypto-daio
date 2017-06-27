@@ -183,3 +183,58 @@ class Order(Trade):
         blank=True,
         null=True
     )
+
+
+class ExchangeTx(models.Model):
+    pair = models.ForeignKey(
+        Pair,
+        related_name='exchange_tx',
+        related_query_name='exchange_txs'
+    )
+    exchange_tx_id = models.CharField(
+        max_length=255
+    )
+    date_time = models.DateTimeField(
+        blank=True,
+        null=True
+    )
+    currency = models.ForeignKey(
+        Currency,
+        related_name='exchange_tx',
+        related_query_name='exchange_txs'
+    )
+    tx_id = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
+    amount = models.DecimalField(max_digits=26, decimal_places=10, blank=True, null=True)
+    fee = models.DecimalField(max_digits=26, decimal_places=10, blank=True, null=True)
+    complete = models.BooleanField(default=True)
+
+
+class Withdrawal(ExchangeTx):
+    tx_type = models.CharField(
+        max_length=255,
+        choices=[
+            ('WITHDRAWAL', 'Withdrawal'),
+            ('DEPOSIT', 'Deposit')
+        ],
+        default='WITHDRAWAL'
+    )
+    address = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
+
+
+class Deposit(ExchangeTx):
+    tx_type = models.CharField(
+        max_length=255,
+        choices=[
+            ('WITHDRAWAL', 'Withdrawal'),
+            ('DEPOSIT', 'Deposit')
+        ],
+        default='DEPOSIT'
+    )

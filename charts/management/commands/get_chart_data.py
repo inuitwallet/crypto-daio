@@ -30,6 +30,12 @@ class Command(BaseCommand):
                 logger.info('getting open orders for {}'.format(pair))
                 wrapper.get_open_orders(pair)
 
+                logger.info('getting withdrawals for {}'.format(pair))
+                wrapper.get_withdrawals(pair)
+
+                logger.info('getting deposits for {}'.format(pair))
+                wrapper.get_deposits(pair)
+
         # get the usd values of currencies that need it
         logger.info('fetching usd values for currencies')
         cmc = wrappers.CoinMarketCap()

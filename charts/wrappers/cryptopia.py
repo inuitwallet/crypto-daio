@@ -13,7 +13,7 @@ import time
 from decimal import Decimal
 from django.utils.timezone import make_aware
 
-from charts.models import Trade, Balance, Pair, Exchange, Order
+from charts.models import Trade, Balance, Pair, Exchange, Order, Withdrawal, Deposit
 
 logger = logging.getLogger(__name__)
 
@@ -117,10 +117,93 @@ class Cryptopia(object):
                 logger.info('saved {}'.format(trade))
 
     def get_withdrawals(self, pair):
-        pass
+        withdrawal_history = self.make_request(
+            'GetTransactions',
+            {
+                'Type': 'Withdraw',
+                'Count': 1000
+            }
+        )
+        for withdrawal in withdrawal_history.get('Data', []):
+            currency = None
+
+            if pair.quote_currency.code == withdrawal.get('Currency'):
+                currency = pair.quote_currency
+
+            if pair.base_currency.code == withdrawal.get('Currency'):
+                currency = pair.base_currency
+
+            if not currency:
+                continue
+
+            completed = (
+                True
+                if withdrawal.get('Status') == 'Complete' else
+                False
+            )
+            date_time = make_aware(
+                datetime.strptime(
+                    withdrawal.get('Timestamp')[:-1],
+                    '%Y-%m-%dT%H:%M:%S.%f'
+                )
+            )
+            Withdrawal.objects.update_or_create(
+                pair=pair,
+                exchange_tx_id=withdrawal.get('Id'),
+                defaults={
+                    'currency': currency,
+                    'date_time': date_time,
+                    'complete': completed,
+                    'amount': withdrawal.get('Amount'),
+                    'fee': withdrawal.get('Fee'),
+                    'tx_id': withdrawal.get('TxId'),
+                    'address': withdrawal.get('Address'),
+                }
+            )
 
     def get_deposits(self, pair):
-        pass
+        deposit_history = self.make_request(
+            'GetTransactions',
+            {
+                'Type': 'Deposit',
+                'Count': 1000
+            }
+        )
+        for deposit in deposit_history.get('Data', []):
+            currency = None
+
+            if pair.quote_currency.code == deposit.get('Currency'):
+                currency = pair.quote_currency
+
+            if pair.base_currency.code == deposit.get('Currency'):
+                currency = pair.base_currency
+
+            if not currency:
+                continue
+
+            completed = (
+                True
+                if deposit.get('Status') == 'Confirmed' else
+                False
+            )
+            date_time = make_aware(
+                datetime.strptime(
+                    deposit.get('Timestamp'),
+                    '%Y-%m-%dT%H:%M:%S'
+                )
+            )
+            Deposit.objects.update_or_create(
+                pair=pair,
+                exchange_tx_id=deposit.get('Id'),
+                defaults={
+                    'currency': currency,
+                    'date_time': date_time,
+                    'complete': completed,
+                    'amount': deposit.get('Amount'),
+                    'fee': deposit.get('Fee'),
+                    'tx_id': deposit.get('TxId'),
+                }
+            )
 
     def get_open_orders(self, pair):
         # close all open orders for the pair
