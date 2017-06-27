@@ -10,7 +10,7 @@ from decimal import Decimal
 
 from django.utils.timezone import make_aware
 
-from charts.models import Balance, Trade, Order, Withdrawal
+from charts.models import Balance, Trade, Order, Withdrawal, Deposit
 
 logger = logging.getLogger(__name__)
 
@@ -167,7 +167,7 @@ class Bittrex(object):
                     '%Y-%m-%dT%H:%M:%S.%f'
                 )
             )
-            Withdrawal.objects.update_or_create(
+            Deposit.objects.update_or_create(
                 pair=pair,
                 exchange_tx_id=deposit.get('Id'),
                 defaults={
