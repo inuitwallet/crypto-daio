@@ -32,7 +32,12 @@ class Address(models.Model):
     @property
     def transactions(self):
         transactions = []
-        for output in self.outputs.all().values_list('transaction', flat=True):
+        for output in self.outputs.all().order_by(
+            'block'
+        ).values_list(
+            'transaction',
+            flat=True
+        ):
             if output in transactions:
                 continue
             transactions.append(output)
