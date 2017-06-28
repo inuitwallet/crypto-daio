@@ -74,7 +74,7 @@ class Command(BaseCommand):
             for tx in addr.transactions:
                 for output in tx.outputs.all():
                     if not output.address:
-                        logger.warning('output {} has no address'.format(output))
+                        output.transaction.block.save()
                         continue
 
                     if output.address.address in target_addresses:
