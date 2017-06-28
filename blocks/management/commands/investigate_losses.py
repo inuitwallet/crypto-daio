@@ -65,6 +65,7 @@ class Command(BaseCommand):
             'ScDYXcJc4TShVLcKBmgRq9rz6ZvqfLrAkv',
         ]
         for address in compromised_addresses:
+            logger.info('looking for {} data'.format(address))
             try:
                 addr = Address.objects.get(address=address)
             except Address.DoesNotExist:
@@ -79,7 +80,7 @@ class Command(BaseCommand):
                         logger.info(
                             '{} sent {} to {} on {}'.format(
                                 address,
-                                tx.address_outputs['out_addr'],
+                                tx.address_outputs[out_addr],
                                 out_addr,
                                 tx.time
                             )
