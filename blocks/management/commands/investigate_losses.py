@@ -79,7 +79,6 @@ class Command(BaseCommand):
                         for output in start_output.input.transaction.outputs.all():
                             if not output.address:
                                 output.transaction.block.save()
-                                logger.error('NO ADDRESS FOR OUTPUT {}'.format(output))
                                 continue
                             if output.address.address in target_addresses:
                                 values = output.transaction.address_outputs
