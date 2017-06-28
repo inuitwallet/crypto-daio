@@ -384,6 +384,8 @@ class Transaction(models.Model):
     def address_outputs(self):
         address_outputs = {}
 
+        addresses = self.outputs.all().distinct('address__address')
+        print(addresses)
         for tout in self.outputs.all():
             if not tout.address:
                 self.save()
