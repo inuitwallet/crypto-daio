@@ -73,6 +73,7 @@ class Command(BaseCommand):
             
             for tx in addr.transactions:
                 tx.block.save()
+                logger.info(tx.address_outputs)
                 for out_addr in tx.address_outputs:
                     if out_addr in target_addresses:
                         logger.info(

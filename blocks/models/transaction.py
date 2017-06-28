@@ -370,6 +370,10 @@ class Transaction(models.Model):
         address_inputs = {}
 
         for tin in self.inputs.all():
+            if not tin.previous_output.address:
+                self.save()
+                self.block.save()
+                continue
             if tin.previous_output.address.address not in address_inputs:
                 address_inputs[tin.previous_output.address.address] = Decimal(0)
             address_inputs[tin.previous_output.address.address] += tin.previous_output.value  # noqa
@@ -381,6 +385,10 @@ class Transaction(models.Model):
         address_outputs = {}
 
         for tout in self.outputs.all():
+            if not tout.address:
+                self.save()
+                self.block.save()
+                continue
             if tout.address.address not in address_outputs:
                 address_outputs[tout.address.address] = Decimal(0)
             address_outputs[tout.address.address] += tout.value
