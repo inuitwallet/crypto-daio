@@ -1,21 +1,15 @@
 import json
 import logging
-from time import sleep
 
-from channels import Group, Channel
 from django.core.management import BaseCommand
-from django.db import connection
-from django.db.models import Max
-from django.template.loader import render_to_string
 from django.utils import timezone
 
-from blocks.models import Info, Block
-from blocks.utils.rpc import send_rpc
 from blocks.models import Address
 
 logger = logging.getLogger(__name__)
 
 tz = timezone.get_current_timezone()
+
 
 
 class Command(BaseCommand):
@@ -75,19 +69,16 @@ class Command(BaseCommand):
             for start_output in addr.outputs.all().order_by(
                 'transaction__block__height'
             ):
-                if not start_output.input:
-                    continue
                 for output in start_output.input.transaction.outputs.all():
                     if not output.address:
                         output.transaction.block.save()
                         continue
                     if output.address.address in target_addresses:
                         logger.info(
-                            '{} sent {} to {} in {} on {}'.format(
-                                address,
-                                output.transaction.address_outputs[output.address.address],
-                                output.address.address,
+                            'transaction {} moved funds from {} to {}: {}'.format(
                                 output.transaction,
-                                output.transaction.time
+                                address,
+                                output.address.address,
+                                output.transaction.address_outputs
                             )
                         )
