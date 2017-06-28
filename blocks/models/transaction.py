@@ -394,7 +394,7 @@ class Transaction(models.Model):
                 address=address_tx.address
             ).aggregate(
                 Sum('value')
-            )
+            )['value__sum']
 
         return address_outputs
 
