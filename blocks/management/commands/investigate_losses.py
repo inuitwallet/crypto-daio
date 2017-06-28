@@ -72,17 +72,14 @@ class Command(BaseCommand):
                 continue
             
             for tx in addr.transactions:
-                for output in tx.outputs.all():
-                    if not output.address:
-                        output.transaction.block.save()
-                        continue
-
-                    if output.address.address in target_addresses:
+                tx.block.save()
+                for out_addr in tx.address_outputs:
+                    if out_addr in target_addresses:
                         logger.info(
                             '{} sent {} to {} on {}'.format(
                                 address,
-                                output.value,
-                                output.address.address,
+                                tx.address_outputs['out_addr'],
+                                out_addr,
                                 tx.time
                             )
                         )

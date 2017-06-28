@@ -6,6 +6,7 @@ from datetime import datetime
 
 from asgiref.base_layer import BaseChannelLayer
 from channels import Channel
+from decimal import Decimal
 from django.db import models, connection, IntegrityError
 from django.utils.timezone import make_aware
 
@@ -363,6 +364,28 @@ class Transaction(models.Model):
         for tout in self.outputs.all():
             total_out += tout.display_value
         return total_out
+
+    @property
+    def address_inputs(self):
+        address_inputs = {}
+
+        for tin in self.inputs.all():
+            if tin.previous_output.address.address not in address_inputs:
+                address_inputs[tin.previous_output.address.address] = Decimal(0)
+            address_inputs[tin.previous_output.address.address] += tin.previous_output.value  # noqa
+
+        return address_inputs
+
+    @property
+    def address_outputs(self):
+        address_outputs = {}
+
+        for tout in self.outputs.all():
+            if tout.address.address not in address_outputs:
+                address_outputs[tout.address.address] = Decimal(0)
+            address_outputs[tout.address.address] += tout.value
+
+        return address_outputs
 
     @property
     def balance(self):
