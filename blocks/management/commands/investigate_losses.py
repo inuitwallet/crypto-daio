@@ -83,6 +83,6 @@ class Command(BaseCommand):
                                     output.transaction.address_outputs
                                 )
                             )
-                            continue
+                            break
                 except TxInput.DoesNotExist:
                     continue
