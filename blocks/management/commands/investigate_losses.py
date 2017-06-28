@@ -64,21 +64,21 @@ class Command(BaseCommand):
             'SNbMQJnVDymEvE2vpyHfqdKzedjekXsGQi',
             'ScDYXcJc4TShVLcKBmgRq9rz6ZvqfLrAkv',
         ]
-        for address in comprimised_addresses:
+        for address in compromised_addresses:
             try:
                 addr = Address.objects.get(address=address)
             except Address.DoesNotExist:
                 logger.error('{} does not exist'.format(address))
                 continue
             
-            for tx in address.transactions:
+            for tx in addr.transactions:
                 for output in tx.outputs.all():
                     if output.address.address in target_addresses:
-                        logger.info('{} sent {} to {} on {}'.format(
-                            address, 
-                            output.value,
-                            output.address.address,
-                            tx.time
+                        logger.info(
+                            '{} sent {} to {} on {}'.format(
+                                address,
+                                output.value,
+                                output.address.address,
+                                tx.time
+                            )
                         )
-
-
