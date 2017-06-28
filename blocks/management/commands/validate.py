@@ -164,7 +164,7 @@ class Command(BaseCommand):
                     # sleep to let the channel empty a bit
                     # maximum of 600 seconds
                     sleep_time = 10 * len(page_invalid_blocks)
-                    time.sleep(sleep_time if sleep_time <= 600 else 600)
+                    time.sleep(sleep_time if sleep_time <= 120 else 120)
 
                 invalid_blocks += page_invalid_blocks
         except KeyboardInterrupt:
