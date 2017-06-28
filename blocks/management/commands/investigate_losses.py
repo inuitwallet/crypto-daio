@@ -73,6 +73,10 @@ class Command(BaseCommand):
             
             for tx in addr.transactions:
                 for output in tx.outputs.all():
+                    if not output.address:
+                        logger.warning('output {} has no address'.format(output))
+                        continue
+
                     if output.address.address in target_addresses:
                         logger.info(
                             '{} sent {} to {} on {}'.format(
