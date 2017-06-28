@@ -76,28 +76,27 @@ class Command(BaseCommand):
                     'transaction__block__height'
                 ):
                     try:
-                        for output in start_output.input.transaction.outputs.all():
-                            values = start_output.input.transaction.address_outputs
-                            for value_address in values:
-                                if value_address in target_addresses:
-                                    logger.info(
-                                        '{} moved {} from {} to {} on {}'.format(
-                                            output.transaction,
-                                            values[value_address],
-                                            address,
-                                            value_address,
-                                            output.transaction.time
-                                        )
+                        values = start_output.input.transaction.address_outputs
+                        for value_address in values:
+                            if value_address in target_addresses:
+                                logger.info(
+                                    '{} moved {} from {} to {} on {}'.format(
+                                        start_output.input.transaction,
+                                        values[value_address],
+                                        address,
+                                        value_address,
+                                        start_output.input.transaction.time
                                     )
-                                    loss_writer.writerow(
-                                        [
-                                            output.transaction.time,
-                                            output.transaction.block.height,
-                                            address,
-                                            value_address,
-                                            start_output.value,
-                                            values[value_address]
-                                        ]
-                                    )
+                                )
+                                loss_writer.writerow(
+                                    [
+                                        start_output.input.transaction.time,
+                                        start_output.input.transaction.block.height,
+                                        address,
+                                        value_address,
+                                        start_output.value,
+                                        values[value_address]
+                                    ]
+                                )
                     except TxInput.DoesNotExist:
                         continue
