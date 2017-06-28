@@ -8,6 +8,7 @@ from asgiref.base_layer import BaseChannelLayer
 from channels import Channel
 from decimal import Decimal
 from django.db import models, connection, IntegrityError
+from django.db.models import Sum
 from django.utils.timezone import make_aware
 
 from blocks.utils.numbers import get_var_int_bytes, convert_to_satoshis
@@ -384,20 +385,16 @@ class Transaction(models.Model):
     def address_outputs(self):
         address_outputs = {}
 
-        addresses = self.outputs.all().distinct(
+        for address_tx in self.outputs.all().distinct(
             'address__address'
         ).order_by(
             'address__address'
-        )
-        print(addresses)
-        for tout in self.outputs.all():
-            if not tout.address:
-                self.save()
-                self.block.save()
-                continue
-            if tout.address.address not in address_outputs:
-                address_outputs[tout.address.address] = Decimal(0)
-            address_outputs[tout.address.address] += tout.value
+        ):
+            address_outputs[address_tx.address.address] = self.outputs.filter(
+                address=address_tx.address
+            ).aggregate(
+                Sum('value')
+            )
 
         return address_outputs
 
