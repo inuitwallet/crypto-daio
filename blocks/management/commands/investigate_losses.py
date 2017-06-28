@@ -79,14 +79,15 @@ class Command(BaseCommand):
                             continue
 
                         matched_txs.append(output.input.transaction)
-                        values = output.input.transaction.address_outputs
+                        in_values = output.input.transaction.address_inputs
+                        out_values = output.input.transaction.address_outputs
 
-                        for value_address in values:
+                        for value_address in out_values:
                             if value_address in target_addresses:
                                 logger.info(
                                     '{} moved {} from {} to {} on {}'.format(
                                         output.input.transaction,
-                                        values[value_address],
+                                        out_values[value_address],
                                         address,
                                         value_address,
                                         output.input.transaction.time
@@ -98,8 +99,8 @@ class Command(BaseCommand):
                                         output.input.transaction.block.height,
                                         address,
                                         value_address,
-                                        output.value,
-                                        values[value_address]
+                                        in_values[address],
+                                        out_values[value_address]
                                     ]
                                 )
                     except TxInput.DoesNotExist:
