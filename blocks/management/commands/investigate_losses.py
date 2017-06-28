@@ -62,7 +62,7 @@ class Command(BaseCommand):
 
         with open('losses.csv', 'w+') as losses_file:
             loss_writer = csv.writer(losses_file)
-            loss_writer.writerow(['From', 'To', 'Date', 'Block', 'Input', 'Outputs'])
+            loss_writer.writerow(['Date', 'Block', 'From', 'To', 'Input', 'Outputs'])
 
             for address in compromised_addresses:
                 logger.info('looking for {} data'.format(address))
@@ -77,31 +77,27 @@ class Command(BaseCommand):
                 ):
                     try:
                         for output in start_output.input.transaction.outputs.all():
-                            if not output.address:
-                                output.transaction.block.save()
-                                continue
-                            if output.address.address in target_addresses:
-                                values = output.transaction.address_outputs
-                                logger.info(
-                                    'transaction {} moved funds from {} to {} on {}: '
-                                    '{}'.format(
-                                        output.transaction,
-                                        address,
-                                        output.address.address,
-                                        output.transaction.time,
-                                        values
+                            values = start_output.input.transaction.address_outputs
+                            for value_address in values:
+                                if value_address in target_addresses:
+                                    logger.info(
+                                        '{} moved {} from {} to {} on {}'.format(
+                                            output.transaction,
+                                            values[value_address],
+                                            address,
+                                            value_address,
+                                            output.transaction.time
+                                        )
                                     )
-                                )
-                                loss_writer.writerow(
-                                    [
-                                        address,
-                                        output.address.address,
-                                        output.transaction.time,
-                                        output.transaction.block.height,
-                                        start_output.value,
-                                        values
-                                    ]
-                                )
-                                break
+                                    loss_writer.writerow(
+                                        [
+                                            output.transaction.time,
+                                            output.transaction.block.height,
+                                            address,
+                                            value_address,
+                                            start_output.value,
+                                            values[value_address]
+                                        ]
+                                    )
                     except TxInput.DoesNotExist:
                         continue
