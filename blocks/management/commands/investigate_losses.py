@@ -1,3 +1,4 @@
+import csv
 import json
 import logging
 
@@ -58,31 +59,50 @@ class Command(BaseCommand):
             'SNbMQJnVDymEvE2vpyHfqdKzedjekXsGQi',
             'ScDYXcJc4TShVLcKBmgRq9rz6ZvqfLrAkv',
         ]
-        for address in compromised_addresses:
-            logger.info('looking for {} data'.format(address))
-            try:
-                addr = Address.objects.get(address=address)
-            except Address.DoesNotExist:
-                logger.error('{} does not exist'.format(address))
-                continue
 
-            for start_output in addr.outputs.all().order_by(
-                'transaction__block__height'
-            ):
+        with open('losses.csv', 'w+') as losses_file:
+            loss_writer = csv.writer(losses_file)
+            loss_writer.writerow(['From', 'To', 'Date', 'Block', 'Input', 'Outputs'])
+
+            for address in compromised_addresses:
+                logger.info('looking for {} data'.format(address))
                 try:
-                    for output in start_output.input.transaction.outputs.all():
-                        if not output.address:
-                            output.transaction.block.save()
-                            continue
-                        if output.address.address in target_addresses:
-                            logger.info(
-                                'transaction {} moved funds from {} to {}: {}'.format(
-                                    output.transaction,
-                                    address,
-                                    output.address.address,
-                                    output.transaction.address_outputs
-                                )
-                            )
-                            break
-                except TxInput.DoesNotExist:
+                    addr = Address.objects.get(address=address)
+                except Address.DoesNotExist:
+                    logger.error('{} does not exist'.format(address))
                     continue
+
+                for start_output in addr.outputs.all().order_by(
+                    'transaction__block__height'
+                ):
+                    try:
+                        for output in start_output.input.transaction.outputs.all():
+                            if not output.address:
+                                output.transaction.block.save()
+                                logger.error('NO ADDRESS FOR OUTPUT {}'.format(output))
+                                continue
+                            if output.address.address in target_addresses:
+                                values = output.transaction.address_outputs
+                                logger.info(
+                                    'transaction {} moved funds from {} to {} on {}: '
+                                    '{}'.format(
+                                        output.transaction,
+                                        address,
+                                        output.address.address,
+                                        output.transaction.time,
+                                        values
+                                    )
+                                )
+                                loss_writer.writerow(
+                                    [
+                                        address,
+                                        output.address.address,
+                                        output.transaction.time,
+                                        output.transaction.block.height,
+                                        start_output.value,
+                                        values
+                                    ]
+                                )
+                                break
+                    except TxInput.DoesNotExist:
+                        continue
