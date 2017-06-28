@@ -4,8 +4,7 @@ import logging
 from django.core.management import BaseCommand
 from django.utils import timezone
 
-from blocks.models import Address
-from models import TxInput
+from blocks.models import Address, TxInput
 
 logger = logging.getLogger(__name__)
 
