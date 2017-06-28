@@ -71,18 +71,22 @@ class Command(BaseCommand):
             except Address.DoesNotExist:
                 logger.error('{} does not exist'.format(address))
                 continue
-            
-            for output in addr.outputs.all().order_by(
+
+            for start_output in addr.outputs.all().order_by(
                 'transaction__block__height'
             ):
-                output.transaction.block.save()
-                for out_addr in output.transaction.address_outputs:
-                    if out_addr in target_addresses:
+                if not start_output.input:
+                    continue
+                for output in start_output.input.transaction.outputs.all():
+                    if not output.address:
+                        output.transaction.block.save()
+                        continue
+                    if output.address.address in target_addresses:
                         logger.info(
                             '{} sent {} to {} in {} on {}'.format(
                                 address,
-                                output.transaction.address_outputs[out_addr],
-                                out_addr,
+                                output.transaction.address_outputs[output.address.address],
+                                output.address.address,
                                 output.transaction,
                                 output.transaction.time
                             )
