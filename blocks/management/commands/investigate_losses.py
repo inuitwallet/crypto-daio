@@ -73,8 +73,8 @@ class Command(BaseCommand):
                 continue
             
             for tx in addr.transactions:
+                logger.info('{} passed'.format(tx))
                 tx.block.save()
-                logger.info(tx.address_outputs)
                 for out_addr in tx.address_outputs:
                     if out_addr in target_addresses:
                         logger.info(
