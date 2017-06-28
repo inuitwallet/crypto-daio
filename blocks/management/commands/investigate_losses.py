@@ -72,29 +72,33 @@ class Command(BaseCommand):
                     logger.error('{} does not exist'.format(address))
                     continue
 
-                for start_output in addr.outputs.all().order_by(
-                    'transaction__block__height'
-                ):
+                matched_txs = []
+                for output in addr.outputs.all():
                     try:
-                        values = start_output.input.transaction.address_outputs
+                        if output.input.transaction in matched_txs:
+                            continue
+
+                        matched_txs.append(output.input.transaction)
+                        values = output.input.transaction.address_outputs
+
                         for value_address in values:
                             if value_address in target_addresses:
                                 logger.info(
                                     '{} moved {} from {} to {} on {}'.format(
-                                        start_output.input.transaction,
+                                        output.input.transaction,
                                         values[value_address],
                                         address,
                                         value_address,
-                                        start_output.input.transaction.time
+                                        output.input.transaction.time
                                     )
                                 )
                                 loss_writer.writerow(
                                     [
-                                        start_output.input.transaction.time,
-                                        start_output.input.transaction.block.height,
+                                        output.input.transaction.time,
+                                        output.input.transaction.block.height,
                                         address,
                                         value_address,
-                                        start_output.value,
+                                        output.value,
                                         values[value_address]
                                     ]
                                 )
