@@ -72,7 +72,7 @@ class Command(BaseCommand):
                 logger.error('{} does not exist'.format(address))
                 continue
             
-            for output in addr.outputs.filter(
+            for output in addr.outputs.all().filter(
                 address__address__in=target_addresses
             ).order_by(
                 'transaction__block__height'
