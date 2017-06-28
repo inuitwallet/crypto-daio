@@ -27,30 +27,6 @@ class Command(BaseCommand):
         :param options:
         :return:
         """
-        addresses = [
-            'SYAxC194NgWoAqtGHHZ4GKXU6LT7mgqAq1',
-            'Sk2P6oj9VCC8VmCBQaRWK4iwTPbvPcGPsh',
-            'SQoAn2DmRPv2ypLcLR1NT3ciqfh8X9qbDQ',
-            'SWvFUTiJ2gvmUEGEszvXrdjkn6Uh9ZLbZe',
-            'SigAuqtYtigWZ8uVFG7iuLDYv9au9cK49L',
-            'SkNDumZBBbx5ygSRd7Nvbg32RoeUERoHrH',
-            'Sif3nJuoCZmG5zeahqAYy9jetRLAKfDawC',
-            'SYhzKRTPVR6PrqcHqZE1c2d7fWDQLqieba',
-            'SNi3zogpVvEGNLyxh6RLNHGU3PMPJBzgEY',
-            'SWxjKJ4m3U1X7h22yVDyDuHcdc5hwqxG6g',
-            'SYBAJJpoxwUBwyrLMud8B6FLibvZzbTCpi',
-            'Sbtxw5pC3y3QpepsWH5iAcra5a53ne6se9',
-            'SYxdao1Pyn92trMniivmw3UVLJ9wXbX6kz',
-            'SWVRAjpqjW4orkYmADPvQ1adUni9jVK7H8',
-            'SUJH1DLG2iLKHY3vXw4V5J1iLphCYAxg6n',
-            'ShQ4Rezxs3NKJHcRV6SVL1bvduT2n9P4bi',
-            'SewzCfwc36oFTXH9jL1VTUHsEPrJpnB2x2',
-            'SYy3bPPGqf3NipGyVRcgcu6rq7RKHoyh5Y',
-            'SQ7JRP54iQeLCHR8tujDJsAndKeiuyAqbi',
-            'SiyWZ1WCedKRXLg7u8fmVkUtF3JRC9QATv',
-            'BJDirPFfohpTRXTiTzw8gfZjV9qy3CRqpM',
-        ]
-
         compromised_addresses = [
             'SSajkovCPXwdw46nyJ7vpTDkwtRZJzyY2z',
             'SNf4uyshit1fj8dWKVxHsKTgTrNR61RskY',
@@ -88,22 +64,21 @@ class Command(BaseCommand):
             'SNbMQJnVDymEvE2vpyHfqdKzedjekXsGQi',
             'ScDYXcJc4TShVLcKBmgRq9rz6ZvqfLrAkv',
         ]
-        for address in addresses:
+        for address in comprimised_addresses:
             try:
                 addr = Address.objects.get(address=address)
             except Address.DoesNotExist:
-                logger.error('No address found for {}'.format(address))
+                logger.error('{} does not exist'.format(address))
                 continue
-
-            transactions = addr.transactions
-            for transaction in transactions:
-                for input in transaction.inputs.all():
-                    print(input)
-                for output in transaction.outputs.all():
-                    print(output)
-
-
-
-
+            
+            for tx in address.transactions:
+                for output in tx.outputs.all():
+                    if output.address.address in target_addresses:
+                        logger.info('{} sent {} to {} on {}'.format(
+                            address, 
+                            output.value,
+                            output.address.address,
+                            tx.time
+                        )
 
 
