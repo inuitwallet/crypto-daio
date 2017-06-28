@@ -390,6 +390,10 @@ class Transaction(models.Model):
         ).order_by(
             'address__address'
         ):
+            if not address_tx.address:
+                self.save()
+                self.block.save()
+                continue
             address_outputs[address_tx.address.address] = self.outputs.filter(
                 address=address_tx.address
             ).aggregate(
