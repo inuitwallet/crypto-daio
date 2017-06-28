@@ -5,6 +5,7 @@ from django.core.management import BaseCommand
 from django.utils import timezone
 
 from blocks.models import Address
+from models import TxInput
 
 logger = logging.getLogger(__name__)
 
@@ -69,16 +70,20 @@ class Command(BaseCommand):
             for start_output in addr.outputs.all().order_by(
                 'transaction__block__height'
             ):
-                for output in start_output.input.transaction.outputs.all():
-                    if not output.address:
-                        output.transaction.block.save()
-                        continue
-                    if output.address.address in target_addresses:
-                        logger.info(
-                            'transaction {} moved funds from {} to {}: {}'.format(
-                                output.transaction,
-                                address,
-                                output.address.address,
-                                output.transaction.address_outputs
+                try:
+                    for output in start_output.input.transaction.outputs.all():
+                        if not output.address:
+                            output.transaction.block.save()
+                            continue
+                        if output.address.address in target_addresses:
+                            logger.info(
+                                'transaction {} moved funds from {} to {}: {}'.format(
+                                    output.transaction,
+                                    address,
+                                    output.address.address,
+                                    output.transaction.address_outputs
+                                )
                             )
-                        )
+                            continue
+                except TxInput.DoesNotExist:
+                    continue
