@@ -6,9 +6,7 @@ $(function() {
     webSocketBridge.connect('/latest_blocks_list/');
 
     webSocketBridge.listen(function (data, channel) {
-        var message_type = data["message_type"];
-
-        if (message_type === "update_info") {
+        if (data["message_type"] === "update_info") {
             var element = $("#" + data["id"]);
             var element_data = $("#" + data["id"] + " span.data");
             var value = data["value"];

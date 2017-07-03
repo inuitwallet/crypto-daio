@@ -42,6 +42,7 @@ def ws_receive(message):
                 message.reply_channel.send({
                     'text': json.dumps(
                         {
+                            'message_type': 'block_transaction',
                             'html': render_to_string(
                                 'explorer/fragments/transaction.html',
                                 {
@@ -60,6 +61,7 @@ def ws_receive(message):
                 message.reply_channel.send({
                     'text': json.dumps(
                         {
+                            'message_type': 'address_transaction',
                             'html': render_to_string(
                                 'explorer/fragments/transaction.html',
                                 {

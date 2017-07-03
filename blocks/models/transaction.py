@@ -371,13 +371,13 @@ class Transaction(models.Model):
         address_inputs = {}
 
         for tin in self.inputs.all():
-            if not tin.previous_output.address:
+            if not tin.previous_output or not tin.previous_output.address:
                 self.save()
                 self.block.save()
                 continue
             if tin.previous_output.address.address not in address_inputs:
                 address_inputs[tin.previous_output.address.address] = Decimal(0)
-            address_inputs[tin.previous_output.address.address] += tin.previous_output.value  # noqa
+            address_inputs[tin.previous_output.address.address] += tin.previous_output.value / Decimal(10000)  # noqa
 
         return address_inputs
 
@@ -398,7 +398,7 @@ class Transaction(models.Model):
                 address=address_tx.address
             ).aggregate(
                 Sum('value')
-            )['value__sum']
+            )['value__sum'] / 10000
 
         return address_outputs
 

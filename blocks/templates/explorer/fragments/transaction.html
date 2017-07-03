@@ -1,4 +1,4 @@
-{% load humanize %}
+{% load humanize block_extras %}
 
 <div class="row transaction spacer">
     <div class="col-md-12">
@@ -37,6 +37,22 @@
                         </div>
                     {% endif %}
                 </div>
+            </div>
+        </div>
+        <div class="row tx-short-body spacer">
+            <div class="col-md-6 short-inputs">
+                {% with inputs=tx.address_inputs %}
+                    {% for address in inputs %}
+                        {{ inputs|get_item:address|floatformat:4|intcomma }} <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span> {{ address }}
+                    {% endfor %}
+                {% endwith %}
+            </div>
+            <div class="col-md-6 short-outputs word-wrap">
+                {% with outputs=tx.address_outputs %}
+                    {% for address in outputs %}
+                        {{ address }} <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span> {{ outputs|get_item:address|floatformat:4|intcomma }}
+                    {% endfor %}
+                {% endwith %}
             </div>
         </div>
         <div class="row tx-body spacer">

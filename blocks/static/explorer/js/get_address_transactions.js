@@ -12,8 +12,9 @@ $(function() {
     webSocketBridge.socket.addEventListener('open', function() {
         webSocketBridge.stream(address).send({'host': window.location.hostname});
         webSocketBridge.listen(function(data, channel) {
-            console.log(data);
-            transactions_div.append(data["html"]);
+            if (data["message_type"] === "address_transaction") {
+                transactions_div.append(data["html"]);
+            }
         });
     });
 });

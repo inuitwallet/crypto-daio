@@ -11,8 +11,11 @@ $(function() {
 
     webSocketBridge.socket.addEventListener('open', function() {
         webSocketBridge.stream(block_hash).send({'host': window.location.hostname});
-        webSocketBridge.listen(function(data, channel) {
-            transactions_div.append(data["html"]);
+        webSocketBridge.listen(function(data) {
+            console.log(data);
+            if (data["message_type"] === "block_transaction"){
+                transactions_div.append(data["html"]);
+            }
         });
     });
 });
