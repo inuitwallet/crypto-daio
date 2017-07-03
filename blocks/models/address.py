@@ -1,6 +1,7 @@
 import logging
 from django.db import models
 from blocks.models import Transaction
+from models import TxInput
 
 logger = logging.getLogger(__name__)
 
@@ -23,10 +24,11 @@ class Address(models.Model):
     def balance(self):
         balance = 0
         for output in self.outputs.all():
-            if output.input:
-                # if output has associated input it is spent
-                continue
-            balance += output.display_value
+            try:
+                if output.input:
+                    continue
+            except TxInput.DoesNotExist:
+                balance += output.display_value
         return balance
 
     @property
