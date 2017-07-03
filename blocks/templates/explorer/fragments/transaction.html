@@ -41,26 +41,22 @@
         </div>
         <div class="row tx-short-body spacer">
             <div class="col-md-6 short-inputs">
-                <div class="row">
-                    <div class="col-md-12">
-                        {% with inputs=tx.address_inputs %}
-                            {% for address in inputs %}
-                                {{ inputs|get_item:address|floatformat:4|intcomma }} <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span> {{ address }}
-                            {% endfor %}
-                        {% endwith %}
-                    </div>
-                </div>
+                {% with inputs=tx.address_inputs %}
+                    {% for address in inputs %}
+                        <div class="row">
+                            {{ inputs|get_item:address|floatformat:4|intcomma }} <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span> {{ address }}
+                        </div>
+                    {% endfor %}
+                {% endwith %}
             </div>
             <div class="col-md-6 short-outputs word-wrap">
-                <div class="row">
-                    <div class="col-md-12">
-                        {% with outputs=tx.address_outputs %}
-                            {% for address in outputs %}
-                                {{ address }} <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span> {{ outputs|get_item:address|floatformat:4|intcomma }}
-                            {% endfor %}
-                        {% endwith %}
-                    </div>
-                </div>
+                {% with outputs=tx.address_outputs %}
+                    {% for address in outputs %}
+                        <div class="row">
+                            {{ address }} <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span> {{ outputs|get_item:address|floatformat:4|intcomma }}
+                        </div>
+                    {% endfor %}
+                {% endwith %}
             </div>
         </div>
         <div class="row tx-body spacer">
