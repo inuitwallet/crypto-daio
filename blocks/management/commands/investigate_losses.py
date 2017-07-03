@@ -113,6 +113,48 @@ class Command(BaseCommand):
                     continue
                 balance_writer.writerow([addr, addr.balance])
 
+    @staticmethod
+    def get_bad_txs():
+        with open('bad_txs.csv', 'w+') as bad_csv:
+            bad_writer = csv.writer(bad_csv)
+            bad_writer.writerow(['Date', 'Block', 'From', 'To', 'Input', 'Outputs'])
+
+            for address in TARGET_ADDRESSES:
+                logger.info('looking for {} data'.format(address))
+                try:
+                    addr = Address.objects.get(address=address)
+                except Address.DoesNotExist:
+                    logger.error('{} does not exist'.format(address))
+                    continue
+
+                for output in addr.outputs.all():
+                    try:
+                        in_values = output.input.transaction.address_inputs
+                        out_values = output.input.transaction.address_outputs
+
+                        for value_address in out_values:
+                            logger.info(
+                                '{} moved {} from {} to {} on {}'.format(
+                                    output.input.transaction,
+                                    out_values[value_address],
+                                    address,
+                                    value_address,
+                                    output.input.transaction.time
+                                )
+                            )
+                            bad_writer.writerow(
+                                [
+                                    output.input.transaction.time,
+                                    output.input.transaction.block.height,
+                                    address,
+                                    value_address,
+                                    in_values[address],
+                                    out_values[value_address]
+                                ]
+                            )
+                    except TxInput.DoesNotExist:
+                        continue
+
     def handle(self, *args, **options):
         """
         investigate the losses by tracking activity through the blockchain
@@ -121,5 +163,6 @@ class Command(BaseCommand):
         :return:
         """
         #self.gather_tx_data()
-        self.get_balances()
+        #self.get_balances()
+        self.get_bad_txs()
 
