@@ -105,6 +105,7 @@ class Command(BaseCommand):
             balance_writer = csv.writer(balances_csv)
             balance_writer.writerow(['Address', 'Balance'])
             for address in COMPROMISED_ADDRESSES + TARGET_ADDRESSES:
+                logger.info('getting balance for {}'.format(address))
                 try:
                     addr = Address.objects.get(address=address)
                 except Address.DoesNotExist:
