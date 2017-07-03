@@ -24,6 +24,7 @@ class Address(models.Model):
     def balance(self):
         balance = 0
         for output in self.outputs.all():
+            output.transaction.save()
             try:
                 if output.input:
                     continue
