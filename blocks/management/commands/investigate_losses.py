@@ -127,8 +127,13 @@ class Command(BaseCommand):
                     logger.error('{} does not exist'.format(address))
                     continue
 
+                matched_txs = []
                 for output in addr.outputs.all():
                     try:
+                        if output.input.transaction in matched_txs:
+                            continue
+
+                        matched_txs.append(output.input.transaction)
                         in_values = output.input.transaction.address_inputs
                         out_values = output.input.transaction.address_outputs
 
