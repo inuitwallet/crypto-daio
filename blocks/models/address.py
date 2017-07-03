@@ -1,7 +1,7 @@
 import logging
 from django.db import models
 from blocks.models import Transaction
-from models import TxInput
+from blocks.models import TxInput
 
 logger = logging.getLogger(__name__)
 
