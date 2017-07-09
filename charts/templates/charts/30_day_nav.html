@@ -1,0 +1,57 @@
+{% extends 'charts/base.html' %}
+
+{% load nvd3_tags static block_extras %}
+
+{% block title %}
+    Current Liquidity
+{% endblock %}
+
+{% block head %}
+    {% include_chart_jscss %}
+    {% load_chart chart_type series_data 'nav_30_day' extra %}
+    <!-- main stylesheet -->
+    <link rel="stylesheet" href="{% static 'charts/css/main.css' %}" />
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <div class="graph">
+                {% include_container 'nav_30_day' 500 '100%' %}
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 text-center">
+            Balances
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-responsive table-bordered table-compact table-striped table-hover">
+                <thead>
+                    <tr>
+                        <td>Date</td>
+                        <td>Exchange</td>
+                        <td>Currency</td>
+                        <td>Amount</td>
+                        <td>Value</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for balance in balances %}
+                        {{ balance }}
+                        <tr>
+{#                            <td>{{ order.pair.exchange }}</td>#}
+{#                            <td>{{ order.pair.quote_currency.code }}</td>#}
+{#                            <td>{{ order.pair.base_currency.code }}</td>#}
+{#                            <td>{{ order.order_type }}</td>#}
+{#                            <td>{{ order.amount }}</td>#}
+{#                            <td>{{ order.rate }}</td>#}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

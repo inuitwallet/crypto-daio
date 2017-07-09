@@ -160,6 +160,37 @@ class Command(BaseCommand):
                     except TxInput.DoesNotExist:
                         continue
 
+    def dedupe(self):
+        bad_addresses = [
+            'SYguMZJM1Y3wriyU2UWzXJg25UAxBQp65y',
+            'SURDRFLs8GoT16pVKcNT6igBexYqd19E6v',
+            'STE9MpqdhNm7Ln9LKQQuuUFtxGhR3RvwbH',
+            'SV3Jpc2yZzXVrwvy3ZSFR5FN6JEmYibQeF',
+            'STyfWicxBZPu2Kn1KaoCA81e4ddYPFUPxH',
+            'SN2722qP5zXbGeKrT236FtK1QsHxXBgqsH',
+            'SjuvNAUH1rAoicvKZ5Tgfo2e3HAxeK42iV',
+            'SdTSNATLyXZLHTbNr3L38GPfVsQZEhvxo3',
+            'SkTtUJWF7G7FRSPVKbh1ATNQV3r64S7c7U',
+            'SMUVkzMqYtabi2P3abFTegGZvLaUvxKRGs',
+            'SgoghD15S8sKFNo13ZgHWZPVcWpeki3qLa',
+            'SeVUrxMsX8N4pi79YjjEumenfPXv7FMNTw',
+            'SXpG2jQsZYiczy83K6jctBBKDgZZZzDe5H',
+            'ShnM5UZjSXqyBXurKXDvTL5xfbK8zBELt2',
+            'ShUQd6JvN2aPY3Yv8dC593NxpT3HKDKnQr',
+            'SQxrW62Sv1DZrL68kNf18u6D5H8ezq6mRN',
+            'SbkCReYV5EPWxjt5PiKC5dsvEbwruvK8MC',
+            'SN8qXUbj6bkZgHHktw5RtWR6YPtY6Vgdej',
+            'SXfkCbPDgTJW1EAdA2WMX28N3VXTRy6j3H',
+            'SfPuW3x4C2BZzUP6piWj4Y1hy9Qwn8uPSA',
+            'Shm9y9t8mYbcP9yXTKGFFTfMDEepPQKDhs',
+            'SirunbyyuxLGSPy2d8QNTUBv4Li7JLSC9v',
+            'SUTt3nHAymXEuH6svTbvYmQT1cBEpsikwK',
+            'SX6MMprHZgYd9J8euZrJMEJJFLanLQ89HE',
+            'SNRVfoGSsArzC1wN81xTxn5HnCKz5xNHmG',
+            'SjQSKz9twZoLZxEgMQ5ZA8GMFfG4mgD6gq'
+        ]
+        print([address for address in bad_addresses if address in COMPROMISED_ADDRESSES])
+
     def handle(self, *args, **options):
         """
         investigate the losses by tracking activity through the blockchain
@@ -169,5 +200,5 @@ class Command(BaseCommand):
         """
         #self.gather_tx_data()
         #self.get_balances()
-        self.get_bad_txs()
-
+        #self.get_bad_txs()
+        self.dedupe()
