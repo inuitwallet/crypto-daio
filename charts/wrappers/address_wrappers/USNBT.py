@@ -12,7 +12,7 @@ class USNBT(object):
     def get_address_balance(self, watched_address):
         try:
             address = Address.objects.get(address=watched_address.address)
-            balance = address.balance()
+            balance = address.balance
         except Address.DoesNotExist:
             balance = 0
 
