@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.utils.timezone import make_aware
 from django.views import View
 
-from charts.models import Balance, CurrencyValue
+from charts.models import Balance, CurrencyValue, WatchedAddress, WatchedAddressBalance
 
 
 class NAVChart(View):
@@ -22,6 +22,7 @@ class NAVChart(View):
             )
             value_data[date] = {}
 
+            # exchange balances
             for exchange in connection.tenant.exchanges.all():
                 value_data[date][exchange] = {}
 
@@ -37,7 +38,7 @@ class NAVChart(View):
                         if pair.base_currency.get_usd_value:
                             base_value = CurrencyValue.objects.get_closest_to(
                                 pair.base_currency,
-                                datetime.datetime.now()
+                                date
                             ).usd_value
                             base_amount *= base_value
                         value_data[date][exchange][pair.base_currency] = base_amount
@@ -51,10 +52,27 @@ class NAVChart(View):
                         if pair.quote_currency.get_usd_value:
                             quote_value = CurrencyValue.objects.get_closest_to(
                                 pair.quote_currency,
-                                datetime.datetime.now()
+                                date
                             ).usd_value
                             quote_amount *= quote_value
                         value_data[date][exchange][pair.quote_currency] = quote_amount
+
+            # watched addresses
+            for address in WatchedAddress.objects.all():
+                closest_balance = WatchedAddressBalance.objects.get_closest_to(
+                    address.address,
+                    date
+                )
+
+                balance = closest_balance.balance
+                if address.currency.get_usd_value:
+                    value = CurrencyValue.objects.get_closest_to(
+                        address.currency,
+                        date
+                    ).usd_value
+                    balance *= value
+
+                value_date[date][address.address] = balance
 
             value_date += datetime.timedelta(days=1)
 
@@ -72,6 +90,24 @@ class NAVChart(View):
             series_data['name{}'.format(index)] = '{}@{} value'.format(
                 balance_type[1].code,
                 balance_type[0]
+            )
+            series_data['extra{}'.format(index)] = {
+                "tooltip": {
+                    "y_start": "NAV = ",
+                    "y_end": "."
+                },
+                "date_format": "%d %b %Y %H:%M:%S %p"
+            }
+            index += 1
+
+        for address in WatchedAddress.objects.all():
+            series_data['y{}'.format(index)] = []
+            for date in x_values:
+                series_data['y{}'.format(index)].append(
+                    float(value_data[date][address.address])
+                )
+            series_data['name{}'.format(index)] = '{} balance'.format(
+                address.address
             )
             series_data['extra{}'.format(index)] = {
                 "tooltip": {
