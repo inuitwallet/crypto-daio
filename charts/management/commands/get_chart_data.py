@@ -2,7 +2,8 @@ import logging
 from django.core.management import BaseCommand
 from django.db import connection
 import charts.wrappers as wrappers
-from charts.models import Currency
+import charts.wrappers.address_wrappers as address_wrappers
+from charts.models import Currency, WatchedAddress
 
 logger = logging.getLogger(__name__)
 
@@ -10,7 +11,6 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
 
     def handle(self, *args, **options):
-
         # get balance and trade data
         chain = connection.tenant
         for exchange in chain.exchanges.all():
@@ -35,6 +35,13 @@ class Command(BaseCommand):
 
                 logger.info('getting deposits for {}'.format(pair))
                 wrapper.get_deposits(pair)
+
+        # get watched address data
+        logger.info('fetching balances for watched addresses')
+        for watched_address in WatchedAddress.objects.all():
+            address_wrapper = getattr(address_wrappers, watched_address.currency.code)
+            wrapper = address_wrapper()
+            wrapper.get_address_balance(watched_address)
 
         # get the usd values of currencies that need it
         logger.info('fetching usd values for currencies')

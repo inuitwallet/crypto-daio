@@ -5,5 +5,5 @@ from .coinmarketcap import CoinMarketCap
 __all__ = [
     'Bittrex',
     'CoinMarketCap',
-    'Cryptopia'
+    'Cryptopia',
 ]

@@ -279,3 +279,26 @@ class Deposit(ExchangeTx):
         ],
         default='DEPOSIT'
     )
+
+
+class WatchedAddress(models.Model):
+    address = models.CharField(
+        max_length=610,
+    )
+    currency = models.ForeignKey(
+        Currency
+    )
+
+    def __str__(self):
+        return self.address
+
+
+class WatchedAddressBalance(models.Model):
+    date_time = models.DateTimeField(auto_now=True)
+    address = models.ForeignKey(
+        WatchedAddress
+    )
+    balance = models.DecimalField(max_digits=26, decimal_places=10, blank=True, null=True)
+
+    def __str__(self):
+        return '{}@{}:{}'.format(self.address, self.date_time, self.balance)
