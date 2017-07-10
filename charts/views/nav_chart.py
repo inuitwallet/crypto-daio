@@ -1,6 +1,5 @@
 import datetime
 import time
-from decimal import Decimal
 from django.db import connection
 from django.shortcuts import render
 from django.utils.timezone import make_aware
@@ -12,78 +11,81 @@ from charts.models import Balance, CurrencyValue
 class NAVChart(View):
     @staticmethod
     def get(request):
-        totals = {}
-        balances = {}
+        # for each exchange get the totals of each currency at midnight
+        # each set of currency totals becomes a series
+        value_data = {}
+        balance_types = []
         value_date = datetime.datetime.now() - datetime.timedelta(days=30)
         while value_date <= datetime.datetime.now():
             date = make_aware(
                 datetime.datetime(value_date.year, value_date.month, value_date.day)
             )
-            totals[date] = Decimal(0)
-            balances[date] = {}
+            value_data[date] = {}
+
+            for exchange in connection.tenant.exchanges.all():
+                value_data[date][exchange] = {}
+
+                for pair in exchange.pairs.all():
+                    balance = Balance.objects.get_closest_to(pair, date)
+                    
+                    if pair.base_currency not in value_data[date][exchange]:
+                        balance_type = (exchange, pair.base_currency)
+                        if balance_type not in balance_types:
+                            balance_types.append(balance_type)
+
+                        base_amount = balance.base_amount
+                        if pair.base_currency.get_usd_value:
+                            base_value = CurrencyValue.objects.get_closest_to(
+                                pair.base_currency,
+                                datetime.datetime.now()
+                            ).usd_value
+                            base_amount *= base_value
+                        value_data[date][exchange][pair.base_currency] = base_amount
+
+                    if pair.quote_currency not in value_data[date][exchange]:
+                        balance_type = (exchange, pair.quote_currency)
+                        if balance_type not in balance_types:
+                            balance_types.append(balance_type)
+
+                        quote_amount = balance.quote_amount
+                        if pair.quote_currency.get_usd_value:
+                            quote_value = CurrencyValue.objects.get_closest_to(
+                                pair.quote_currency,
+                                datetime.datetime.now()
+                            ).usd_value
+                            quote_amount *= quote_value
+                        value_data[date][exchange][pair.quote_currency] = quote_amount
+
             value_date += datetime.timedelta(days=1)
 
-        scanned_currencies = {}
-        for exchange in connection.tenant.exchanges.all():
-            scanned_currencies[exchange] = {}
-            for pair in exchange.pairs.all():
-                for date_time in totals:
-                    scanned_currencies[exchange][date_time] = []
-                    balance = Balance.objects.get_closest_to(pair, date_time)
-
-                    base_amount = balance.base_amount
-                    base_value = 1
-                    if pair.base_currency.get_usd_value:
-                        base_value = CurrencyValue.objects.get_closest_to(
-                            pair.base_currency,
-                            datetime.datetime.now()
-                        ).usd_value
-                        base_amount *= base_value
-
-                    quote_amount = balance.quote_amount
-                    quote_value = 1
-                    if pair.quote_currency.get_usd_value:
-                        quote_value = CurrencyValue.objects.get_closest_to(
-                            pair.quote_currency,
-                            datetime.datetime.now()
-                        ).usd_value
-                        quote_amount *= quote_value
-
-                    if pair.base_currency not in scanned_currencies[exchange][date_time]:
-                        totals[date_time] += base_amount
-                        scanned_currencies[exchange][date_time].append(
-                            pair.base_currency
-                        )
-
-                    if pair.quote_currency not in scanned_currencies[exchange][date_time]:
-                        totals[date_time] += quote_amount
-                        scanned_currencies[exchange][date_time].append(
-                            pair.quote_currency
-                        )
-
-                    balances[date_time] = {
-                        'quote': pair.quote_currency,
-                        'amount': quote_amount,
-                        'value': quote_value
-                    }
-
-        x_values = sorted([date for date in totals])
+        x_values = sorted([date for date in value_data])
+        series_data = {
+            'x': [int(time.mktime(date.timetuple()) * 1000) for date in x_values]
+        }
+        index = 1
+        for balance_type in balance_types:
+            series_data['y{}'.format(index)] = []
+            for date in x_values:
+                series_data['y{}'.format(index)].append(
+                    float(value_data[date][balance_type[0]][balance_type[1]])
+                )
+            series_data['name{}'.format(index)] = '{}@{} value'.format(
+                balance_type[1].code,
+                balance_type[0]
+            )
+            series_data['extra{}'.format(index)] = {
+                "tooltip": {
+                    "y_start": "NAV = ",
+                    "y_end": "."
+                },
+                "date_format": "%d %b %Y %H:%M:%S %p"
+            }
+            index += 1
 
         chart_data = {
-            'chart_type': "lineChart",
+            'chart_type': "stackedAreaChart",
             'name': '30 day historical NAV on exchanges in USD ',
-            'series_data': {
-                'x': [int(time.mktime(date.timetuple()) * 1000) for date in x_values],
-                'y1': [float(totals.get(date)) for date in x_values],
-                'name1': 'NAV on exchange in USD',
-                'extra1': {
-                    "tooltip": {
-                        "y_start": "NAV = ",
-                        "y_end": "."
-                    },
-                    "date_format": "%d %b %Y %H:%M:%S %p"
-                }
-            },
+            'series_data': series_data,
             'extra': {
                 'x_is_date': True,
                 'color_category': 'category10',
@@ -92,6 +94,5 @@ class NAVChart(View):
             },
             'chain': connection.tenant
         }
-        print(chart_data)
         return render(request, 'charts/30_day_nav.html', chart_data)
 
