@@ -72,7 +72,7 @@ class NAVChart(View):
                     ).usd_value
                     balance *= value
 
-                value_date[date][address.address] = balance
+                value_data[date][address.address] = balance
 
             value_date += datetime.timedelta(days=1)
 
