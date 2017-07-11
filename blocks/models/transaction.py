@@ -347,9 +347,12 @@ class Transaction(models.Model):
 
         # check the outputs for addresses
         for tx_out in self.outputs.all():
-            if tx_out.script_pub_key_type in ['pubkey', 'pubkeyhash']:
+            if tx_out.script_pub_key_type in ['pubkey', 'pubkeyhash', 'park']:
                 if not tx_out.address:
                     return False, 'output has no address'
+            if tx_out.script_pub_key_type == 'park':
+                if not tx_out.park_duration:
+                    return False, 'park output has no duration'
 
         # check the inputs, previous outputs for addresses
         for tx_in in self.inputs.all():

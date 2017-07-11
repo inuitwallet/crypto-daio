@@ -208,4 +208,31 @@ def repair_transaction(message):
                         scanned_transactions.append(previous_tx_id)
             return
 
+        if error_message == 'park output has no duration':
+            for tout in rpc_tx.get('vout', []):
+                try:
+                    tx_out = tx.outputs.get(index=tout.get('n'))
+                except TxOutput.DoesNotExist:
+                    logger.warning('output not found: {}'.format(tout.get('n')))
+                    tx.save()
+                    continue
+
+                script = tout.get('scriptPubKey')
+                if not script:
+                    logger.warning(
+                        'no script found in rpc for output {}'.format(tx_out)
+                    )
+                    continue
+
+                if script.get('type') != 'park':
+                    continue
+
+                park_data = script.get('park', {})
+                tx_out.park_duration = park_data.get('duration')
+                address = park_data.get('unparkaddress')
+                address_object, _ = Address.objects.get_or_create(address=address)
+                tx_out.address = address_object
+                tx_out.save()
+                logger.info('added park data to {}'.format(tx_out))
+
         tx.parse_rpc_tx(rpc_tx)
