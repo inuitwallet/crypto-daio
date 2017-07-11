@@ -106,6 +106,8 @@ def repair_transaction(message):
                     )
                     continue
 
+                logger.info('script = {}'.format(script))
+
                 if script.get('type') == 'park':
                     logger.info('park output')
                     park_data = script.get('park', {})
