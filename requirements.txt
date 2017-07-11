@@ -14,3 +14,4 @@ psycopg2
 requests[security]
 service_identity
 -e git+https://github.com/areski/django-nvd3.git@develop#egg=django-nvd3
+-e git+https://github.com/areski/python-nvd3.git@develop#egg=python-nvd3
