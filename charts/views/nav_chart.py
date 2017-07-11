@@ -141,7 +141,9 @@ class NAVChart(View):
                 'xAxis_rotateLabel': 45,
                 'show_controls': False,
             },
-            'chain': connection.tenant
+            'chain': connection.tenant,
+            'span': span,
+            'interval': interval
         }
         return render(request, 'charts/usd_nav.html', chart_data)
 
