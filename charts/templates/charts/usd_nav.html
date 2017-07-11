@@ -3,24 +3,38 @@
 {% load nvd3_tags static block_extras %}
 
 {% block title %}
-    Current Liquidity
+    USD NAV
 {% endblock %}
 
 {% block head %}
     {% include_chart_jscss %}
-    {% load_chart chart_type series_data 'nav_30_day' extra %}
+    {% load_chart chart_type series_data 'usd_nav' extra %}
     <!-- main stylesheet -->
     <link rel="stylesheet" href="{% static 'charts/css/main.css' %}" />
 {% endblock %}
 
 {% block content %}
+    <div class="row spacer"></div>
+    <div class="row">
+        <div class="col-md-12">
+            <a href="{% url 'usd_nav' %}?span=129600&interval=10080" class="btn btn-default {% if request.GET.span == '129600' %}btn-primary{% endif %}">90 days</a>
+            <a href="{% url 'usd_nav' %}" class="btn btn-default {% if not request.GET.span %}btn-primary{% endif %}">30 days</a>
+            <a href="{% url 'usd_nav' %}?span=20160&interval=1440" class="btn btn-default {% if request.GET.span == '20160' %}btn-primary{% endif %}">14 days</a>
+            <a href="{% url 'usd_nav' %}?span=10080&interval=720" class="btn btn-default {% if request.GET.span == '10080' %}btn-primary{% endif %}">7 days</a>
+            <a href="{% url 'usd_nav' %}?span=1440&interval=60" class="btn btn-default {% if request.GET.span == '1440' %}btn-primary{% endif %}">1 day</a>
+            <a href="{% url 'usd_nav' %}?span=720&interval=30" class="btn btn-default {% if request.GET.span == '720' %}btn-primary{% endif %}">12 hours</a>
+            <a href="{% url 'usd_nav' %}?span=360&interval=15" class="btn btn-default {% if request.GET.span == '360' %}btn-primary{% endif %}">6 hours</a>
+            <a href="{% url 'usd_nav' %}?span=60&interval=1" class="btn btn-default {% if request.GET.span == '60' %}btn-primary{% endif %}">1 hour</a>
+        </div>
+    </div>
     <div class="row">
         <div class="col-md-12">
             <div class="graph">
-                {% include_container 'nav_30_day' 500 '100%' %}
+                {% include_container 'usd_nav' 500 '100%' %}
             </div>
         </div>
     </div>
+
 {#    <div class="row">#}
 {#        <div class="col-md-12">#}
 {#            <table class="table table-responsive table-bordered table-compact table-striped table-hover">#}

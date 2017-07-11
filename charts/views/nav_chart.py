@@ -11,15 +11,22 @@ from charts.models import Balance, CurrencyValue, WatchedAddress, WatchedAddress
 class NAVChart(View):
     @staticmethod
     def get(request):
-        # for each exchange get the totals of each currency at midnight
-        # each set of currency totals becomes a series
+        # get GET data to set chart boundries
+        span = int(request.GET.get('span', 43200))
+        interval = int(request.GET.get('interval', 1440))
+
+        # instantiate data structures
         value_data = {}
         balance_types = []
-        value_date = datetime.datetime.now() - datetime.timedelta(days=30)
-        while value_date <= datetime.datetime.now():
-            date = make_aware(
-                datetime.datetime(value_date.year, value_date.month, value_date.day)
+
+        # get the start date
+        start_date = datetime.datetime.now() - datetime.timedelta(minutes=span)
+        date = make_aware(
+                datetime.datetime(start_date.year, start_date.month, start_date.day)
             )
+
+        # populate data structures
+        while date <= make_aware(datetime.datetime.now()):
             value_data[date] = {}
 
             # exchange balances
@@ -74,7 +81,7 @@ class NAVChart(View):
 
                 value_data[date][address.address] = balance
 
-            value_date += datetime.timedelta(days=1)
+            date += datetime.timedelta(minutes=interval)
 
         x_values = sorted([date for date in value_data])
         series_data = {
@@ -120,8 +127,9 @@ class NAVChart(View):
 
         chart_data = {
             'chart_type': "stackedAreaChart",
-            'name': '30 day historical NAV on exchanges in USD ',
+            'name': 'Historical NAV in USD',
             'series_data': series_data,
+            "date_format": "%d %b %Y %H:%M:%S %p",
             'extra': {
                 'x_is_date': True,
                 'color_category': 'category10',
@@ -130,5 +138,6 @@ class NAVChart(View):
             },
             'chain': connection.tenant
         }
-        return render(request, 'charts/30_day_nav.html', chart_data)
+        print(chart_data)
+        return render(request, 'charts/usd_nav.html', chart_data)
 
