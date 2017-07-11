@@ -220,7 +220,7 @@ class Transaction(models.Model):
                 logger.error('CHANNEL FULL!')
 
         # parse park outputs
-        if tx_output.type == 'park':
+        if tx_output.script_pub_key_type == 'park':
             park_data = script_pubkey.get('park', {})
             tx_output.park_duration = park_data.get('duration')
             tx_output.save()
