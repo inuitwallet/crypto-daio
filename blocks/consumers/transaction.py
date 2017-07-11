@@ -98,19 +98,27 @@ def repair_transaction(message):
                     logger.warning('output not found: {}'.format(tout.get('n')))
                     tx.save()
                     continue
+
                 script = tout.get('scriptPubKey')
                 if not script:
                     logger.warning(
                         'no script found in rpc for output {}'.format(tx_out)
                     )
                     continue
-                addresses = script.get('addresses', [])
-                if not addresses:
-                    logger.warning(
-                        'no addresses found in rpc for output {}'.format(tx_out)
-                    )
-                    continue
-                address = addresses[0]
+
+                if script.get('type') == 'park':
+                    park_data = script.get('park', {})
+                    tx_out.park_duration = park_data.get('duration')
+                    address = park_data.get('unparkaddress')
+                else:
+                    addresses = script.get('addresses', [])
+                    if not addresses:
+                        logger.warning(
+                            'no addresses found in rpc for output {}'.format(tx_out)
+                        )
+                        continue
+                    address = addresses[0]
+
                 address_object, _ = Address.objects.get_or_create(address=address)
                 if tx_out.address == address_object:
                     logger.info(
