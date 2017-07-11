@@ -13,6 +13,9 @@
         <a href="{% url 'address' tx_input.previous_output.address.address %}" class="previous-address">
             {{ tx_input.previous_output.address.address }}
         </a>
+        {% if tx_input.previous_output.script_pub_key_type == 'park' %}
+            Unpark
+        {% endif %}
     {% elif tx_input.coin_base %}
         CoinBase {{ tx_input.coin_base }}
     {% else %}
