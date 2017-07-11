@@ -39,26 +39,26 @@
                 </div>
             </div>
         </div>
-        <div class="row tx-short-body spacer">
-            <div class="col-md-6 short-inputs">
-                {% with inputs=tx.address_inputs %}
-                    {% for address in inputs %}
-                        <div class="row">
-                            {{ inputs|get_item:address|floatformat:4|intcomma }} <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span> {{ address }}
-                        </div>
-                    {% endfor %}
-                {% endwith %}
-            </div>
-            <div class="col-md-6 short-outputs word-wrap">
-                {% with outputs=tx.address_outputs %}
-                    {% for address in outputs %}
-                        <div class="row">
-                            {{ address }} <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span> {{ outputs|get_item:address|floatformat:4|intcomma }}
-                        </div>
-                    {% endfor %}
-                {% endwith %}
-            </div>
-        </div>
+{#        <div class="row tx-short-body spacer">#}
+{#            <div class="col-md-6 short-inputs">#}
+{#                {% with inputs=tx.address_inputs %}#}
+{#                    {% for address in inputs %}#}
+{#                        <div class="row">#}
+{#                            {{ inputs|get_item:address|floatformat:4|intcomma }} <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span> {{ address }}#}
+{#                        </div>#}
+{#                    {% endfor %}#}
+{#                {% endwith %}#}
+{#            </div>#}
+{#            <div class="col-md-6 short-outputs word-wrap">#}
+{#                {% with outputs=tx.address_outputs %}#}
+{#                    {% for address in outputs %}#}
+{#                        <div class="row">#}
+{#                            {{ address }} <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span> {{ outputs|get_item:address|floatformat:4|intcomma }}#}
+{#                        </div>#}
+{#                    {% endfor %}#}
+{#                {% endwith %}#}
+{#            </div>#}
+{#        </div>#}
         <div class="row tx-body spacer">
             <div class="col-md-6 inputs">
                 {% for tx_input in tx.inputs.all %}

@@ -10,7 +10,7 @@
         {% endif %}
     {% else %}
         {% if tx_output.script_pub_key_type == 'park' %}
-            <span class="output-park-data">Park for {{ tx_output.park_duration }} blocks</span>
+            <span class="output-park-data">Park</span>
         {% endif %}
         <a href="{% url 'address' tx_output.address.address %}" class="output-address">
             {{ tx_output.address.address }}
