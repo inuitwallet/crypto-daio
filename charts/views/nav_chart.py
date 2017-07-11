@@ -138,6 +138,5 @@ class NAVChart(View):
             },
             'chain': connection.tenant
         }
-        print(chart_data)
         return render(request, 'charts/usd_nav.html', chart_data)
 
