@@ -11,7 +11,7 @@ def human_time(num_minutes):
     if num_minutes < 1440:
         # less than 1 day
         # return number of hours
-        value = int(num_minutes / 60)
+        value = num_minutes / 60
         unit = 'hour' if value == 1 else 'hours'
         return '{} {}'.format(value, unit)
 
