@@ -24,7 +24,7 @@
             <a href="{% url 'usd_nav' %}?span=1440&interval=60" class="btn btn-default {% if request.GET.span == '1440' %}btn-primary{% endif %}">1 day</a>
             <a href="{% url 'usd_nav' %}?span=720&interval=30" class="btn btn-default {% if request.GET.span == '720' %}btn-primary{% endif %}">12 hours</a>
             <a href="{% url 'usd_nav' %}?span=360&interval=15" class="btn btn-default {% if request.GET.span == '360' %}btn-primary{% endif %}">6 hours</a>
-            <a href="{% url 'usd_nav' %}?span=60&interval=1" class="btn btn-default {% if request.GET.span == '60' %}btn-primary{% endif %}">1 hour</a>
+            <a href="{% url 'usd_nav' %}?span=60&interval=5" class="btn btn-default {% if request.GET.span == '60' %}btn-primary{% endif %}">1 hour</a>
         </div>
     </div>
     <div class="row">

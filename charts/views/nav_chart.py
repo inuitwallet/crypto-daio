@@ -11,7 +11,7 @@ from charts.models import Balance, CurrencyValue, WatchedAddress, WatchedAddress
 class NAVChart(View):
     @staticmethod
     def get(request):
-        # get GET data to set chart boundries
+        # get GET data to set chart boundaries
         span = int(request.GET.get('span', 43200))
         interval = int(request.GET.get('interval', 1440))
 
@@ -132,9 +132,14 @@ class NAVChart(View):
             "date_format": "%d %b %Y %H:%M:%S %p",
             'extra': {
                 'x_is_date': True,
+                'x_axis_format': "%d %b %Y %H:%M:%S %p",
                 'color_category': 'category10',
                 'margin_left': 100,
+                'margin_right': 100,
+                'margin_bottom': 150,
                 'use_interactive_guideline': True,
+                'xAxis_rotateLabel': 45,
+                'show_controls': False,
             },
             'chain': connection.tenant
         }
