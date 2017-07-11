@@ -106,8 +106,6 @@ def repair_transaction(message):
                     )
                     continue
 
-                logger.info('script = {}'.format(script))
-
                 if script.get('type') == 'park':
                     logger.info('park output')
                     park_data = script.get('park', {})
@@ -166,19 +164,27 @@ def repair_transaction(message):
                                     )
                                 )
                                 continue
-                            addresses = script.get('addresses', [])
 
-                            if not addresses:
-                                logger.warning(
-                                    'no addresses found in rpc for output {}'.format(
-                                        tx_in.previous_output
+                            if script.get('type') == 'park':
+                                logger.info('park output')
+                                park_data = script.get('park', {})
+                                tx_in.previous_output.park_duration = park_data.get('duration')  # noqa
+                                address = park_data.get('unparkaddress')
+                            else:
+                                addresses = script.get('addresses', [])
+                                if not addresses:
+                                    logger.warning(
+                                        'no addresses found in rpc for output {}'.format(
+                                            tx_in.previous_output
+                                        )
                                     )
-                                )
-                                continue
-                            address = addresses[0]
+                                    continue
+                                address = addresses[0]
+
                             address_object, _ = Address.objects.get_or_create(
                                 address=address
                             )
+
                             if tx_in.previous_output.address == address_object:
                                 logger.info(
                                     'output {} already has address {}'.format(
