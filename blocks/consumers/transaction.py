@@ -107,6 +107,7 @@ def repair_transaction(message):
                     continue
 
                 if script.get('type') == 'park':
+                    logger.info('park output')
                     park_data = script.get('park', {})
                     tx_out.park_duration = park_data.get('duration')
                     address = park_data.get('unparkaddress')
