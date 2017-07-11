@@ -219,6 +219,20 @@ class Transaction(models.Model):
             except BaseChannelLayer.ChannelFull:
                 logger.error('CHANNEL FULL!')
 
+        # parse park outputs
+        if tx_output.type == 'park':
+            park_data = script_pubkey.get('park', {})
+            tx_output.park_duration = park_data.get('duration')
+            tx_output.save()
+            try:
+                Channel('parse_address').send({
+                    'chain': connection.schema_name,
+                    'address': park_data.get('unparkaddress'),
+                    'tx_output': tx_output.pk
+                })
+            except BaseChannelLayer.ChannelFull:
+                logger.error('CHANNEL FULL!')
+
     def parse_rpc_tx(self, rpc_tx):
         logger.info('parsing tx {}'.format(self))
         self.version = rpc_tx.get('version', None)
@@ -445,6 +459,10 @@ class TxOutput(models.Model):
         'Address',
         related_name='outputs',
         related_query_name='output_address',
+        blank=True,
+        null=True,
+    )
+    park_duration = models.BigIntegerField(
         blank=True,
         null=True,
     )

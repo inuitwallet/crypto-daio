@@ -9,6 +9,9 @@
             <span class="output-non-standard">Non-standard Output</span>
         {% endif %}
     {% else %}
+        {% if tx_output.script_pub_key_type == 'park' %}
+            <span class="output-park-data">Park for {{ tx_output.park_duration }} blocks</span>
+        {% endif %}
         <a href="{% url 'address' tx_output.address.address %}" class="output-address">
             {{ tx_output.address.address }}
         </a>
