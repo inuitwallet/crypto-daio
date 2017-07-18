@@ -158,6 +158,8 @@ def fix_next_block(block, chain):
         height=this_height
     )
 
+    this_block.save(validate=False)
+
     next_hash = get_block_hash(this_height + 1, schema_name=chain)
 
     if not next_hash:
