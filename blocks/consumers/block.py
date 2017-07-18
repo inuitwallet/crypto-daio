@@ -118,9 +118,19 @@ def fix_previous_block(block, chain):
     except Block.DoesNotExist:
         prev_block = Block(hash=prev_hash)
 
-    prev_block.height = block.height -1
+    try:
+        prev_height_block = Block.objects.get(height=block.height - 1)
+    except Block.DoesNotExist:
+        prev_height_block = prev_block
+
+    if prev_block != prev_height_block:
+        # the block with the previous height doesn't match the hash from this block
+        # likely to be an orphan so remove it
+        prev_height_block.delete()
+
+    prev_block.height = block.height - 1
     prev_block.next_block = block
-    prev_block.save(validate=False)
+    prev_block.save()
 
     block.previous_block = prev_block
     block.save()
@@ -137,6 +147,16 @@ def fix_next_block(block, chain):
         next_block = Block.objects.get(hash=next_hash)
     except Block.DoesNotExist:
         next_block = Block(hash=next_hash)
+
+    try:
+        next_height_block = Block.objects.get(height=block.height + 1)
+    except Block.DoesNotExist:
+        next_height_block = next_block
+
+    if next_block != next_height_block:
+        # the block with the next height doesn't match this blocks next hash
+        # just print for now and decide what to do if this causes issues
+        logger.error('NEXT BLOCKS HEIGHT AND HASH DON\'T MATCH')
 
     next_block.height = block.height + 1
     next_block.previous_block = block
