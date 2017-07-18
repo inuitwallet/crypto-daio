@@ -325,7 +325,7 @@ class Block(models.Model):
                 return False, 'next block does not lead on from this block'
 
         top_height = Block.objects.all().aggregate(Max('height'))
-        if top_height['height__max'] > self.height:
+        if (top_height['height__max'] > self.height) and not self.next_block:
             return False, 'missing next block'
 
         # calculate merkle root of transactions
