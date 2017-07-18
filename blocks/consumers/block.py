@@ -83,11 +83,16 @@ def repair_block(message):
             fix_merkle_root(block, message.get('chain'))
             return
 
-        if 'previous' in error_message:
+        if error_message in ['missing attribute: self.previous_block',
+                             'no previous block hash',
+                             'incorrect previous height',
+                             'no previous block hash']:
             fix_previous_block(block, message.get('chain'))
             return
 
-        if 'next' in error_message:
+        if error_message in ['incorrect next height',
+                             'next block does not lead on from this block',
+                             'missing next block']:
             fix_next_block(block, message.get('chain'))
             return
 
@@ -138,9 +143,25 @@ def fix_previous_block(block, chain):
 
 def fix_next_block(block, chain):
     logger.info('fixing next block')
-    next_hash = get_block_hash(block.height + 1, schema_name=chain)
+    # it's likely that this block is an orphan so we should remove it and rescan
+    this_height = block.height
+    this_hash = get_block_hash(this_height, schema_name=chain)
+
+    if not this_hash:
+        logger.warning('could not get hash for block at height {}'.format(this_height))
+        return
+
+    block.delete()
+
+    this_block = Block(
+        hash=this_hash,
+        height=this_height
+    )
+
+    next_hash = get_block_hash(this_height + 1, schema_name=chain)
 
     if not next_hash:
+        logger.warning('could not get next hash for height {}'.format(this_height + 1))
         return
 
     try:
@@ -148,22 +169,12 @@ def fix_next_block(block, chain):
     except Block.DoesNotExist:
         next_block = Block(hash=next_hash)
 
-    try:
-        next_height_block = Block.objects.get(height=block.height + 1)
-    except Block.DoesNotExist:
-        next_height_block = next_block
-
-    if next_block != next_height_block:
-        # the block with the next height doesn't match this blocks next hash
-        # just print for now and decide what to do if this causes issues
-        logger.error('NEXT BLOCKS HEIGHT AND HASH DON\'T MATCH')
-
-    next_block.height = block.height + 1
-    next_block.previous_block = block
+    next_block.height = this_height + 1
+    next_block.previous_block = this_block
     next_block.save(validate=False)
 
-    block.next_block = next_block
-    block.save()
+    this_block.next_block = next_block
+    this_block.save()
 
 
 def fix_merkle_root(block, chain):
