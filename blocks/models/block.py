@@ -7,6 +7,7 @@ from datetime import datetime
 from asgiref.base_layer import BaseChannelLayer
 from channels import Channel
 from django.db import models, connection, IntegrityError
+from django.db.models import Max
 from django.utils.timezone import make_aware
 
 from blocks.models import Transaction
@@ -322,6 +323,10 @@ class Block(models.Model):
             # check the next block has this block as it's previous block
             if self.next_block.previous_block != self:
                 return False, 'next block does not lead on from this block'
+
+        top_height = Block.objects.all().aggregate(Max('height'))
+        if top_height['height__max'] > self.height:
+            return False, 'missing next block'
 
         # calculate merkle root of transactions
         transactions = list(
