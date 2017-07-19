@@ -45,8 +45,8 @@ class Command(BaseCommand):
         )
 
     @staticmethod
-    def check_hash(block_height, block_hash):
-        check_hash = get_block_hash(block_height, connection.schema_name)
+    def check_hash(block_height, block_hash, schema_name):
+        check_hash = get_block_hash(block_height, schema_name)
         if check_hash != block_hash:
             logger.error('block at height {} has incorrect hash'.format(block_height))
 
@@ -85,7 +85,8 @@ class Command(BaseCommand):
                         target=self.check_hash,
                         kwargs={
                             'block_height': block.height,
-                            'block_hash': block.hash
+                            'block_hash': block.hash,
+                            'schema_name': connection.schema_name
                         }
                     )
                     check_thread.daemon = True
