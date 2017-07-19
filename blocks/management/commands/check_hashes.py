@@ -11,7 +11,7 @@ from django.utils import timezone
 import logging
 
 from blocks.utils.channels import send_to_channel
-from utils.rpc import get_block_hash
+from blocks.utils.rpc import get_block_hash
 
 logger = logging.getLogger(__name__)
 
