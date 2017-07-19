@@ -1,19 +1,14 @@
+import logging
 import time
-from threading import Thread
-
-from asgiref.base_layer import BaseChannelLayer
 
 from django.core.management import BaseCommand
 from django.core.paginator import Paginator
 from django.db import connection
-
-from blocks.models import Block
 from django.utils import timezone
 
-import logging
-
-from blocks.utils.channels import send_to_channel
+from blocks.models import Block
 from blocks.utils.rpc import get_block_hash
+from channels import Channel
 
 logger = logging.getLogger(__name__)
 
@@ -81,20 +76,14 @@ class Command(BaseCommand):
             for page_num in paginator.page_range:
                 for block in paginator.page(page_num):
 
-                    check_thread = Thread(
-                        target=self.check_hash,
-                        kwargs={
-                            'block_height': block.height,
-                            'block_hash': block.hash,
-                            'schema_name': connection.schema_name
-                        }
-                    )
-                    check_thread.daemon = True
-                    check_thread.start()
+                    Channel('check_block_hash').send({
+                        'block_height': block.height,
+                        'block_hash': block.hash,
+                        'chain': connection.schema_name
+                    })
 
-                logger.info('checked {} blocks'.format(page_num * 1000))
                 time.sleep(10)
+                logger.info('checked {} blocks'.format(page_num * 1000))
 
         except KeyboardInterrupt:
             pass
-

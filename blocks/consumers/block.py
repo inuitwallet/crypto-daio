@@ -224,3 +224,15 @@ def fix_merkle_root(block, chain):
 
     # reinitialise validation
     block.save()
+
+
+def check_block_hash(message):
+    schema = message.get('chain')
+    with schema_context(schema):
+        block_hash = message.get('block_hash')
+        block_height = message.get('block_height')
+
+        check_hash = get_block_hash(block_height, schema)
+
+        if check_hash != block_hash:
+            logger.error('block at height {} has incorrect hash'.format(block_height))
