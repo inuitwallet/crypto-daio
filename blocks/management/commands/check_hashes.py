@@ -1,4 +1,6 @@
 import time
+from threading import Thread
+
 from asgiref.base_layer import BaseChannelLayer
 
 from django.core.management import BaseCommand
@@ -43,66 +45,10 @@ class Command(BaseCommand):
         )
 
     @staticmethod
-    def validate_block(block):
-        if block.height == 0:
-            # genesis block is ok
-            return True
-
-        valid, error_message = block.validate()
-
-        if valid:
-            invalid_txs = []
-
-            for tx in block.transactions.all():
-                if not tx.is_valid:
-                    send_to_channel(
-                        'parse_transaction', {
-                            'chain': connection.tenant.schema_name,
-                            'tx_hash': tx.tx_id,
-                            'block_hash': block.hash,
-                            'tx_index': tx.index
-                        }
-                    )
-                    invalid_txs.append('{}:{}'.format(tx.index, tx.tx_id[:8]))
-
-            if invalid_txs:
-                logger.error(
-                    'block {} has invalid transactions: {}'.format(
-                        block.height,
-                        invalid_txs
-                    )
-                )
-                return False
-
-            else:
-                return True
-
-        else:
-            logger.error('block {} is invalid: {}'.format(block.height, error_message))
-            send_to_channel(
-                'repair_block', {
-                    'chain': connection.tenant.schema_name,
-                    'block_hash': block.hash,
-                    'error_message': error_message,
-                }
-            )
-            return False
-
-    def save_block(self, block, retry=1):
-        try:
-            block.save()
-        except BaseChannelLayer.ChannelFull:
-            logger.warning('channel full. sleeping')
-            time.sleep(60*retry)
-            self.save_block(block, retry+1)
-
-    def save_tx(self, tx, retry=1):
-        try:
-            tx.save()
-        except BaseChannelLayer.ChannelFull:
-            logger.warning('channel full. sleeping')
-            time.sleep(60*retry)
-            self.save_tx(tx, retry+1)
+    def check_hash(block_height, block_hash):
+        check_hash = get_block_hash(block_height, connection.schema_name)
+        if check_hash != block_hash:
+            logger.error('block at height {} has incorrect hash'.format(block_height))
 
     def handle(self, *args, **options):
         """
@@ -131,35 +77,23 @@ class Command(BaseCommand):
         # paginate to speed the initial load up a bit
         paginator = Paginator(blocks, 1000)
 
-        invalid_blocks = []
-        total_blocks = 0
         try:
             for page_num in paginator.page_range:
-                page_invalid_blocks = []
-
                 for block in paginator.page(page_num):
-                    total_blocks += 1
 
-                    check_hash = get_block_hash(block.height, connection.schema_name)
-
-                    if check_hash != block.hash:
-                        page_invalid_blocks.append(block)
-
-                logger.info(
-                    '{} ({} blocks validated with {} '
-                    'invalid blocks found this round)'.format(
-                        page_invalid_blocks,
-                        total_blocks,
-                        len(page_invalid_blocks),
+                    check_thread = Thread(
+                        target=self.check_hash,
+                        kwargs={
+                            'block_height': block.height,
+                            'block_hash': block.hash
+                        }
                     )
-                )
-                # if len(page_invalid_blocks) > 0:
-                #     # sleep to let the channel empty a bit
-                #     # maximum of 600 seconds
-                #     sleep_time = 10 * len(page_invalid_blocks)
-                #     time.sleep(sleep_time if sleep_time <= 120 else 120)
+                    check_thread.daemon = True
+                    check_thread.start()
 
-                invalid_blocks += page_invalid_blocks
+                logger.info('checked {} blocks'.format(page_num * 1000))
+                time.sleep(10)
+
         except KeyboardInterrupt:
             pass
-        logger.info('{} ({} invalid blocks)'.format(invalid_blocks, len(invalid_blocks)))
+
