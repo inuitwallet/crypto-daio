@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView
 from django.conf import settings
 
+from charts.urls import urlpatterns
 from daio.models import Chain
 from .models import *
 
@@ -93,5 +94,18 @@ class AddressDetailView(View):
             {
                 'object': get_object_or_404(Address, address=address),
                 'chain': connection.tenant,
+            }
+        )
+
+
+class ChartsView(View):
+    @staticmethod
+    def get(request):
+        return render(
+            request,
+            'explorer/chart_menu.html',
+            {
+                'urls': urlpatterns,
+                'chain': connection.tenant
             }
         )

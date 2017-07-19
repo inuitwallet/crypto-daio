@@ -5,7 +5,6 @@ from django.template.defaulttags import register
 @register.filter
 @stringfilter
 def human_time(num_minutes):
-    print(num_minutes)
     num_minutes = int(num_minutes)
 
     if num_minutes < 60:
@@ -25,3 +24,8 @@ def human_time(num_minutes):
     value = int((num_minutes / 60) / 24)
     unit = 'day' if value == 1 else 'days'
     return '{} {}'.format(value, unit)
+
+
+@register.filter
+def multiply(value, multiplier):
+    return value * multiplier

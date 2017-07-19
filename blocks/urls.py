@@ -21,4 +21,6 @@ urlpatterns = [
     url(r'^$', views.LatestBlocksList.as_view(), name='index'),
     url(r'^block/(?P<block_height>.*)$', views.BlockDetailView.as_view(), name='block'),
     url(r'^address/(?P<address>.*)$', views.AddressDetailView.as_view(), name='address'),
+
+    url(r'^menu/charts$', views.ChartsView.as_view(), name='charts_menu'),
 ]

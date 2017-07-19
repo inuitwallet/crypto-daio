@@ -19,6 +19,6 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^daio/', include('wallet.urls')),
     url(r'^admin/', admin.site.urls),
-    url(r'^charts/', include('charts.urls')),
+    url(r'^charts/', include('charts.urls'), name='charts'),
     url(r'^', include('blocks.urls')),
 ]

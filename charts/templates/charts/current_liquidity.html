@@ -1,6 +1,6 @@
 {% extends 'charts/base.html' %}
 
-{% load nvd3_tags static %}
+{% load nvd3_tags static chart_extras humanize %}
 
 {% block title %}
     Current Liquidity
@@ -25,7 +25,7 @@
         <div class="col-md-6">
             <div class="row">
                 <div class="col-md-12 text-center">
-                    Buy Orders
+                    <h3>Buy Orders</h3>
                 </div>
             </div>
             <div class="row">
@@ -34,22 +34,20 @@
                         <thead>
                             <tr>
                                 <td>Exchange</td>
-                                <td>Quote</td>
-                                <td>Base</td>
-                                <td>Type</td>
+                                <td>Pair</td>
                                 <td>Amount</td>
                                 <td>Rate</td>
+                                <td>Total</td>
                             </tr>
                         </thead>
                         <tbody>
                             {% for order in buy_orders %}
                                 <tr>
                                     <td>{{ order.pair.exchange }}</td>
-                                    <td>{{ order.pair.quote_currency.code }}</td>
-                                    <td>{{ order.pair.base_currency.code }}</td>
-                                    <td>{{ order.order_type }}</td>
-                                    <td>{{ order.amount }}</td>
-                                    <td>{{ order.rate }}</td>
+                                    <td>{{ order.pair.quote_currency.code }}/{{ order.pair.base_currency.code }}</td>
+                                    <td>{{ order.amount|floatformat:8|intcomma }} {{ order.pair.quote_currency.code }}</td>
+                                    <td>{{ order.rate|floatformat:8|intcomma }} {{ order.pair.base_currency.code }}</td>
+                                    <td>{{ order.amount|multiply:order.rate|floatformat:8|intcomma }} {{ order.pair.base_currency.code }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
@@ -60,7 +58,7 @@
         <div class="col-md-6">
             <div class="row">
                 <div class="col-md-12 text-center">
-                    Sell Orders
+                    <h3>Sell Orders</h3>
                 </div>
             </div>
             <div class="row">
@@ -69,22 +67,20 @@
                         <thead>
                             <tr>
                                 <td>Exchange</td>
-                                <td>Quote</td>
-                                <td>Base</td>
-                                <td>Type</td>
+                                <td>Pair</td>
                                 <td>Amount</td>
                                 <td>Rate</td>
+                                <td>Total</td>
                             </tr>
                         </thead>
                         <tbody>
                             {% for order in sell_orders %}
                                 <tr>
                                     <td>{{ order.pair.exchange }}</td>
-                                    <td>{{ order.pair.quote_currency.code }}</td>
-                                    <td>{{ order.pair.base_currency.code }}</td>
-                                    <td>{{ order.order_type }}</td>
-                                    <td>{{ order.amount }}</td>
-                                    <td>{{ order.rate }}</td>
+                                    <td>{{ order.pair.quote_currency.code }}/{{ order.pair.base_currency.code }}</td>
+                                    <td>{{ order.amount|floatformat:8|intcomma }} {{ order.pair.quote_currency.code }}</td>
+                                    <td>{{ order.rate|floatformat:8|intcomma }} {{ order.pair.base_currency.code }}</td>
+                                    <td>{{ order.amount|multiply:order.rate|floatformat:8|intcomma }} {{ order.pair.base_currency.code }}</td>
                                 </tr>
                             {% endfor %}
                         </tbody>

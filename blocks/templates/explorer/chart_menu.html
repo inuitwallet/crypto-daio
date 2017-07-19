@@ -1,0 +1,20 @@
+{% extends 'explorer/base.html' %}
+
+{% block title %}
+Charts
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        {% for url in urls %}
+            <div class="col-md-3">
+                <div class="row">
+                    <h3>
+                        <a href="{% url url.name %}">{{ url.name }}</a>
+                    </h3>
+                </div>
+            </div>
+
+        {% endfor %}
+    </div>
+{% endblock %}
