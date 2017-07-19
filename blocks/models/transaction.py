@@ -243,7 +243,7 @@ class Transaction(models.Model):
         else:
             self.time = None
 
-        self.lock_time = rpc_tx.get('locktime', None)
+        self.lock_time = rpc_tx.get('locktime', 0)
         self.coin = Coin.objects.get(unit_code=rpc_tx.get('unit', None))
 
         self.save(validate=False)

@@ -34,6 +34,7 @@ def repair_transaction(message):
         block_hash = rpc_tx.get('blockhash')
         if not block_hash:
             logger.error('no block hash found in rpc_tx: {}'.format(tx_id[:8]))
+            # indicates that block is orphaned?
             return
 
         block, block_created = Block.objects.get_or_create(hash=block_hash)

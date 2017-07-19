@@ -1,5 +1,6 @@
 asgi-redis
 bitstring
+boto3
 bpython
 channels
 django
@@ -7,6 +8,7 @@ django-bower
 django-redis
 django-redisboard
 djangorestframework
+django-storages
 django-tenant-schemas
 ecdsa
 pbkdf2

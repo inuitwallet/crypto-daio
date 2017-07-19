@@ -39,6 +39,7 @@ SHARED_APPS = [
     'django.contrib.sites',
     'django_nvd3',
     'djangobower',
+    'storages',
     'daio',
 ]
 
@@ -51,6 +52,7 @@ TENANT_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.messages',
     'django.contrib.humanize',
+    'alerts',
     'blocks',
     'charts',
     'wallet',
@@ -63,7 +65,14 @@ INSTALLED_APPS = SHARED_APPS + list(app for app in TENANT_APPS if app not in SHA
 
 TENANT_MODEL = 'daio.Chain'
 
-DEFAULT_FILE_STORAGE = 'tenant_schemas.storage.TenantFileSystemStorage'
+MEDIA_ROOT = '/data/media'
+MEDIA_URL = '/media/'
+DEFAULT_FILE_STORAGE = 'daio.storages.DaioStorage'
+
+AWS_ACCESS_KEY_ID = 'AKIAJKYMJLESKDXC4BLA'
+AWS_SECRET_ACCESS_KEY = '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'
+AWS_STORAGE_BUCKET_NAME = 'crypto-daio'
+AWS_S3_REGION_NAME = 'eu-west-1'
 
 MIDDLEWARE_CLASSES = [
     'tenant_schemas.middleware.TenantMiddleware',
@@ -217,3 +226,5 @@ BOWER_INSTALLED_APPS = (
     'd3#3.5.5',
     'nvd3#1.7.1',
 )
+
+STATICFILES_STORAGE = 'daio.storages.DaioStorage'

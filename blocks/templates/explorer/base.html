@@ -29,7 +29,7 @@
         <div class="row">
             <div class="col-md-1 text-center info-panel">
                 <a href="{% url 'index' %}">
-                    <img src="{% static 'explorer/images/nu-logo.png' %}" class="img-responsive chain-logo" />
+                    <img src="{{ chain.logo.url }}" class="img-responsive chain-logo" />
                 </a>
                 <div id="connections">Connections: <span class="data"></span></div>
                 <div id="height">Height: <span class="data"></span></div>
