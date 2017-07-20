@@ -277,7 +277,6 @@ class Block(models.Model):
                 tx.parse_output(rpc_output)
 
             tx.save()
-        logger.info('saved block {}'.format(self))
 
     @property
     def is_valid(self):
