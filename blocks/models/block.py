@@ -120,9 +120,13 @@ class Block(models.Model):
             logger.error(e)
             Block.objects.filter(height=self.height).delete()
             Block.objects.filter(hash=self.hash).delete()
-            super(Block, self).save(*args, **kwargs)
-        except psycopg_IntegrityError as e:
-            logger.error(e)
+            try:
+                super(Block, self).save(*args, **kwargs)
+            except IntegrityError as e:
+                logger.error(e)
+                self.next_block.save()
+                self.previous_block.save()
+                super(Block, self).save(*args, **kwargs)
 
         if validate:
             if not self.is_valid:
