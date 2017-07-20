@@ -120,13 +120,20 @@ class Block(models.Model):
             logger.error(e)
             Block.objects.filter(height=self.height).delete()
             Block.objects.filter(hash=self.hash).delete()
+
+            if self.next_block:
+                self.next_block.save()
+
+            if self.previous_block:
+                self.previous_block.save()
+
+            super(Block, self).save(*args, **kwargs)
+
             try:
                 super(Block, self).save(*args, **kwargs)
             except IntegrityError as e:
                 logger.error(e)
-                self.next_block.save()
-                self.previous_block.save()
-                super(Block, self).save(*args, **kwargs)
+                return
 
         if validate:
             if not self.is_valid:
