@@ -130,12 +130,12 @@ class Block(models.Model):
                 logger.error('found matching block {}'.format(block))
                 for rel_block in Block.objects.filter(next_block=block):
                     rel_block.next_block = None
-                    rel_block.save(validate=False)
+                    rel_block.save()
                     logger.error('removed {} from {}.next'.format(block, rel_block))
 
                 for rel_block in Block.objects.filter(previous_block=self):
                     rel_block.previous_block = None
-                    rel_block.save(validate=False)
+                    rel_block.save()
                     logger.error('removed {} from {}.previous'.format(block, rel_block))
 
                 block.delete()
