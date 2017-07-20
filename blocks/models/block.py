@@ -118,8 +118,21 @@ class Block(models.Model):
             super(Block, self).save(*args, **kwargs)
         except IntegrityError as e:
             logger.error(e)
-            Block.objects.filter(height=self.height).delete()
-            Block.objects.filter(hash=self.hash).delete()
+
+            for block in (
+                Block.objects.filter(height=self.height) +
+                Block.objects.filter(hash=self.hash)
+            ):
+                for rel_block in Block.objects.filter(next_block=block):
+                    rel_block.next_block = None
+                    rel_block.save()
+
+                for rel_block in Block.objects.filter(previous_block=self):
+                    rel_block.previous_block = None
+                    rel_block.save()
+
+                block.delete()
+
             self.next_block = None
             self.previous_block = None
             validate = True
