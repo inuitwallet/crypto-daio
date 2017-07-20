@@ -6,13 +6,11 @@ from datetime import datetime
 
 from asgiref.base_layer import BaseChannelLayer
 from channels import Channel
-from django.db import models, connection, IntegrityError
+from django.db import models, connection
 from django.db.models import Max
 from django.utils.timezone import make_aware
 
 from blocks.models import Transaction
-from blocks.utils.rpc import send_rpc, get_block_hash
-from daio.models import Chain
 
 logger = logging.getLogger(__name__)
 

@@ -4,7 +4,7 @@ from tenant_schemas.utils import schema_context
 
 from blocks.models import Transaction, Block, Address, TxOutput
 from blocks.utils.numbers import convert_to_satoshis
-from blocks.utils.rpc import send_rpc
+from blocks.utils.rpc import send_rpc, get_block_hash
 
 logger = logging.getLogger(__name__)
 
@@ -35,13 +35,25 @@ def repair_transaction(message):
         if not block_hash:
             logger.error('no block hash found in rpc_tx: {}'.format(tx_id[:8]))
             # indicates that block is orphaned?
+            # get the transaction
+            # and delete the block
+            try:
+                tx = Transaction.objects.get(tx_id=tx_id)
+            except Transaction.DoesNotExist:
+                return
+
+            block_height = tx.block.height
+            tx.block.delete()
+            # get the hash for block_height and create a new block
+            block_hash = get_block_hash(block_height, message.get('chain'))
+            Block.objects.create(hash=block_hash, height=block_height)
             return
 
         block, block_created = Block.objects.get_or_create(hash=block_hash)
         if block_created:
             # save has triggered validation which will parse the full block with tx
             logger.warning('block {} is new when parsing tx {}'.format(block, tx_id))
-            return False
+            return
 
         # get the block too for the index
         rpc_block = send_rpc(
