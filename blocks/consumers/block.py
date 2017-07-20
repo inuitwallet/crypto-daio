@@ -151,8 +151,6 @@ def fix_next_block(block, chain):
         logger.warning('could not get hash for block at height {}'.format(this_height))
         return
 
-    block.delete()
-
     this_block = Block(
         hash=this_hash,
         height=this_height
