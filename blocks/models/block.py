@@ -120,15 +120,9 @@ class Block(models.Model):
             logger.error(e)
             Block.objects.filter(height=self.height).delete()
             Block.objects.filter(hash=self.hash).delete()
-
             self.next_block = None
-            Block.objects.get_or_create(height=self.height + 1)
-
             self.previous_block = None
-            Block.objects.get_or_create(height=self.height - 1)
-
             validate = True
-
             super(Block, self).save(*args, **kwargs)
 
         if validate:

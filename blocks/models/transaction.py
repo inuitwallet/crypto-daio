@@ -74,7 +74,6 @@ class Transaction(models.Model):
         except IntegrityError as e:
             logger.error(e)
             Transaction.objects.filter(tx_id=self.tx_id).delete()
-            self.block.save()
             self.block = None
             validate = True
             super(Transaction, self).save(*args, **kwargs)
