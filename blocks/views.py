@@ -1,5 +1,9 @@
+import json
+
+from channels import Group
 from django.db import connection
 from django.shortcuts import get_object_or_404, render
+from django.template.loader import render_to_string
 from django.views import View
 
 from django.http import HttpResponse
@@ -27,6 +31,31 @@ class Notify(View):
             return HttpResponseNotFound()
         # block validation is tied to the save method
         Block.objects.get_or_create(hash=block_hash)
+
+        # update top blocks on ui
+        top_blocks = Block.objects.exclude(height=None).order_by('-height')[:50]
+        index = 0
+
+        for block in top_blocks:
+            block.save()
+            Group('{}_latest_blocks_list'.format(connection.schema_name)).send(
+                {
+                    'text': json.dumps(
+                        {
+                            'message_type': 'update_block',
+                            'index': index,
+                            'block_html': render_to_string(
+                                'explorer/fragments/block.html',
+                                {
+                                    'block': block
+                                }
+                            ),
+                            'block_is_valid': block.is_valid
+                        }
+                    )
+                }
+            )
+            index += 1
         return HttpResponse('daio received block {}'.format(block_hash))
 
 
