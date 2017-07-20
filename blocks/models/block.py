@@ -202,21 +202,7 @@ class Block(models.Model):
         }
 
     def parse_rpc_block(self, rpc_block):
-        proposed_height = rpc_block.get('height')
-        # check there's no existing block at this height with a different hash
-        existing_blocks = Block.objects.filter(height=proposed_height)
-        for existing_block in existing_blocks:
-            if existing_block.hash != rpc_block.get('hash'):
-                logger.warning(
-                    'found existing block at height {} with different hash: '
-                    'deleting {}'.format(
-                        proposed_height,
-                        existing_block
-                    )
-                )
-                existing_block.delete()
-
-        self.height = proposed_height
+        self.height = rpc_block.get('height')
         logger.info('parsing block {}'.format(self))
         # parse the json and apply to the block we just fetched
         self.size = rpc_block.get('size')
