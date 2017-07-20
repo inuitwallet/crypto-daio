@@ -55,8 +55,7 @@ Block Detail: {{ object.height }}
                     {% if object.is_valid %}
                         <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
                     {% else %}
-                        {{ block.validate }}
-                        <span class="glyphicon glyphicon-remove" aria-hidden="true" data-toggle="tooltip" title="{{ block.validate.1 }}"></span>
+                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
                     {% endif %}
                 </div>
             </div>
