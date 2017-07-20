@@ -35,15 +35,6 @@ def repair_transaction(message):
         if not block_hash:
             logger.error('no block hash found in rpc_tx: {}'.format(tx_id[:8]))
             # indicates that block is orphaned?
-            # delete the transaction if it exists
-            try:
-                tx = Transaction.objects.get(tx_id=tx_id)
-                logger.info('removing tx {} as it has no block'.format(tx))
-                tx.delete()
-            except Transaction.DoesNotExist:
-                logger.info('no tx matching {} was found'.format(tx_id))
-
-            return
 
         block, block_created = Block.objects.get_or_create(hash=block_hash)
         if block_created:
