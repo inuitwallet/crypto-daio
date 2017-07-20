@@ -37,7 +37,10 @@ def ws_receive(message):
     with tenant_context(tenant):
         if message['path'] == '/get_block_transactions/':
             block_hash = message_dict['stream']
-            block = Block.objects.get(hash=block_hash)
+            try:
+                block = Block.objects.get(hash=block_hash)
+            except Block.DoesNotExist:
+                return
             for tx in block.transactions.all():
                 message.reply_channel.send({
                     'text': json.dumps(
