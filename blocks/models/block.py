@@ -116,7 +116,7 @@ class Block(models.Model):
 
         try:
             super(Block, self).save(*args, **kwargs)
-        except IntegrityError as e:
+        except (IntegrityError, psycopg_IntegrityError) as e:
             logger.error(e)
             Block.objects.filter(height=self.height).delete()
             Block.objects.filter(hash=self.hash).delete()
