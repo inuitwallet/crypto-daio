@@ -113,7 +113,7 @@ def repair_block(message):
 
 
 def fix_previous_block(block, chain):
-    logger.info('fixing previous block')
+    logger.info('fixing previous block for {}'.format(block))
     prev_hash = get_block_hash(block.height - 1, schema_name=chain)
 
     if not prev_hash:
@@ -143,7 +143,7 @@ def fix_previous_block(block, chain):
 
 
 def fix_next_block(block, chain):
-    logger.info('fixing next block')
+    logger.info('fixing next block for {}'.format(block))
     # it's likely that this block is an orphan so we should remove it and rescan
     this_height = block.height
     this_hash = get_block_hash(this_height, schema_name=chain)
