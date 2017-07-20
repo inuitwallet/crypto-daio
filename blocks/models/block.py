@@ -121,13 +121,11 @@ class Block(models.Model):
             Block.objects.filter(height=self.height).delete()
             Block.objects.filter(hash=self.hash).delete()
 
-            if self.next_block:
-                self.next_block.save()
-                self.next_block = None
+            self.next_block = None
+            Block.objects.get_or_create(height=self.height + 1)
 
-            if self.previous_block:
-                self.previous_block.save()
-                self.previous_block = None
+            self.previous_block = None
+            Block.objects.get_or_create(height=self.height - 1)
 
             validate = True
 
