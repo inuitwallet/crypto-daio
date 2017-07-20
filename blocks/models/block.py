@@ -6,10 +6,10 @@ from datetime import datetime
 
 from asgiref.base_layer import BaseChannelLayer
 from channels import Channel
-from django.db import models, connection, IntegrityError
+from django.db import models, connection
 from django.db.models import Max
 from django.utils.timezone import make_aware
-from django.db.utils import IntegrityError as utils_IntegrityError
+from django.db.utils import IntegrityError
 
 from blocks.models import Transaction
 
@@ -116,7 +116,7 @@ class Block(models.Model):
 
         try:
             super(Block, self).save(*args, **kwargs)
-        except (IntegrityError, utils_IntegrityError) as e:
+        except IntegrityError as e:
             logger.error(e)
             Block.objects.filter(height=self.height).delete()
             Block.objects.filter(hash=self.hash).delete()
