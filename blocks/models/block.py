@@ -134,7 +134,7 @@ class Block(models.Model):
                     rel_block.save()
                     logger.error('removed {} from {}.next'.format(block, rel_block))
 
-                for rel_block in Block.objects.filter(previous_block=self):
+                for rel_block in Block.objects.filter(previous_block=block):
                     rel_block.previous_block = None
                     rel_block.save()
                     logger.error('removed {} from {}.previous'.format(block, rel_block))
@@ -277,6 +277,7 @@ class Block(models.Model):
                 tx.parse_output(rpc_output)
 
             tx.save()
+        logger.info('saved block {}'.format(self))
 
     @property
     def is_valid(self):

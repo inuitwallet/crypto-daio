@@ -1,5 +1,6 @@
 import logging
 
+import itertools
 from asgiref.base_layer import BaseChannelLayer
 from channels import Channel
 from tenant_schemas.utils import schema_context
@@ -152,12 +153,8 @@ def fix_next_block(block, chain):
         logger.warning('could not get hash for block at height {}'.format(this_height))
         return
 
-    this_block = Block(
-        hash=this_hash,
-        height=this_height
-    )
-
-    this_block.save(validate=False)
+    if this_hash != block.hash:
+        block = Block.objects.create(hash=this_hash, height=this_height)
 
     next_hash = get_block_hash(this_height + 1, schema_name=chain)
 
@@ -171,11 +168,11 @@ def fix_next_block(block, chain):
         next_block = Block(hash=next_hash)
 
     next_block.height = this_height + 1
-    next_block.previous_block = this_block
+    next_block.previous_block = block
     next_block.save(validate=False)
 
-    this_block.next_block = next_block
-    this_block.save()
+    block.next_block = next_block
+    block.save()
 
 
 def fix_merkle_root(block, chain):
