@@ -123,9 +123,11 @@ class Block(models.Model):
 
             if self.next_block:
                 self.next_block.save()
+                self.next_block = None
 
             if self.previous_block:
                 self.previous_block.save()
+                self.previous_block = None
 
             super(Block, self).save(*args, **kwargs)
 
