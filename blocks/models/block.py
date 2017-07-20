@@ -124,13 +124,14 @@ class Block(models.Model):
                 Block.objects.filter(height=self.height),
                 Block.objects.filter(hash=self.hash)
             ):
+                logger.error('found matching block {}'.format())
                 for rel_block in Block.objects.filter(next_block=block):
                     rel_block.next_block = None
-                    rel_block.save()
+                    rel_block.save(validate=False)
 
                 for rel_block in Block.objects.filter(previous_block=self):
                     rel_block.previous_block = None
-                    rel_block.save()
+                    rel_block.save(validate=False)
 
                 block.delete()
 
