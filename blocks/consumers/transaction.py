@@ -42,11 +42,14 @@ def repair_transaction(message):
             except Transaction.DoesNotExist:
                 return
 
-            block_height = tx.block.height
-            tx.block.delete()
-            # get the hash for block_height and create a new block
-            block_hash = get_block_hash(block_height, message.get('chain'))
-            Block.objects.create(hash=block_hash, height=block_height)
+            if tx.block:
+                block_height = tx.block.height
+                tx.block.delete()
+                # get the hash for block_height and create a new block
+                block_hash = get_block_hash(block_height, message.get('chain'))
+                Block.objects.create(hash=block_hash, height=block_height)
+            else:
+                tx.delete()
             return
 
         block, block_created = Block.objects.get_or_create(hash=block_hash)
