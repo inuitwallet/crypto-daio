@@ -40,15 +40,18 @@ def repair_transaction(message):
             try:
                 tx = Transaction.objects.get(tx_id=tx_id)
             except Transaction.DoesNotExist:
+                logger.info('no tx matching {} was found'.format(tx_id))
                 return
 
             if tx.block:
+                logger.info('removing block {}'.format(tx.block))
                 block_height = tx.block.height
                 tx.block.delete()
                 # get the hash for block_height and create a new block
                 block_hash = get_block_hash(block_height, message.get('chain'))
                 Block.objects.create(hash=block_hash, height=block_height)
             else:
+                logger.info('removing tx {} as it has no block'.format(tx))
                 tx.delete()
             return
 
