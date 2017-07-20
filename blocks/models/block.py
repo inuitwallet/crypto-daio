@@ -129,12 +129,6 @@ class Block(models.Model):
 
             super(Block, self).save(*args, **kwargs)
 
-            try:
-                super(Block, self).save(*args, **kwargs)
-            except IntegrityError as e:
-                logger.error(e)
-                return
-
         if validate:
             if not self.is_valid:
                 try:
