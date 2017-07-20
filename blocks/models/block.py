@@ -5,6 +5,7 @@ import time
 import itertools
 from datetime import datetime
 
+import psycopg2
 from asgiref.base_layer import BaseChannelLayer
 from channels import Channel
 from django.db import models, connection
@@ -117,7 +118,7 @@ class Block(models.Model):
 
         try:
             super(Block, self).save(*args, **kwargs)
-        except IntegrityError as e:
+        except (IntegrityError, psycopg2.IntegrityError) as e:
             logger.error(e)
 
             for block in itertools.chain(

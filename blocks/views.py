@@ -1,6 +1,5 @@
 from django.db import connection
 from django.shortcuts import get_object_or_404, render
-from django.utils.decorators import method_decorator
 from django.views import View
 
 from django.http import HttpResponse
@@ -10,7 +9,6 @@ from django.views.generic import ListView
 from django.conf import settings
 
 from charts.urls import urlpatterns
-from daio.models import Chain
 from .models import *
 
 
