@@ -123,7 +123,7 @@ class Block(models.Model):
             connection.close()
 
             for block in itertools.chain(
-                Block.objects.filter(pk=self.pk),
+                Block.objects.filter(id=self.id),
                 Block.objects.filter(height=self.height),
                 Block.objects.filter(hash=self.hash)
             ):

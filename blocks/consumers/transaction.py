@@ -42,7 +42,8 @@ def repair_transaction(message):
                 tx.delete()
             except Transaction.DoesNotExist:
                 logger.info('no tx matching {} was found'.format(tx_id))
-                return
+
+            return
 
         block, block_created = Block.objects.get_or_create(hash=block_hash)
         if block_created:
