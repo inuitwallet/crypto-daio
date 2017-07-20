@@ -9,6 +9,7 @@ from channels import Channel
 from django.db import models, connection, IntegrityError
 from django.db.models import Max
 from django.utils.timezone import make_aware
+from psycopg2 import IntegrityError as psycopg_IntegrityError
 
 from blocks.models import Transaction
 
@@ -120,6 +121,8 @@ class Block(models.Model):
             Block.objects.filter(height=self.height).delete()
             Block.objects.filter(hash=self.hash).delete()
             super(Block, self).save(*args, **kwargs)
+        except psycopg_IntegrityError as e:
+            logger.error(e)
 
         if validate:
             if not self.is_valid:
