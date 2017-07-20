@@ -120,8 +120,10 @@ class Block(models.Model):
             super(Block, self).save(*args, **kwargs)
         except (IntegrityError, psycopg2.IntegrityError) as e:
             logger.error(e)
+            connection.close()
 
             for block in itertools.chain(
+                Block.objects.filter(pk=self.pk),
                 Block.objects.filter(height=self.height),
                 Block.objects.filter(hash=self.hash)
             ):
@@ -129,20 +131,20 @@ class Block(models.Model):
                 for rel_block in Block.objects.filter(next_block=block):
                     rel_block.next_block = None
                     rel_block.save(validate=False)
-                    logger.error('removed {} from {} next'.format(block, rel_block))
+                    logger.error('removed {} from {}.next'.format(block, rel_block))
 
                 for rel_block in Block.objects.filter(previous_block=self):
                     rel_block.previous_block = None
                     rel_block.save(validate=False)
-                    logger.error('removed {} from {} previous'.format(block, rel_block))
+                    logger.error('removed {} from {}.previous'.format(block, rel_block))
 
                 block.delete()
                 logger.error('deleted {}'.format(block))
 
             self.next_block = None
             self.previous_block = None
-            validate = True
-            super(Block, self).save(*args, **kwargs)
+
+            self.save()
 
         if validate:
             if not self.is_valid:
