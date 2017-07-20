@@ -20,7 +20,8 @@ def update_info(info_id, value, schema):
                     'value': value
                 }
             )
-        }
+        },
+        immediately=True
     )
 
 

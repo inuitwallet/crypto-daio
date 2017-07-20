@@ -61,7 +61,8 @@ def repair_block(message):
                     {
                         'chain': message.get('chain'),
                         'block_hash': block_hash
-                    }
+                    },
+                    immediately=True
                 )
             except BaseChannelLayer.ChannelFull:
                 logger.error('CHANNEL FULL!')

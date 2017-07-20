@@ -21,12 +21,9 @@ def get_schema_from_host(message):
 
 def ws_connect(message):
     schema = get_schema_from_host(message)
-    message.reply_channel.send({
-        'accept': True
-    })
+    message.reply_channel.send({'accept': True}, immediately=True)
     Group('{}_update_info'.format(schema)).add(message.reply_channel)
-    Channel('display_info').send({'chain': schema})
-
+    Channel('display_info').send({'chain': schema}, immediately=True)
     if message['path'] == '/latest_blocks_list/':
         Group('{}_latest_blocks_list'.format(schema)).add(message.reply_channel)
 
@@ -42,38 +39,44 @@ def ws_receive(message):
             except Block.DoesNotExist:
                 return
             for tx in block.transactions.all():
-                message.reply_channel.send({
-                    'text': json.dumps(
-                        {
-                            'message_type': 'block_transaction',
-                            'html': render_to_string(
-                                'explorer/fragments/transaction.html',
-                                {
-                                    'tx': tx
-                                }
-                            )
-                        }
-                    )
-                })
+                message.reply_channel.send(
+                    {
+                        'text': json.dumps(
+                            {
+                                'message_type': 'block_transaction',
+                                'html': render_to_string(
+                                    'explorer/fragments/transaction.html',
+                                    {
+                                        'tx': tx
+                                    }
+                                )
+                            }
+                        )
+                    },
+                    immediately=True
+                )
             return
 
         if message['path'] == '/get_address_transactions/':
             address = message_dict['stream']
             address_object = Address.objects.get(address=address)
             for tx in address_object.transactions:
-                message.reply_channel.send({
-                    'text': json.dumps(
-                        {
-                            'message_type': 'address_transaction',
-                            'html': render_to_string(
-                                'explorer/fragments/transaction.html',
-                                {
-                                    'tx': tx
-                                }
-                            )
-                        }
-                    )
-                })
+                message.reply_channel.send(
+                    {
+                        'text': json.dumps(
+                            {
+                                'message_type': 'address_transaction',
+                                'html': render_to_string(
+                                    'explorer/fragments/transaction.html',
+                                    {
+                                        'tx': tx
+                                    }
+                                )
+                            }
+                        )
+                    },
+                    immediately=True
+                )
             return
 
 
@@ -85,6 +88,9 @@ def ws_disconnect(message):
         Group(
             '{}_update_info'.format(chain.schema_name)
         ).discard(message.reply_channel)
-    message.reply_channel.send({
-        'close': True
-    })
+    message.reply_channel.send(
+        {
+            'close': True
+        },
+        immediately=True
+    )
