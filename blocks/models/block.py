@@ -129,6 +129,8 @@ class Block(models.Model):
                 self.previous_block.save()
                 self.previous_block = None
 
+            validate = True
+
             super(Block, self).save(*args, **kwargs)
 
         if validate:
