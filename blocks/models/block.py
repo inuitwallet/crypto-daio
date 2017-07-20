@@ -6,7 +6,7 @@ from datetime import datetime
 
 from asgiref.base_layer import BaseChannelLayer
 from channels import Channel
-from django.db import models, connection
+from django.db import models, connection, IntegrityError
 from django.db.models import Max
 from django.utils.timezone import make_aware
 
@@ -113,7 +113,13 @@ class Block(models.Model):
     def save(self, *args, **kwargs):
         validate = kwargs.pop('validate', True)
 
-        super(Block, self).save(*args, **kwargs)
+        try:
+            super(Block, self).save(*args, **kwargs)
+        except IntegrityError as e:
+            logger.error(e)
+            Block.objects.filter(height=self.height).delete()
+            Block.objects.filter(hash=self.hash).delete()
+            super(Block, self).save(*args, **kwargs)
 
         if validate:
             if not self.is_valid:

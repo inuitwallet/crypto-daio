@@ -69,7 +69,13 @@ class Transaction(models.Model):
     def save(self, *args, **kwargs):
         validate = kwargs.pop('validate', True)
 
-        super(Transaction, self).save(*args, **kwargs)
+        try:
+            super(Transaction, self).save(*args, **kwargs)
+        except IntegrityError as e:
+            logger.error(e)
+            Transaction.objects.filter(tx_id=self.tx_id).delete()
+            super(Transaction, self).save(*args, **kwargs)
+
         if validate:
             if not self.is_valid:
                 try:
