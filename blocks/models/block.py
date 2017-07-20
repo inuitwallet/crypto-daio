@@ -7,7 +7,7 @@ from datetime import datetime
 from asgiref.base_layer import BaseChannelLayer
 from channels import Channel
 from django.db import models, connection
-from django.db.models import Max
+from django.db.models import Max, itertools
 from django.utils.timezone import make_aware
 from django.db.utils import IntegrityError
 
@@ -119,8 +119,8 @@ class Block(models.Model):
         except IntegrityError as e:
             logger.error(e)
 
-            for block in (
-                Block.objects.filter(height=self.height) +
+            for block in itertools.chain(
+                Block.objects.filter(height=self.height),
                 Block.objects.filter(hash=self.hash)
             ):
                 for rel_block in Block.objects.filter(next_block=block):
