@@ -118,6 +118,7 @@ class Block(models.Model):
 
         try:
             super(Block, self).save(*args, **kwargs)
+            logger.info('saved {}'.format(self))
         except (IntegrityError, psycopg2.IntegrityError) as e:
             logger.error(e)
             connection.close()
