@@ -5,12 +5,14 @@ bpython
 channels
 django
 django-bower
+django-jet
 django-redis
 django-redisboard
 djangorestframework
 django-storages
 django-tenant-schemas
 ecdsa
+google-api-python-client==1.4.1
 pbkdf2
 psycopg2
 requests[security]

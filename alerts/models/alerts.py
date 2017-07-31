@@ -16,6 +16,9 @@ class Alert(models.Model):
         max_digits=50,
         decimal_places=8
     )
+    provider = models.ManyToManyField(
+        'Connector'
+    )
 
 
 class BalanceAlert(Alert):
