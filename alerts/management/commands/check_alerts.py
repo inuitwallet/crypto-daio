@@ -39,9 +39,10 @@ class Command(BaseCommand):
                 '-date_time'
             ).first()
 
-            if make_aware(datetime.datetime.now()) < notification.date_time + alert.period:  # noqa
-                logger.warning('period has not yet elapsed')
-                continue
+            if notification:
+                if make_aware(datetime.datetime.now()) < notification.date_time + alert.period:  # noqa
+                    logger.warning('period has not yet elapsed')
+                    continue
 
             # Get the balance to be checked
             balance = Balance.objects.filter(
