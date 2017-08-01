@@ -93,30 +93,31 @@ class Cryptopia(object):
             }
         )
         for historic_trade in trade_history.get('Data', []):
-            trade, created = Trade.objects.get_or_create(
+            amount = Decimal(historic_trade.get('Amount', 0))
+            rate = Decimal(historic_trade.get('Rate', 0))
+
+            trade, _ = Trade.objects.update_or_create(
                 order_id=historic_trade.get('TradeId'),
-                pair=pair
+                pair=pair,
+                defaults={
+                    'date_time': make_aware(
+                        datetime.strptime(
+                            historic_trade.get('TimeStamp')[:-1],
+                            '%Y-%m-%dT%H:%M:%S.%f'
+                        )
+                    ),
+                    'order_type': (
+                        'BUY'
+                        if historic_trade.get('Type') == 'Buy'
+                        else 'SELL'
+                    ),
+                    'amount': amount,
+                    'rate': rate,
+                    'fee': Decimal(historic_trade.get('Fee', 0)),
+                    'total': Decimal(historic_trade.get('Total', amount * rate))
+                }
             )
-            if created:
-                trade.date_time = make_aware(
-                    datetime.strptime(
-                        historic_trade.get('TimeStamp')[:-1],
-                        '%Y-%m-%dT%H:%M:%S.%f'
-                    )
-                )
-                trade.order_type = (
-                    'BUY'
-                    if historic_trade.get('Type') == 'Buy'
-                    else 'SELL'
-                )
-                amount = Decimal(historic_trade.get('Amount', 0))
-                trade.amount = amount
-                rate = Decimal(historic_trade.get('Rate', 0))
-                trade.rate = rate
-                trade.fee = Decimal(historic_trade.get('Fee', 0))
-                trade.total = Decimal(historic_trade.get('Total', amount * rate))
-                trade.save()
-                logger.info('saved {}'.format(trade))
+            logger.info('saved {}'.format(trade))
 
     def get_withdrawals(self, pair):
         withdrawal_history = self.make_request(
@@ -225,20 +226,25 @@ class Cryptopia(object):
         )
 
         for open_order in open_orders.get('Data', []):
-            order, _ = Order.objects.get_or_create(
+            order, _ = Order.objects.update_or_create(
                 pair=pair,
-                order_id=open_order.get('OrderId')
+                order_id=open_order.get('OrderId'),
+                defaults={
+                    'order_type': (
+                        'BUY'
+                        if open_order.get('Type') == 'Buy'
+                        else 'SELL'
+                    ),
+                    'amount': open_order.get('Amount'),
+                    'rate': open_order.get('Rate'),
+                    'date_time': make_aware(
+                        datetime.strptime(
+                            open_order.get('TimeStamp')[:-1],
+                            '%Y-%m-%dT%H:%M:%S.%f'
+                        )
+                    ),
+                    'total': open_order.get('Total'),
+                    'open': True,
+                    'remaining': open_order.get('Remaining')
+                }
             )
-            order.order_type = 'BUY' if open_order.get('Type') == 'Buy' else 'SELL'
-            order.amount = open_order.get('Amount')
-            order.rate = open_order.get('Rate')
-            order.date_time = make_aware(
-                datetime.strptime(
-                    open_order.get('TimeStamp')[:-1],
-                    '%Y-%m-%dT%H:%M:%S.%f'
-                )
-            )
-            order.Total = open_order.get('Total')
-            order.open = True
-            order.Remaining = open_order.get('Remaining')
-            order.save()

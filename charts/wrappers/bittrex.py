@@ -69,29 +69,32 @@ class Bittrex(object):
             }
         )
         for historic_trade in trade_history.get('result', []):
-            trade, created = Trade.objects.get_or_create(
+            amount = Decimal(historic_trade.get('Quantity', 0))
+            rate = Decimal(historic_trade.get('PricePerUnit', 0))
+
+            trade, _ = Trade.objects.update_or_create(
                 order_id=historic_trade.get('OrderUuid'),
-                pair=pair
+                pair=pair,
+                defaults={
+                    'date_time': make_aware(
+                        datetime.strptime(
+                            historic_trade.get('TimeStamp'),
+                            '%Y-%m-%dT%H:%M:%S.%f'
+                        )
+                    ),
+                    'order_type': (
+                        'BUY' if
+                        historic_trade.get('OrderType') == 'LIMIT_BUY'
+                        else 'SELL'
+                    ),
+                    'amount': amount,
+                    'rate': rate,
+                    'fee': Decimal(historic_trade.get('Commission', 0)),
+                    'total': Decimal(amount * rate)
+                }
             )
-            if created:
-                trade.date_time = make_aware(
-                    datetime.strptime(
-                        historic_trade.get('TimeStamp'),
-                        '%Y-%m-%dT%H:%M:%S.%f'
-                    )
-                )
-                trade.order_type = (
-                    'BUY' if
-                    historic_trade.get('OrderType') == 'LIMIT_BUY'
-                    else 'SELL'
-                )
-                amount = Decimal(historic_trade.get('Quantity', 0))
-                trade.amount = amount
-                rate = Decimal(historic_trade.get('PricePerUnit', 0))
-                trade.rate = rate
-                trade.fee = Decimal(historic_trade.get('Commission', 0))
-                trade.total = Decimal(amount * rate)
-                trade.save()
+
+            logger.info('saved {}'.format(trade))
 
     def get_withdrawals(self, pair):
         withdrawal_history = self.make_request(
@@ -196,21 +199,25 @@ class Bittrex(object):
         )
 
         for open_order in open_orders.get('result', []):
-            order, _ = Order.objects.get_or_create(
+            order, _ = Order.objects.update_or_create(
                 pair=pair,
-                order_id=open_order.get('OrderUuid')
+                order_id=open_order.get('OrderUuid'),
+                defaults={
+                    'order_type': (
+                        'BUY'
+                        if open_order.get('OrderType') == 'LIMIT_BUY'
+                        else 'SELL'
+                    ),
+                    'amount': open_order.get('Quantity'),
+                    'rate': open_order.get('Limit'),
+                    'date_time': make_aware(
+                        datetime.strptime(
+                            open_order.get('Opened'),
+                            '%Y-%m-%dT%H:%M:%S.%f'
+                        )
+                    ),
+                    'remaining': open_order.get('QuantityRemaining'),
+                    'total': open_order.get('Quantity') * open_order.get('Limit'),
+                    'open': True
+                }
             )
-            order.order_type = 'BUY' if open_order.get('OrderType') == 'LIMIT_BUY' else 'SELL'  # noqa
-            order.amount = open_order.get('Quantity')
-            order.rate = open_order.get('Limit')
-            order.date_time = make_aware(
-                datetime.strptime(
-                    open_order.get('Opened'),
-                    '%Y-%m-%dT%H:%M:%S.%f'
-                )
-            )
-            order.Remaining = open_order.get('QuantityRemaining')
-            order.Total = open_order.get('Quantity') * open_order.get('Limit')
-            order.open = True
-            order.save()
-
