@@ -1,6 +1,20 @@
+import datetime
+
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
-from charts.models import Currency, Pair
+from charts.models import Pair
+
+
+class Notification(models.Model):
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey()
+    date_time = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return '{} {}'.format(self.date_time, self.content_object)
 
 
 class Alert(models.Model):
@@ -16,8 +30,13 @@ class Alert(models.Model):
         max_digits=50,
         decimal_places=8
     )
-    providers = models.ManyToManyField(
+    connectors = models.ManyToManyField(
         'Connector'
+    )
+    period = models.DurationField(default=datetime.timedelta(minutes=20))
+    notifications = GenericRelation(
+        Notification,
+        related_query_name='alerts'
     )
 
 
@@ -32,3 +51,10 @@ class BalanceAlert(Alert):
             ('QUOTE', 'Quote')
         ]
     )
+
+    def __str__(self):
+        return '{} {} @ {}'.format(
+            self.alert_operator,
+            self.alert_value,
+            self.pair
+        )

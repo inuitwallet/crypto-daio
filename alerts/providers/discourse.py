@@ -1,3 +1,5 @@
+import datetime
+
 import requests
 
 
@@ -40,5 +42,15 @@ class Discourse(object):
         except ValueError:
             return response.text
 
-    def send_alert(self):
-        pass
+    def send_notification(self, channel_id, message):
+        self.make_request(
+            'posts',
+            'POST',
+            {
+                "topic_id": channel_id,
+                "raw": message,
+                "category": None,
+                "archetype": "private_message",
+                "created_at": datetime.datetime.now().isoformat()
+            }
+        )

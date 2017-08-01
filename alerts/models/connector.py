@@ -5,9 +5,9 @@ class Connector(models.Model):
     provider = models.CharField(
         max_length=255,
         choices=[
-            ('DISCOURSE', 'Discourse'),
-            ('GITTER', 'Gitter'),
-            ('EMAIL', 'Email')
+            ('Discourse', 'Discourse'),
+            ('Gitter', 'Gitter'),
+            ('Email', 'Email')
         ]
     )
     name = models.CharField(

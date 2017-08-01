@@ -67,7 +67,8 @@
                         {% endif %}
                         {% if 0.9 > trade.adjusted_rate %}
                             class="danger"
-                        {% endif %}>{{ trade.adjusted_rate }}</td>
+                        {% endif %}>
+                        {{ trade.adjusted_rate }}</td>
                     <td>{{ trade.adjusted_total }}</td>
                     <td>{% if trade.quote_price %}1 {{ trade.pair.quote_currency.code }} = ${{ trade.quote_price }}{% endif %}</td>
                     <td>{% if trade.base_price %}1 {{ trade.pair.base_currency.code }} = ${{ trade.base_price }}{% endif %}</td>

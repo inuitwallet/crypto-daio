@@ -2,8 +2,15 @@ from django.contrib import admin
 
 from alerts.models import (
     BalanceAlert,
-    Connector
+    Connector,
+    Notification
 )
+
+
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ('date_time', 'content_object',)
+
+admin.site.register(Notification, NotificationAdmin)
 
 
 class ConnectorAdmin(admin.ModelAdmin):
@@ -14,6 +21,6 @@ admin.site.register(Connector, ConnectorAdmin)
 
 
 class BalanceAlertAdmin(admin.ModelAdmin):
-    list_display = ('pair', 'currency', 'alert_operator', 'alert_value')
+    list_display = ('pair', 'currency', 'alert_operator', 'alert_value', 'period')
 
 admin.site.register(BalanceAlert, BalanceAlertAdmin)
