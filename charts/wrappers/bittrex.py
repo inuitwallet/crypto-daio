@@ -85,11 +85,11 @@ class Bittrex(object):
                     historic_trade.get('OrderType') == 'LIMIT_BUY'
                     else 'SELL'
                 )
-                amount = Decimal(historic_trade.get('Quantity'), 0)
+                amount = Decimal(historic_trade.get('Quantity', 0))
                 trade.amount = amount
-                rate = Decimal(historic_trade.get('PricePerUnit'), 0)
+                rate = Decimal(historic_trade.get('PricePerUnit', 0))
                 trade.rate = rate
-                trade.fee = Decimal(historic_trade.get('Commission'))
+                trade.fee = Decimal(historic_trade.get('Commission', 0))
                 trade.total = Decimal(amount * rate)
                 trade.save()
 

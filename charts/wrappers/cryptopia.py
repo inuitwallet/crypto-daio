@@ -111,10 +111,10 @@ class Cryptopia(object):
                 )
                 amount = Decimal(historic_trade.get('Amount', 0))
                 trade.amount = amount
-                rate = Decimal(historic_trade.get('Rate'), 0)
+                rate = Decimal(historic_trade.get('Rate', 0))
                 trade.rate = rate
-                trade.fee = Decimal(historic_trade.get('Fee'))
-                trade.total = Decimal(historic_trade.get('Total'), amount * rate)
+                trade.fee = Decimal(historic_trade.get('Fee', 0))
+                trade.total = Decimal(historic_trade.get('Total', amount * rate))
                 trade.save()
                 logger.info('saved {}'.format(trade))
 

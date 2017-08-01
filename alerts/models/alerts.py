@@ -1,6 +1,6 @@
 from django.db import models
 
-from charts.models import Exchange, Currency
+from charts.models import Currency, Pair
 
 
 class Alert(models.Model):
@@ -16,15 +16,19 @@ class Alert(models.Model):
         max_digits=50,
         decimal_places=8
     )
-    provider = models.ManyToManyField(
+    providers = models.ManyToManyField(
         'Connector'
     )
 
 
 class BalanceAlert(Alert):
-    exchange = models.ForeignKey(
-        Exchange
+    pair = models.ForeignKey(
+        Pair
     )
-    currency = models.ForeignKey(
-        Currency
+    currency = models.CharField(
+        max_length=10,
+        choices=[
+            ('BASE', 'Base'),
+            ('QUOTE', 'Quote')
+        ]
     )

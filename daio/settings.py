@@ -60,6 +60,7 @@ TENANT_APPS = [
     'wallet',
     'rest_framework',
     'channels',
+    'channels.delay',
     'redisboard',
 ]
 
