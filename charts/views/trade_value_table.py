@@ -17,6 +17,7 @@ class TradeValueTable(ListView):
                 continue
 
             trade.adjusted_amount = trade.amount
+            trade.quote_price = 1
             if trade.pair.quote_currency.get_usd_value:
                 closest_value = CurrencyValue.objects.get_closest_to(
                     trade.pair.quote_currency,
@@ -28,6 +29,7 @@ class TradeValueTable(ListView):
 
             trade.adjusted_rate = trade.rate
             trade.adjusted_total = trade.total
+            trade.base_price = 1
             if trade.pair.base_currency.get_usd_value:
                 closest_value = CurrencyValue.objects.get_closest_to(
                     trade.pair.base_currency,
