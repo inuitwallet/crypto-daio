@@ -23,7 +23,8 @@ class Command(BaseCommand):
                 api_key=connector.api_key,
                 api_username=connector.api_user_name
             )
-            provider.send_notification(connector.target_channel, message)
+            # provider.send_notification(connector.target_channel, message)
+            logger.info(alert, message)
 
     def check_balance_alerts(self):
         """
@@ -76,19 +77,6 @@ class Command(BaseCommand):
                     check_balance
                 )
             )
-
-            # Check that the same alert hasn't been sent within the last period
-            notification = Notification.objects.filter(
-                alerts=alert
-            ).order_by(
-                '-date_time'
-            ).first()
-
-            if notification:
-                if make_aware(
-                        datetime.datetime.now()) < notification.date_time + alert.period:  # noqa
-                    logger.warning('period has not yet elapsed')
-                    continue
 
             if alert.alert_operator == 'LESS_THAN':
                 if check_balance < alert.alert_value:
