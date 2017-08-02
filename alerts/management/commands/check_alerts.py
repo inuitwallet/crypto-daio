@@ -1,6 +1,8 @@
 import datetime
 
 import logging
+
+from decimal import Decimal
 from django.core.management import BaseCommand
 from django.utils.timezone import make_aware
 
@@ -59,27 +61,8 @@ class Command(BaseCommand):
                 check_balance = balance.quote_amount
                 check_currency = alert.pair.quote_currency
 
-            logger.info(
-                'alert {} matched balance {} at {}'.format(
-                    alert,
-                    balance,
-                    balance.date_time
-                )
-            )
-            logger.info(
-                'quote = {}\n'
-                'base = {}\n'
-                'currency = {}\n'
-                'check = {}'.format(
-                    balance.quote_amount,
-                    balance.base_amount,
-                    alert.currency,
-                    check_balance
-                )
-            )
-
             if alert.alert_operator == 'LESS_THAN':
-                if check_balance < alert.alert_value:
+                if Decimal(check_balance) < Decimal(alert.alert_value):
                     self.send_notification(
                         alert,
                         'The balance of {} on {} has fallen below {}.\n'
@@ -93,7 +76,7 @@ class Command(BaseCommand):
                     Notification.objects.create(content_object=alert)
 
             if alert.alert_operator == 'GREATER_THAN':
-                if check_balance < alert.alert_value:
+                if Decimal(check_balance) > Decimal(alert.alert_value):
                     self.send_notification(
                         alert,
                         'The balance of {} on {} has risen above {}.\n'
@@ -107,7 +90,7 @@ class Command(BaseCommand):
                     Notification.objects.create(content_object=alert)
 
             if alert.alert_operator == 'EQUALS':
-                if check_balance < alert.alert_value:
+                if Decimal(check_balance) == Decimal(alert.alert_value):
                     self.send_notification(
                         alert,
                         'The balance of {} on {} equals {}.'.format(
