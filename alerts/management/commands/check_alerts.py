@@ -62,10 +62,11 @@ class Command(BaseCommand):
                 check_currency = alert.pair.quote_currency
 
             logger.info(
-                'balance: {} {} {}'.format(
+                'balance: {} {} {} {}'.format(
                     balance.date_time,
                     balance.quote_amount,
-                    balance.base_amount
+                    balance.base_amount,
+                    balance.pair
                 )
             )
 
