@@ -94,8 +94,6 @@ class Bittrex(object):
                 }
             )
 
-            logger.info('saved {}'.format(trade))
-
     def get_withdrawals(self, pair):
         withdrawal_history = self.make_request(
             'account/getwithdrawalhistory',
