@@ -25,8 +25,8 @@ class Command(BaseCommand):
                 api_key=connector.api_key,
                 api_username=connector.api_user_name
             )
-            # provider.send_notification(connector.target_channel, message)
-            logger.info(alert, message)
+            provider.send_notification(connector.target_channel, message)
+            logger.info('sending notification {} for {}'.format(connector, alert))
 
     def check_balance_alerts(self):
         """
@@ -35,17 +35,17 @@ class Command(BaseCommand):
         :return:
         """
         for alert in BalanceAlert.objects.all():
-            # # Check that the same alert hasn't been sent within the last period
-            # notification = Notification.objects.filter(
-            #     alerts=alert
-            # ).order_by(
-            #     '-date_time'
-            # ).first()
-            #
-            # if notification:
-            #     if make_aware(datetime.datetime.now()) < notification.date_time + alert.period:  # noqa
-            #         logger.warning('period has not yet elapsed')
-            #         continue
+            # Check that the same alert hasn't been sent within the last period
+            notification = Notification.objects.filter(
+                alerts=alert
+            ).order_by(
+                '-date_time'
+            ).first()
+
+            if notification:
+                if make_aware(datetime.datetime.now()) < notification.date_time + alert.period:  # noqa
+                    logger.warning('period has not yet elapsed')
+                    continue
 
             # Get the balance to be checked
             balance = Balance.objects.filter(
@@ -60,6 +60,8 @@ class Command(BaseCommand):
             if alert.currency == 'QUOTE':
                 check_balance = balance.quote_amount
                 check_currency = alert.pair.quote_currency
+
+            logger.info(balance.date_time, balance.quote_amount, balance.base_amount)
 
             if alert.alert_operator == 'LESS_THAN':
                 if Decimal(check_balance) < Decimal(alert.alert_value):
