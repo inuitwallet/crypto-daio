@@ -61,7 +61,13 @@ class Command(BaseCommand):
                 check_balance = balance.quote_amount
                 check_currency = alert.pair.quote_currency
 
-            logger.info(balance.date_time, balance.quote_amount, balance.base_amount)
+            logger.info(
+                'balance: {} {} {}'.format(
+                    balance.date_time,
+                    balance.quote_amount,
+                    balance.base_amount
+                )
+            )
 
             if alert.alert_operator == 'LESS_THAN':
                 if Decimal(check_balance) < Decimal(alert.alert_value):
