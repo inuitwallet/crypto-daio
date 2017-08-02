@@ -32,17 +32,17 @@ class Command(BaseCommand):
         :return:
         """
         for alert in BalanceAlert.objects.all():
-            # Check that the same alert hasn't been sent within the last period
-            notification = Notification.objects.filter(
-                alerts=alert
-            ).order_by(
-                '-date_time'
-            ).first()
-
-            if notification:
-                if make_aware(datetime.datetime.now()) < notification.date_time + alert.period:  # noqa
-                    logger.warning('period has not yet elapsed')
-                    continue
+            # # Check that the same alert hasn't been sent within the last period
+            # notification = Notification.objects.filter(
+            #     alerts=alert
+            # ).order_by(
+            #     '-date_time'
+            # ).first()
+            #
+            # if notification:
+            #     if make_aware(datetime.datetime.now()) < notification.date_time + alert.period:  # noqa
+            #         logger.warning('period has not yet elapsed')
+            #         continue
 
             # Get the balance to be checked
             balance = Balance.objects.filter(
@@ -57,6 +57,38 @@ class Command(BaseCommand):
             if alert.currency == 'QUOTE':
                 check_balance = balance.quote_amount
                 check_currency = alert.pair.quote_currency
+
+            logger.info(
+                'alert {} matched balance {} at {}'.format(
+                    alert,
+                    balance,
+                    balance.date_time
+                )
+            )
+            logger.info(
+                'quote = {}\n'
+                'base = {}\n'
+                'currency = {}\n'
+                'check = {}'.format(
+                    balance.quote_amount,
+                    balance.base_amount,
+                    alert.currency,
+                    check_balance
+                )
+            )
+
+            # Check that the same alert hasn't been sent within the last period
+            notification = Notification.objects.filter(
+                alerts=alert
+            ).order_by(
+                '-date_time'
+            ).first()
+
+            if notification:
+                if make_aware(
+                        datetime.datetime.now()) < notification.date_time + alert.period:  # noqa
+                    logger.warning('period has not yet elapsed')
+                    continue
 
             if alert.alert_operator == 'LESS_THAN':
                 if check_balance < alert.alert_value:

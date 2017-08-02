@@ -205,6 +205,10 @@ LOGGING = {
         },
     },
     'loggers': {
+        'alerts': {
+            'handlers': ['console'],
+            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        },
         'blocks': {
             'handlers': ['console'],
             'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
