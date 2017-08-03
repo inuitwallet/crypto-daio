@@ -50,6 +50,10 @@ class Command(BaseCommand):
             # Get the balance to be checked
             balance = Balance.objects.filter(
                 pair=alert.pair
+            ).exclude(
+                base_amount=None
+            ).exclude(
+                quote_amount=None
             ).order_by(
                 '-date_time'
             ).first()

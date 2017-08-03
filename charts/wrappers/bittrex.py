@@ -53,9 +53,9 @@ class Bittrex(object):
         balances = self.make_request('account/getbalances', {})
         for ex_balance in balances.get('result', []):
             if ex_balance.get('Currency') == pair.quote_currency.code:
-                balance.quote_amount = Decimal(ex_balance.get('Balance', 0))
+                balance.quote_amount = Decimal(ex_balance.get('Balance'))
             if ex_balance.get('Currency') == pair.base_currency.code:
-                balance.base_amount = Decimal(ex_balance.get('Balance', 0))
+                balance.base_amount = Decimal(ex_balance.get('Balance'))
         balance.save()
 
     def get_trade_history(self, pair):

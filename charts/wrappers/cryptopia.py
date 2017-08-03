@@ -76,9 +76,9 @@ class Cryptopia(object):
         )
         for ex_balance in balances.get('Data', []):
             if ex_balance.get('Symbol') == pair.quote_currency.code:
-                balance.quote_amount = Decimal(ex_balance.get('Total', 0))
+                balance.quote_amount = Decimal(ex_balance.get('Total'))
             if ex_balance.get('Symbol') == pair.base_currency.code:
-                balance.base_amount = Decimal(ex_balance.get('Total', 0))
+                balance.base_amount = Decimal(ex_balance.get('Total'))
         balance.save()
 
     def get_trade_history(self, pair):
