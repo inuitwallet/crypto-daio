@@ -47,8 +47,8 @@ class Bittrex(object):
     def get_balances(self, pair):
         balance = Balance.objects.create(
             pair=pair,
-            base_amount=Decimal(0),
-            quote_amount=Decimal(0)
+            base_amount=None,
+            quote_amount=None
         )
         balances = self.make_request('account/getbalances', {})
         for ex_balance in balances.get('result', []):
