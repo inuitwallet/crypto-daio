@@ -56,17 +56,7 @@ def repair_block(message):
         try:
             block = Block.objects.get(hash=block_hash)
         except Block.DoesNotExist:
-            logger.error('no block found with hash {}'.format(block_hash))
-            try:
-                Channel('parse_block').send(
-                    {
-                        'chain': message.get('chain'),
-                        'block_hash': block_hash
-                    },
-                    immediately=True
-                )
-            except BaseChannelLayer.ChannelFull:
-                logger.error('CHANNEL FULL!')
+            logger.error('no block found for hash {}'.format(block_hash[:7]))
             return
 
         valid, error_message = block.validate()

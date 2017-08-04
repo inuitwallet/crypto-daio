@@ -121,31 +121,35 @@ class Block(models.Model):
         except (IntegrityError, psycopg2.IntegrityError) as e:
             logger.error('error saving {}: {}'.format(self, e))
             connection.close()
+            validate = False
 
-            for block in itertools.chain(
-                Block.objects.filter(id=self.id),
-                Block.objects.filter(height=self.height),
-                Block.objects.filter(hash=self.hash)
-            ):
-                logger.error('found matching block {}'.format(block))
-                for rel_block in Block.objects.filter(next_block=block):
-                    rel_block.next_block = None
-                    rel_block.save()
-                    logger.error('removed {} from {}.next'.format(block, rel_block))
+            # most likely a block already exists at this height and we've been on a fork.
+            # get the block currently at this height
+            try:
+                height_block = Block.objects.get(height=self.height)
+                logger.info('found existing block {}. setting height to None'.format(height_block))
+                height_block.height = None
+                height_block.save(validate=False)
+                # make sure no blocks point to this one
+                for prev_block in Block.objects.filter(next_block=height_block):
+                    prev_block.next_block = None
+                    prev_block.save(validate=False)
 
-                for rel_block in Block.objects.filter(previous_block=block):
-                    rel_block.previous_block = None
-                    rel_block.save()
-                    logger.error('removed {} from {}.previous'.format(block, rel_block))
+                for next_block in Block.objects.filter(previous_block=height_block):
+                    next_block.previous_block = None
+                    next_block.save(validate=False)
+            except Block.DoesNotExist:
+                logger.info('no existing block at {}'.format(self.height))
 
-                block.delete()
-                logger.error('deleted {}'.format(block))
+            # see if a block with this hash already exists
+            try:
+                hash_block = Block.objects.get(hash=self.hash)
+                hash_block.height = self.height
+            except Block.DoesNotExist:
+                hash_block = self
 
-            self.next_block = None
-            self.previous_block = None
-
-            self.save()
-
+            hash_block.save()
+                
         if validate:
             if not self.is_valid:
                 try:
