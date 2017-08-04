@@ -5,6 +5,7 @@ from alerts.models import (
     Connector,
     Notification
 )
+from alerts.models.alerts import WatchedAddressBalanceAlert
 
 
 class NotificationAdmin(admin.ModelAdmin):
@@ -22,5 +23,13 @@ admin.site.register(Connector, ConnectorAdmin)
 
 class BalanceAlertAdmin(admin.ModelAdmin):
     list_display = ('pair', 'currency', 'alert_operator', 'alert_value', 'period')
+    raw_id_fields = ('pair',)
 
 admin.site.register(BalanceAlert, BalanceAlertAdmin)
+
+
+class WatchedAddressBalanceAlertAdmin(admin.ModelAdmin):
+    list_display = ('address', 'alert_operator', 'alert_value', 'period')
+    raw_id_fields = ('address',)
+
+admin.site.register(WatchedAddressBalanceAlert, WatchedAddressBalanceAlertAdmin)

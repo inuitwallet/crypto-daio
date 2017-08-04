@@ -4,7 +4,7 @@ from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelatio
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
-from charts.models import Pair
+from charts.models import Pair, WatchedAddress
 
 
 class Notification(models.Model):
@@ -34,6 +34,13 @@ class Alert(models.Model):
         'Connector'
     )
     period = models.DurationField(default=datetime.timedelta(minutes=20))
+    message = models.TextField(blank=True, default='')
+    icon = models.ImageField(
+        height_field=None,
+        width_field=None,
+        blank=True,
+        null=True
+    )
     notifications = GenericRelation(
         Notification,
         related_query_name='alerts'
@@ -57,4 +64,17 @@ class BalanceAlert(Alert):
             self.alert_operator,
             self.alert_value,
             self.pair
+        )
+
+
+class WatchedAddressBalanceAlert(Alert):
+    address = models.ForeignKey(
+        WatchedAddress
+    )
+
+    def __str__(self):
+        return '{} {} @ {}'.format(
+            self.alert_operator,
+            self.alert_value,
+            self.address
         )

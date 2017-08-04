@@ -1,5 +1,3 @@
-import requests
-
 from charts.models import WatchedAddressBalance
 from blocks.models import Address
 
@@ -14,7 +12,7 @@ class USNBT(object):
             address = Address.objects.get(address=watched_address.address)
             balance = address.balance
         except Address.DoesNotExist:
-            balance = 0
+            balance = None
 
         WatchedAddressBalance.objects.create(
             address=watched_address,

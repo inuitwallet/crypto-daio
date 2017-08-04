@@ -1,6 +1,10 @@
 import datetime
-
+import random
+import time
+import logging
 import requests
+
+logger = logging.getLogger(__name__)
 
 
 class Discourse(object):
@@ -43,7 +47,7 @@ class Discourse(object):
             return response.text
 
     def send_notification(self, channel_id, message):
-        self.make_request(
+        response = self.make_request(
             'posts',
             'POST',
             {
@@ -54,3 +58,12 @@ class Discourse(object):
                 "created_at": datetime.datetime.now().isoformat()
             }
         )
+
+        if 'error_type' in response:
+            logger.error(response)
+
+            if response['error_type'] == 'rate_limit':
+                time.sleep(5)
+                self.send_notification(channel_id, message)
+
+            return

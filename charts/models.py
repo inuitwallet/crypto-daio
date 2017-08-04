@@ -333,11 +333,18 @@ class WatchedAddressBalanceManager(models.Manager):
 
 
 class WatchedAddressBalance(models.Model):
-    date_time = models.DateTimeField(auto_now=True)
+    date_time = models.DateTimeField(
+        auto_now=True
+    )
     address = models.ForeignKey(
         WatchedAddress
     )
-    balance = models.DecimalField(max_digits=26, decimal_places=10, blank=True, null=True)
+    balance = models.DecimalField(
+        max_digits=26,
+        decimal_places=10,
+        blank=True,
+        null=True
+    )
 
     objects = WatchedAddressBalanceManager()
 

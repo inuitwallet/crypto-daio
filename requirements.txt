@@ -14,6 +14,7 @@ django-tenant-schemas
 ecdsa
 google-api-python-client==1.4.1
 pbkdf2
+Pillow
 psycopg2
 requests[security]
 service_identity
