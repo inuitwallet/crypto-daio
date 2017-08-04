@@ -125,12 +125,12 @@ def fix_previous_block(block, chain):
         # likely to be an orphan so remove it
         prev_height_block.delete()
 
+    block.previous_block = prev_block
+    block.save()
+
     prev_block.height = block.height - 1
     prev_block.next_block = block
     prev_block.save()
-
-    block.previous_block = prev_block
-    block.save()
 
 
 def fix_next_block(block, chain):
@@ -157,12 +157,12 @@ def fix_next_block(block, chain):
     except Block.DoesNotExist:
         next_block = Block(hash=next_hash)
 
+    block.next_block = next_block
+    block.save()
+
     next_block.height = this_height + 1
     next_block.previous_block = block
     next_block.save(validate=False)
-
-    block.next_block = next_block
-    block.save()
 
 
 def fix_merkle_root(block, chain):
