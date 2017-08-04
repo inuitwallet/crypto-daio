@@ -127,7 +127,11 @@ class Block(models.Model):
             # get the block currently at this height
             try:
                 height_block = Block.objects.get(height=self.height)
-                logger.info('found existing block {}. setting height to None'.format(height_block))
+                logger.info(
+                    'found existing block {}. setting height to None'.format(
+                        height_block
+                    )
+                )
                 height_block.height = None
                 height_block.save(validate=False)
                 # make sure no blocks point to this one
