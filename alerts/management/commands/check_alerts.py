@@ -43,20 +43,20 @@ class Command(BaseCommand):
             logger.info('sending notification {} for {}'.format(connector, alert))
             provider.send_notification(connector.target_channel, message)
 
-    def alert_comparison(self, alert, value):
+    def alert_comparison(self, alert, value, data=None):
         if alert.alert_operator == 'LESS_THAN':
             if Decimal(value) < Decimal(alert.alert_value):
-                self.send_notification(alert)
+                self.send_notification(alert, data)
                 Notification.objects.create(content_object=alert)
 
         if alert.alert_operator == 'GREATER_THAN':
             if Decimal(value) > Decimal(alert.alert_value):
-                self.send_notification(alert)
+                self.send_notification(alert, data)
                 Notification.objects.create(content_object=alert)
 
         if alert.alert_operator == 'EQUALS':
             if Decimal(value) == Decimal(alert.alert_value):
-                self.send_notification(alert)
+                self.send_notification(alert, data)
                 Notification.objects.create(content_object=alert)
 
     def check_balance_alert(self, alert):
@@ -76,7 +76,11 @@ class Command(BaseCommand):
         if alert.currency == 'QUOTE':
             check_balance = balance.quote_amount
 
-        self.alert_comparison(alert, check_balance)
+        self.alert_comparison(
+            alert,
+            check_balance,
+            {'Current Balance': check_balance}
+        )
 
     def check_watched_address_balance_alert(self, alert):
         # Get the balance to be checked
@@ -86,7 +90,11 @@ class Command(BaseCommand):
             '-date_time'
         ).first()
 
-        self.alert_comparison(alert, watched_address_balance.balance)
+        self.alert_comparison(
+            alert,
+            watched_address_balance.balance,
+            {'Current Balance': watched_address_balance.balance}
+        )
 
     @staticmethod
     def yield_alert():
