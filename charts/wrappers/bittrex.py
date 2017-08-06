@@ -72,16 +72,22 @@ class Bittrex(object):
             amount = Decimal(historic_trade.get('Quantity', 0))
             rate = Decimal(historic_trade.get('PricePerUnit', 0))
 
+            try:
+                timestamp = datetime.strptime(
+                    historic_trade.get('TimeStamp'),
+                    '%Y-%m-%dT%H:%M:%S.%f'
+                )
+            except ValueError:
+                timestamp = datetime.strptime(
+                    historic_trade.get('TimeStamp'),
+                    '%Y-%m-%dT%H:%M:%S'
+                )
+
             trade, _ = Trade.objects.update_or_create(
                 order_id=historic_trade.get('OrderUuid'),
                 pair=pair,
                 defaults={
-                    'date_time': make_aware(
-                        datetime.strptime(
-                            historic_trade.get('TimeStamp'),
-                            '%Y-%m-%dT%H:%M:%S.%f'
-                        )
-                    ),
+                    'date_time': make_aware(timestamp),
                     'order_type': (
                         'BUY' if
                         historic_trade.get('OrderType') == 'LIMIT_BUY'
@@ -113,18 +119,27 @@ class Bittrex(object):
 
             completed = False
 
+            try:
+                date_time = make_aware(
+                    datetime.strptime(
+                        withdrawal.get('Opened'),
+                        '%Y-%m-%dT%H:%M:%S.%f'
+                    )
+                )
+            except ValueError:
+                date_time = make_aware(
+                    datetime.strptime(
+                        withdrawal.get('Opened'),
+                        '%Y-%m-%dT%H:%M:%S'
+                    )
+                )
+
             if withdrawal.get('Authorized') \
                     and not withdrawal.get('PendingPayment') \
                     and not withdrawal.get('InvalidAddress') \
                     and not withdrawal.get('Canceled'):
                 completed = True
 
-            date_time = make_aware(
-                datetime.strptime(
-                    withdrawal.get('Opened'),
-                    '%Y-%m-%dT%H:%M:%S.%f'
-                )
-            )
             Withdrawal.objects.update_or_create(
                 pair=pair,
                 exchange_tx_id=withdrawal.get('PaymentUuid'),
@@ -162,12 +177,21 @@ class Bittrex(object):
                 False
             )
 
-            date_time = make_aware(
-                datetime.strptime(
-                    deposit.get('LastUpdated'),
-                    '%Y-%m-%dT%H:%M:%S.%f'
+            try:
+                date_time = make_aware(
+                    datetime.strptime(
+                        deposit.get('LastUpdated'),
+                        '%Y-%m-%dT%H:%M:%S.%f'
+                    )
                 )
-            )
+            except ValueError:
+                date_time = make_aware(
+                    datetime.strptime(
+                        deposit.get('LastUpdated'),
+                        '%Y-%m-%dT%H:%M:%S'
+                    )
+                )
+
             Deposit.objects.update_or_create(
                 pair=pair,
                 exchange_tx_id=deposit.get('Id'),
@@ -197,6 +221,20 @@ class Bittrex(object):
         )
 
         for open_order in open_orders.get('result', []):
+            try:
+                date_time = make_aware(
+                    datetime.strptime(
+                        open_order.get('Opened'),
+                        '%Y-%m-%dT%H:%M:%S.%f'
+                    )
+                )
+            except ValueError:
+                date_time = make_aware(
+                    datetime.strptime(
+                        open_order.get('Opened'),
+                        '%Y-%m-%dT%H:%M:%S'
+                    )
+                )
             order, _ = Order.objects.update_or_create(
                 pair=pair,
                 order_id=open_order.get('OrderUuid'),
@@ -208,12 +246,7 @@ class Bittrex(object):
                     ),
                     'amount': open_order.get('Quantity'),
                     'rate': open_order.get('Limit'),
-                    'date_time': make_aware(
-                        datetime.strptime(
-                            open_order.get('Opened'),
-                            '%Y-%m-%dT%H:%M:%S.%f'
-                        )
-                    ),
+                    'date_time': date_time,
                     'remaining': open_order.get('QuantityRemaining'),
                     'total': open_order.get('Quantity') * open_order.get('Limit'),
                     'open': True
