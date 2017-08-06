@@ -107,6 +107,9 @@ class Command(BaseCommand):
                 if make_aware(datetime.datetime.now()) < notification.date_time + alert.period:  # noqa
                     logger.warning('period for {} has not yet elapsed'.format(alert))
                     continue
+
+            logger.info('handling alert {}'.format(alert))
+
             yield alert
 
     def handle(self, *args, **options):
