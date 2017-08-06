@@ -19,15 +19,9 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
 
     @staticmethod
-    def send_notification(alert, data=None):
+    def send_notification(alert, value):
         # append additional data to alert message
-        if data:
-            message = '{}\n\n{}'.format(
-                alert.message,
-                ('{} = {}\n'.format(name, data.get(name)) for name in data)
-            )
-        else:
-            message = alert.message
+        message = '{}\n\nCurrent Value ={}'.format(alert.message, value)
 
         # prepend the message with the icon if one exists
         if alert.icon:
@@ -43,20 +37,20 @@ class Command(BaseCommand):
             logger.info('sending notification {} for {}'.format(connector, alert))
             provider.send_notification(connector.target_channel, message)
 
-    def alert_comparison(self, alert, value, data=None):
+    def alert_comparison(self, alert, value):
         if alert.alert_operator == 'LESS_THAN':
             if Decimal(value) < Decimal(alert.alert_value):
-                self.send_notification(alert, data)
+                self.send_notification(alert, value)
                 Notification.objects.create(content_object=alert)
 
         if alert.alert_operator == 'GREATER_THAN':
             if Decimal(value) > Decimal(alert.alert_value):
-                self.send_notification(alert, data)
+                self.send_notification(alert, value)
                 Notification.objects.create(content_object=alert)
 
         if alert.alert_operator == 'EQUALS':
             if Decimal(value) == Decimal(alert.alert_value):
-                self.send_notification(alert, data)
+                self.send_notification(alert, value)
                 Notification.objects.create(content_object=alert)
 
     def check_balance_alert(self, alert):
@@ -78,8 +72,7 @@ class Command(BaseCommand):
 
         self.alert_comparison(
             alert,
-            check_balance,
-            {'Current Balance': check_balance}
+            check_balance
         )
 
     def check_watched_address_balance_alert(self, alert):
@@ -92,8 +85,7 @@ class Command(BaseCommand):
 
         self.alert_comparison(
             alert,
-            watched_address_balance.balance,
-            {'Current Balance': watched_address_balance.balance}
+            watched_address_balance.balance
         )
 
     @staticmethod
