@@ -90,15 +90,15 @@
                             </form>
                         </div>
                         <div class="row variable-content">
-                            {% if messages %}
-                                {% for message in messages %}
-                                    <div {% if message.tags %}class="alert alert-{{ message.tags }} alert-dismissable fade in"{% endif %}>
-                                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                        <span>{{ message }}</span>
-                                    </div>
-                                {% endfor %}
-                            {% endif %}
                             <div id="main-content">
+                                {% if messages %}
+                                    {% for message in messages %}
+                                        <div {% if message.tags %}class="alert alert-{{ message.tags }} alert-dismissable fade in"{% endif %}>
+                                            <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                                            <span>{{ message }}</span>
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
                                 {% block content %}
                                 {% endblock %}
                             </div>
