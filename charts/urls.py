@@ -17,4 +17,9 @@ urlpatterns = [
         CurrentLiquidityChart.as_view(),
         name='current_liquidity'
     ),
+    url(
+        r'^liquidity_operations$',
+        LiquidityOperations.as_view(),
+        name='liquidity_operations'
+    ),
 ]

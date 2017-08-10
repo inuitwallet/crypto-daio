@@ -1,5 +1,5 @@
 from django.conf.urls import url
-from . import views
+from blocks.views import *
 
 block_hash_pattern = r'([A-Za-z0-9]{64})'
 secret_hash_pattern = r'([A-Za-z0-9]{32})'
@@ -13,14 +13,17 @@ urlpatterns = [
             secret_hash_pattern,
             block_hash_pattern
         ),
-        views.Notify.as_view(),
+        Notify.as_view(),
         name='notify'
     ),
 
     # Explorer
-    url(r'^$', views.LatestBlocksList.as_view(), name='index'),
-    url(r'^block/(?P<block_height>.*)$', views.BlockDetailView.as_view(), name='block'),
-    url(r'^address/(?P<address>.*)$', views.AddressDetailView.as_view(), name='address'),
+    url(r'^$', LatestBlocksList.as_view(), name='index'),
+    url(r'^all-blocks$', All_Blocks.as_view(), name='all_blocks'),
+    url(r'^block/(?P<block_height>.*)$', BlockDetailView.as_view(), name='block'),
+    url(r'^address/(?P<address>.*)$', AddressDetailView.as_view(), name='address'),
 
-    url(r'^menu/charts$', views.ChartsView.as_view(), name='charts_menu'),
+    url(r'^search$', Search.as_view(), name='search'),
+
+    url(r'^menu/charts$', ChartsView.as_view(), name='charts_menu'),
 ]

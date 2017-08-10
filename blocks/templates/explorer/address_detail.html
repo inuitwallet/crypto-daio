@@ -1,4 +1,4 @@
-{% extends 'explorer/base.html' %}
+{% extends 'base.html' %}
 
 {% load humanize static %}
 
@@ -13,7 +13,9 @@ Address Details
         </div>
     </div>
     <div class="row">
-        {{ object.balance|floatformat:4|intcomma }}
+        <div class="col-md-5, col-md-offset-1">
+            Balance = <span id="balance"></span>
+        </div>
     </div>
     <div class="row">
         <div id="transactions" class="col-md-10 col-md-offset-1">

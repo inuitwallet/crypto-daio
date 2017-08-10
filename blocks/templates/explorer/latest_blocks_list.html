@@ -1,4 +1,4 @@
-{% extends 'explorer/base.html' %}
+{% extends 'base.html' %}
 
 {% load humanize static %}
 
@@ -8,26 +8,30 @@ Latest Blocks
 
 {% block content %}
     <div class="row">
-        <div class="col-md-6 latest-blocks-container">
-            <table id="latest-blocks-table" class="table table-striped table-bordered table-hover table-condensed">
-                <thead>
-                    <tr>
-                        <td>Height</td>
-                        <td>Hash</td>
-                        <td>Age</td>
-                        <td>Num. Trans</td>
-                        <td>SDD</td>
-                        <td>Valid</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for block in object_list %}
-                        <tr class="{% if not block.is_valid %}warning{% endif %}">
-                            {% include 'explorer/fragments/block.html' %}
+        <div class="col-md-6">
+            <h4>50 Latest Blocks on the {{ chain }} blockchain</h4>
+            <div class="latest-blocks-container">
+                <table id="latest-blocks-table" class="table table-striped table-bordered table-hover table-condensed">
+                    <thead>
+                        <tr>
+                            <td>Height</td>
+                            <td>Hash</td>
+                            <td>Age</td>
+                            <td>Num. Trans</td>
+                            <td>SDD</td>
+                            <td>Valid</td>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for block in object_list %}
+                            <tr class="{% if not block.is_valid %}warning{% endif %}">
+                                {% include 'explorer/fragments/block.html' %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            <h5><a href="{% url 'all_blocks' %}">All Blocks</a></h5>
         </div>
     </div>
 {% endblock %}

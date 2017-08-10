@@ -1,4 +1,4 @@
-{% extends 'explorer/base.html' %}
+{% extends 'base.html' %}
 
 {% load humanize static %}
 
@@ -7,56 +7,44 @@ Block Detail: {{ object.height }}
 {% endblock %}
 
 {% block content %}
-    <div class="row">
-        <div class="col-md-10 col-md-offset-1">
-            <h3>Block {{ object.height }} - <span id="block-hash">{{ object.hash }}</span></h3>
-        </div>
-    </div>
     <div class="row block-navigation">
-        <div class="col-md-4 text-left">
+        <div class="col-md-4 col-md-offset-2 text-left">
             {% if object.previous_block.height %}
                 <a href="{% url 'block' object.previous_block.height %}" class="btn btn-default">
                     <span class="glyphicon glyphicon glyphicon-backward" aria-hidden="true"></span>
-                    Previous Block
+                    Previous
                 </a>
             {% endif %}
-        </div>
-        <div class="col-md-4 text-center">
-            <a href="{% url 'block' object.height %}" class="btn btn-default">
-                <span class="glyphicon glyphicon glyphicon glyphicon-refresh" aria-hidden="true"></span>
-            </a>
         </div>
         <div class="col-md-4 text-right">
             {% if object.next_block.height %}
                 <a href="{% url 'block' object.next_block.height %}" class="btn btn-default">
-                    Next Block
+                    Next
                     <span class="glyphicon glyphicon glyphicon-forward" aria-hidden="true"></span>
                 </a>
             {% endif %}
         </div>
     </div>
+    <div class="row">
+        <div class="col-md-10 col-md-offset-1 text-center">
+            <h3 class="block-title{% if object.is_valid %} valid{% else %} in-valid{% endif %}"><span class="block-height">Block {{ object.height }}</span> &ndash; <span id="block-hash">{{ object.hash }}</span></h3>
+        </div>
+    </div>
+
     <div class="row block-info spacer">
-        <div class="col-md-10 col-md-offset-1">
+        <div class="col-md-12">
             <div class="row">
-                <div class="col-md-4 block-date text-center">
-                    Date: {{ object.time }}
+                <div class="col-md-4 text-center">
+                    <div class="row block-label">Date Solved</div>
+                    <div class="row block-data">{{ object.time }}</div>
                 </div>
-                <div class="col-md-4 solved-by text-center">
-                    Solved By: {{ object.solved_by }}
+                <div class="col-md-4 text-center">
+                    <div class="row block-label">Solved By</div>
+                    <div class="row block-data">{{ object.solved_by }}</div>
                 </div>
                 <div class="col-md-4 block-size text-center">
-                    Size: {{ object.size }}
-                </div>
-                <div class="col-md-4 block-merkle-root text-center">
-                    Merkle Root: {{ object.merkle_root }}
-                </div>
-                <div class="col-md-4 valid text-center">
-                    Valid:
-                    {% if object.is_valid %}
-                        <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
-                    {% else %}
-                        <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
-                    {% endif %}
+                    <div class="row block-label">Size</div>
+                    <div class="row block-data">{{ object.size|filesizeformat }}</div>
                 </div>
             </div>
             <div class="row spacer">
