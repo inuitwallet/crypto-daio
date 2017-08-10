@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 
 import os
 
+from django.contrib import messages
+
 APPLICATION_DIR = os.path.dirname(globals()['__file__'])
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -237,3 +239,7 @@ BOWER_INSTALLED_APPS = (
 )
 
 STATICFILES_STORAGE = 'daio.storages.DaioStorage'
+
+MESSAGE_TAGS = {
+    messages.ERROR: 'danger'
+}

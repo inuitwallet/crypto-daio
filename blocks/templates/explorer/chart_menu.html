@@ -1,4 +1,4 @@
-{% extends 'explorer/base.html' %}
+{% extends 'base.html' %}
 
 {% block title %}
 Charts
@@ -6,15 +6,18 @@ Charts
 
 {% block content %}
     <div class="row">
-        {% for url in urls %}
-            <div class="col-md-3">
-                <div class="row">
-                    <h3>
-                        <a href="{% url url.name %}">{{ url.name }}</a>
-                    </h3>
-                </div>
+        <div class="col-md-10 col-md-offset-1">
+            <div class="row">
+                {% for url in urls %}
+                    <div class="col-md-3">
+                        <div class="row">
+                            <h3>
+                                <a href="{% url url.1 %}">{{ url.0 }}</a>
+                            </h3>
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
-
-        {% endfor %}
+        </div>
     </div>
 {% endblock %}

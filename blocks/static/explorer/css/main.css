@@ -1,3 +1,7 @@
+/*
+Global
+*/
+
 .word-wrap {
     white-space: normal;
     word-break: break-all;
@@ -7,29 +11,115 @@
     margin-top: 15px;
 }
 
-.chain-logo {
-    margin: auto;
+.a {
+    color: #0074a0;
 }
 
-.coin-info {
-    padding: 10px 0 0 0;
+/*
+Info Panel
+ */
+
+.info-panel {
+    /*min-height: 100vh;*/
+}
+
+.chain-logo {
+    height: 8vh;
+}
+
+.chain-logo-img {
+    margin: auto;
+    top: 5px;
+    position: relative;
+}
+
+#chain-data, .coin-info {
+    border-radius: 6px;
+    padding: 3px;
+    margin: 0 auto 4px;
+    width: 90%;
 }
 
 .coin-code {
-
+    width: 100%;
+    font-size: 110%;
+    font-weight: 700;
+    margin-top: 2px;
 }
 
-.coin-data {
-    display: none;
+.coin-data .data {
+    font-size: 80%;
+}
+
+.info-label {
+    width: 100%;
+    font-size: 100%;
+    margin-top: 3px;
+}
+
+#chain-data .info-label {
+    font-weight: 700;
+}
+
+/*
+Menu
+ */
+nav {
+    height: 4vh;
+    position: relative;
+    left: 10px;
+}
+
+nav a {
+    display: inline-block;
+    font-size: 130%;
+    font-weight: 700;
+    padding: 5px 10px;
+    position: relative;
+    border-radius: 6px;
+}
+
+.menu {
+    height: auto;
+    padding-bottom: 15px;
+}
+
+.search button {
+    border: none;
+    outline: none;
+}
+
+.search-input {
+    width: 70%;
+    border: 0;
+}
+
+.search-input:focus {
+    outline: 0 none;
+}
+
+
+/*
+Blocks
+ */
+#main-content {
+    padding: 10px;
+    background: #fefefe;
+    color: #353535;
+    min-height: 100vh;
+    border-radius: 6px 0 0 0;
+}
+
+.pagination {
+    margin: 0;
+    padding: 5px;
+    display: block;
 }
 
 .latest-blocks-container {
     height: 600px;
     overflow-y: scroll;
-    border: 1px solid #a9a9a9;
     border-radius: 5px;
-    margin: 5px;
-    padding: 5px;
 }
 
 .previous-block-link {
@@ -38,6 +128,20 @@
 
 .next-block-link {
     float: right
+}
+
+.block-title {
+    border: 3px solid;
+    border-radius: 6px;
+    padding: 10px;
+}
+
+.block-label {
+    font-size: 120%;
+    font-weight: 700;
+}
+
+.block-data {
 }
 
 .transaction {

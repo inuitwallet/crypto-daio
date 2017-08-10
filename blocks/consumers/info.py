@@ -45,9 +45,21 @@ def display_info(message):
             ).first()
             if not info:
                 continue
-            update_info('{}-supply'.format(coin.code), str(info.money_supply), schema)
-            update_info('{}-parked'.format(coin.code), str(info.total_parked), schema)
-            update_info('{}-fee'.format(coin.code), str(info.pay_tx_fee), schema)
+            update_info(
+                '{}-supply'.format(coin.code),
+                '{:,}'.format(info.money_supply if info.money_supply else 0),
+                schema
+            )
+            update_info(
+                '{}-parked'.format(coin.code),
+                '{:,}'.format(info.total_parked if info.total_parked else 0),
+                schema
+            )
+            update_info(
+                '{}-fee'.format(coin.code),
+                '{:,}'.format(info.pay_tx_fee if info.pay_tx_fee else 0),
+                schema
+            )
 
             max_height = str(info.max_height)
             connections = str(info.connections)

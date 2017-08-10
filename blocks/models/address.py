@@ -1,4 +1,6 @@
 import logging
+
+from django.core.paginator import Paginator
 from django.db import models
 from blocks.models import Transaction
 from blocks.models import TxInput
@@ -24,7 +26,7 @@ class Address(models.Model):
     def balance(self):
         balance = 0
         for output in self.outputs.all():
-            output.transaction.save()
+            # output.transaction.save()
             try:
                 if output.input:
                     continue
@@ -32,19 +34,16 @@ class Address(models.Model):
                 balance += output.display_value
         return balance
 
-    @property
-    def transactions(self):
-        transactions = []
-        for output in self.outputs.all().order_by(
-            'transaction__block__height'
-        ).values_list(
-            'transaction',
-            flat=True
-        ):
-            if output in transactions:
-                continue
-            transactions.append(output)
-        return [Transaction.objects.get(id=tx_pk) for tx_pk in transactions]
+    def transactions(self, page=1):
+        transactions = Transaction.objects.distinct(
+            'tx_id'
+        ).filter(
+            output__address=self
+        ).order_by(
+            'tx_id'
+        )
+        paginator = Paginator(transactions, 20)
+        return paginator.page(page)
 
 
 class WatchAddress(models.Model):

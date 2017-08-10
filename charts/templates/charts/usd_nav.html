@@ -1,4 +1,4 @@
-{% extends 'charts/base.html' %}
+{% extends 'base.html' %}
 
 {% load nvd3_tags static block_extras chart_extras %}
 
@@ -40,32 +40,30 @@
         </div>
     </div>
 
-{#    <div class="row">#}
-{#        <div class="col-md-12">#}
-{#            <table class="table table-responsive table-bordered table-compact table-striped table-hover">#}
-{#                <thead>#}
-{#                    <tr>#}
-{#                        <td>Date</td>#}
-{#                        <td>Exchange</td>#}
-{#                        <td>Currency</td>#}
-{#                        <td>Amount</td>#}
-{#                        <td>Value</td>#}
-{#                    </tr>                </thead>#}
-{##}
-{#                <tbody>#}
-{#                    {% for balance in balances %}#}
-{#                        {{ balance }}#}
-{#                        <tr>#}
-{#                            <td>{{ order.pair.exchange }}</td>#}
-{#                            <td>{{ order.pair.quote_currency.code }}</td>#}
-{#                            <td>{{ order.pair.base_currency.code }}</td>#}
-{#                            <td>{{ order.order_type }}</td>#}
-{#                            <td>{{ order.amount }}</td>#}
-{#                            <td>{{ order.rate }}</td>#}
-{#                        </tr>#}
-{#                    {% endfor %}#}
-{#                </tbody>#}
-{#            </table>#}
-{#        </div>#}
-{#    </div>#}
+    <div class="row">
+        <div class="col-md-12">
+            <table class="table table-responsive table-bordered table-compact table-striped table-hover">
+                <thead>
+                    <tr>
+                        <td>Source</td>
+                        <td>Value</td>
+                        <td>USD Value</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for balance in balances %}
+                        {{ balance }}
+                        <tr>
+                            <td>{{ order.pair.exchange }}</td>
+                            <td>{{ order.pair.quote_currency.code }}</td>
+                            <td>{{ order.pair.base_currency.code }}</td>
+                            <td>{{ order.order_type }}</td>
+                            <td>{{ order.amount }}</td>
+                            <td>{{ order.rate }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
 {% endblock %}

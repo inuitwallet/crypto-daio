@@ -1,0 +1,75 @@
+{% load humanize block_extras %}
+
+<div class="row transaction spacer">
+    <div class="col-md-12">
+        {% with valid=tx.is_valid %}
+        <div class="row tx-header {% if not valid %}invalid{% endif %}">
+            <div class="col-md-6 tx-id">
+                {{ tx.index }} : {{ tx.tx_id }}
+                {% if not valid %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="tx_pk" value="{{ tx.pk }}" />
+                        <button type="submit">Validate</button>
+                    </form>
+                {% endif %}
+            </div>
+            <div class="col-md-6 text-right tx-time">
+                {{ tx.time }}
+            </div>
+        </div>
+        {% endwith %}
+        <div class="row tx-info spacer">
+            <div class="col-md-10 col-md-offset-1">
+                <div class="row">
+                    {% if not tx.is_coinbase %}
+                        <div class="col-md-3 coin">
+                            Coin: {{ tx.coin.name }}
+                        </div>
+                        <div class="col-md-3 total-input">
+                            Total Input: {{ tx.total_input|floatformat:4|intcomma }} {{ tx.coin.code }}
+                        </div>
+                        <div class="col-md-3 total-input">
+                            Total Output: {{ tx.total_output|floatformat:4|intcomma }} {{ tx.coin.code }}
+                        </div>
+                        <div class="col-md-3 balance">
+                            Balance: {{ tx.balance|floatformat:4|intcomma }} {{ tx.coin.code }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+{#        <div class="row tx-short-body spacer">#}
+{#            <div class="col-md-6 short-inputs">#}
+{#                {% with inputs=tx.address_inputs %}#}
+{#                    {% for address in inputs %}#}
+{#                        <div class="row">#}
+{#                            {{ inputs|get_item:address|floatformat:4|intcomma }} <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span> {{ address }}#}
+{#                        </div>#}
+{#                    {% endfor %}#}
+{#                {% endwith %}#}
+{#            </div>#}
+{#            <div class="col-md-6 short-outputs word-wrap">#}
+{#                {% with outputs=tx.address_outputs %}#}
+{#                    {% for address in outputs %}#}
+{#                        <div class="row">#}
+{#                            {{ address }} <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span> {{ outputs|get_item:address|floatformat:4|intcomma }}#}
+{#                        </div>#}
+{#                    {% endfor %}#}
+{#                {% endwith %}#}
+{#            </div>#}
+{#        </div>#}
+        <div class="row tx-body spacer">
+            <div class="col-md-6 inputs">
+                {% for tx_input in tx.inputs.all %}
+                    {% include 'explorer/fragments/tx_input.html' %}
+                {% endfor %}
+            </div>
+            <div class="col-md-6 outputs word-wrap">
+                {% for tx_output in tx.outputs.all %}
+                    {% include 'explorer/fragments/tx_output.html' %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>

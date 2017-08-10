@@ -31,3 +31,9 @@ def parse_address(message):
         tx_output.save()
 
         # TODO check the address against the list of addresses to watch
+
+
+def get_address_balance(message):
+    with schema_context(message.get('chain')):
+        addr = message.get('address')
+

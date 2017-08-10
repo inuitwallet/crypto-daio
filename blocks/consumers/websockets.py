@@ -1,11 +1,13 @@
 import json
 
 from channels import Group, Channel
-from django.template.loader import render_to_string
 from tenant_schemas.utils import get_tenant_model, tenant_context
 
+from .ui import (
+    get_address_details,
+    get_block_transactions,
+)
 from daio.models import Chain
-from blocks.models import Block, Address
 
 
 def get_schema_from_host(message):
@@ -33,50 +35,11 @@ def ws_receive(message):
     tenant = get_tenant_model().objects.get(domain_url=message_dict['payload']['host'])
     with tenant_context(tenant):
         if message['path'] == '/get_block_transactions/':
-            block_hash = message_dict['stream']
-            try:
-                block = Block.objects.get(hash=block_hash)
-            except Block.DoesNotExist:
-                return
-            for tx in block.transactions.all():
-                message.reply_channel.send(
-                    {
-                        'text': json.dumps(
-                            {
-                                'message_type': 'block_transaction',
-                                'html': render_to_string(
-                                    'explorer/fragments/transaction.html',
-                                    {
-                                        'tx': tx
-                                    }
-                                )
-                            }
-                        )
-                    },
-                    immediately=True
-                )
+            get_block_transactions(message_dict, message)
             return
 
-        if message['path'] == '/get_address_transactions/':
-            address = message_dict['stream']
-            address_object = Address.objects.get(address=address)
-            for tx in address_object.transactions:
-                message.reply_channel.send(
-                    {
-                        'text': json.dumps(
-                            {
-                                'message_type': 'address_transaction',
-                                'html': render_to_string(
-                                    'explorer/fragments/transaction.html',
-                                    {
-                                        'tx': tx
-                                    }
-                                )
-                            }
-                        )
-                    },
-                    immediately=True
-                )
+        if message['path'] == '/get_address_details/':
+            get_address_details(message_dict, message)
             return
 
 

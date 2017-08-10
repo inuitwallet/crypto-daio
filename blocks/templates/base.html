@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <title>
+        {{ chain.name }} &ndash;
+        {% block title %}
+        {% endblock %}
+    </title>
+    <!-- JQUERY -->
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js" integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4=" crossorigin="anonymous"></script>
+    <!-- BOOTSTRAP -->
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <!-- main stylesheet -->
+    <link rel="stylesheet" href="{% static 'explorer/css/main.css' %}" />
+    <!-- chain stylesheet -->
+    <link rel="stylesheet" href="{% static 'explorer/css/'|add:chain.schema_name|add:'.css' %}" />
+    <!-- Channels Websockets -->
+    <script type="text/javascript" src='{% static "channels/js/websocketbridge.js" %}'></script>
+    {% block head %}
+    {% endblock %}
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-1 text-center info-panel">
+                <div class="row chain-logo">
+                    <a href="{% url 'index' %}">
+                        <img src="{{ chain.logo.url }}" class="img-responsive chain-logo-img" />
+                    </a>
+                </div>
+                <div class="row">
+                    <div id="chain-data">
+                        <div id="height">
+                            <div class="info-label">Height</div>
+                            <div class="data"></div>
+                        </div>
+                        <div id="connections">
+                            <div class="info-label">Connections</div>
+                            <div class="data"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    {% for coin in chain.coins.all %}
+                        <div class="coin-info">
+                            <div class="coin-code">{{ coin.code }}</div>
+                            <div id="{{ coin.code }}-supply" class="coin-data">
+                                <div class="info-label">Supply</div>
+                                <div class="data"></div>
+                            </div>
+                            <div id="{{ coin.code }}-parked" class="coin-data">
+                                <div class="info-label">Parked</div>
+                                <div class="data"></div>
+                            </div>
+                            <div id="{{ coin.code }}-fee" class="coin-data">
+                                <div class="info-label">Fee</div>
+                                <div class="data"></div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col-md-11 content">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="row menu">
+                            <nav>
+                                <a href="{% url 'index' %}"><span>Blocks</span></a>
+                                <a href="{% url 'charts_menu' %}"><span>Charts</span></a>
+                                <a href="#"><span>Motions</span></a>
+                                <a href="#"><span>Grants</span></a>
+                            </nav>
+                            <form class="search" action="{% url 'search' %}" method="POST">
+                                {% csrf_token %}
+                                <div class="input-group input-group-lg">
+                                    <span class="input-group-btn">
+                                        <button class="btn" type="submit">
+                                            <span class="glyphicon glyphicon-search"></span>
+                                        </button>
+                                    </span>
+                                    <input type="text" name="search" placeholder="Search for Height, Hash, Tx or Address" class="search-input input-lg" autocomplete="off" />
+                                </div>
+                            </form>
+                        </div>
+                        <div class="row variable-content">
+                            {% if messages %}
+                                {% for message in messages %}
+                                    <div {% if message.tags %}class="alert alert-{{ message.tags }} alert-dismissable fade in"{% endif %}>
+                                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
+                                        <span>{{ message }}</span>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                            <div id="main-content">
+                                {% block content %}
+                                {% endblock %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script type="text/javascript" src='{% static 'explorer/js/update_info.js' %}'></script>
+{% block afterbody %}
+{% endblock %}
+<script>
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+</script>
+</html>
