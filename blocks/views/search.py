@@ -9,6 +9,10 @@ from blocks.models import Block, Transaction, Address
 
 class Search(View):
     @staticmethod
+    def get(reqquest):
+        return redirect(reverse('index'))
+
+    @staticmethod
     def post(request):
         search_term = request.POST.get('search', '').strip()
         if search_term == '':
