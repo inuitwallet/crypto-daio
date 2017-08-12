@@ -15,6 +15,7 @@ class LiquidityOperations(View):
         latest_balances_dedupe = []
         latest_balances = []
         for exchange in connection.tenant.exchanges.all():
+            print(exchange)
             for pair in exchange.pairs.all():
                 latest_balance = Balance.objects.get_closest_to(
                     pair,
@@ -73,8 +74,8 @@ class LiquidityOperations(View):
                     )
                     latest_balances_dedupe.append((pair.base_currency, pair.exchange))
 
-            context = {
-                'chain': connection.tenant,
-                'latest_balances': latest_balances
-            }
-            return render(request, 'charts/liquidity_operations.html', context)
+        context = {
+            'chain': connection.tenant,
+            'latest_balances': latest_balances
+        }
+        return render(request, 'charts/liquidity_operations.html', context)
