@@ -21,7 +21,7 @@ class Command(BaseCommand):
     @staticmethod
     def send_notification(alert, value):
         # append additional data to alert message
-        message = '{}\n\nCurrent Value ={}'.format(alert.message, value)
+        message = '{}\n\nCurrent Value = {}'.format(alert.message, value)
 
         # prepend the message with the icon if one exists
         if alert.icon:
