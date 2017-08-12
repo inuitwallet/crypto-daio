@@ -48,8 +48,9 @@ class Search(View):
             pass
 
         # didn't find anything
-        messages.ERROR(
+        messages.add_message(
             request,
+            messages.ERROR,
             'Nothing matched your search term: {}'.format(search_term)
         )
         return redirect(request.META.get('HTTP_REFERER'))
