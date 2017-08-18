@@ -39,27 +39,7 @@
                 </div>
             </div>
         </div>
-{#        <div class="row tx-short-body spacer">#}
-{#            <div class="col-md-6 short-inputs">#}
-{#                {% with inputs=tx.address_inputs %}#}
-{#                    {% for address in inputs %}#}
-{#                        <div class="row">#}
-{#                            {{ inputs|get_item:address|floatformat:4|intcomma }} <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span> {{ address }}#}
-{#                        </div>#}
-{#                    {% endfor %}#}
-{#                {% endwith %}#}
-{#            </div>#}
-{#            <div class="col-md-6 short-outputs word-wrap">#}
-{#                {% with outputs=tx.address_outputs %}#}
-{#                    {% for address in outputs %}#}
-{#                        <div class="row">#}
-{#                            {{ address }} <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span> {{ outputs|get_item:address|floatformat:4|intcomma }}#}
-{#                        </div>#}
-{#                    {% endfor %}#}
-{#                {% endwith %}#}
-{#            </div>#}
-{#        </div>#}
-        <div class="row tx-body spacer">
+        <div class="row tx-extra-detail spacer full-detail-{{ tx.tx_id }}">
             <div class="col-md-6 inputs">
                 {% for tx_input in tx.inputs.all %}
                     {% include 'explorer/fragments/tx_input.html' %}
@@ -69,6 +49,35 @@
                 {% for tx_output in tx.outputs.all %}
                     {% include 'explorer/fragments/tx_output.html' %}
                 {% endfor %}
+            </div>
+        </div>
+        <div class="row spacer">
+            <div class="col-md-12 text-center">
+                <a class="show-extra-detail" data="{{ tx.tx_id }}">More Detail</a>
+            </div>
+        </div>
+        <div class="row tx-short-body spacer min-detail-{{ tx.tx_id }}">
+            <div class="col-md-5 col-md-offset-1 short-inputs">
+                {% with inputs=tx.address_inputs %}
+                    {% for address in inputs %}
+                        <div class="row">
+                            {{ inputs|get_item:address|floatformat:4|intcomma }}
+                            <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>
+                            <a href="{% url 'address' address %}" class="output-address">{{ address }}</a>
+                        </div>
+                    {% endfor %}
+                {% endwith %}
+            </div>
+            <div class="col-md-5 col-md-offset-1 short-outputs word-wrap">
+                {% with outputs=tx.address_outputs %}
+                    {% for address in outputs %}
+                        <div class="row">
+                            <a href="{% url 'address' address %}" class="output-address">{{ address }}</a>
+                            <span class="glyphicon glyphicon-arrow-right" aria-hidden="true"></span>
+                            {{ outputs|get_item:address|floatformat:4|intcomma }}
+                        </div>
+                    {% endfor %}
+                {% endwith %}
             </div>
         </div>
     </div>

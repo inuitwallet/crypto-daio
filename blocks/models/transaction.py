@@ -401,7 +401,7 @@ class Transaction(models.Model):
                 self.block.save()
                 continue
             if tin.previous_output.address.address not in address_inputs:
-                address_inputs[tin.previous_output.address.address] = Decimal(0)
+                address_inputs[tin.previous_output.address.address] = float(0)
             address_inputs[tin.previous_output.address.address] += tin.previous_output.display_value  # noqa
 
         return address_inputs

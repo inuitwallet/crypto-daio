@@ -158,6 +158,16 @@ Blocks
     border: darkred 2px solid;
 }
 
+.tx-extra-detail {
+    display: none;
+}
+
+.show-extra-detail {
+    color: #0074a0;
+    font-weight: 600;
+    cursor: pointer;
+}
+
 .tx-input, tx-output {
     width: 100%;
 }

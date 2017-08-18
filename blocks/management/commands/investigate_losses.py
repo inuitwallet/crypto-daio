@@ -1,5 +1,4 @@
 import csv
-import json
 import logging
 
 from django.core.management import BaseCommand
