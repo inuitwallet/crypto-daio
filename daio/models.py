@@ -32,6 +32,7 @@ class Coin(models.Model):
     index = models.IntegerField(
         default=0
     )
+    decimal_places = models.PositiveIntegerField(default=8)
 
     def __str__(self):
         return self.code

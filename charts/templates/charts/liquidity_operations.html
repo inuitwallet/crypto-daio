@@ -23,8 +23,8 @@
                 <thead>
                     <tr>
                         <td>Exchange</td>
-                        <td>Currency</td>
-                        <td>Value</td>
+                        <td>Amount</td>
+                        <td>Asset</td>
                         <td>USD Price</td>
                         <td>USD Value</td>
                         <td>Time</td>
@@ -34,8 +34,8 @@
                     {% for balance in latest_balances %}
                         <tr>
                             <td>{{ balance.exchange }}</td>
-                            <td>{{ balance.currency.code }}</td>
                             <td>{{ balance.value|floatformat:8|intcomma }}</td>
+                            <td>{{ balance.currency.code }}</td>
                             <td>{{ balance.usd_price|floatformat:2|intcomma }}</td>
                             <td>{{ balance.value_usd|floatformat:2|intcomma }}</td>
                             <td class="{{ balance.time_warning }}">{{ balance.time }}</td>

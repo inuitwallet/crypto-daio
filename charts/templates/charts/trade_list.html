@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 
+{% load humanize %}
+
 {% block title %}Trade List{% endblock %}
 
 {% block content %}
@@ -13,43 +15,37 @@
             <table class="table table-responsive table-bordered table-compact table-striped table-hover">
         <thead>
             <tr>
-                <td>Date/Time</td>
-                <td>Exchange</td>
-                <td>Quote</td>
-                <td>Base</td>
-                <td>Type</td>
-                <td>Amount</td>
-                <td>Rate</td>
-                <td>Total</td>
-                <td>Amount USD</td>
-                <td>Rate USD</td>
-                <td>Total USD</td>
-                <td>Quote USD Price</td>
-                <td>Base USD Price</td>
+                <td class="text-right">Date/Time</td>
+                <td class="text-right">Exchange</td>
+                <td class="text-right">Quote</td>
+                <td class="text-right">Base</td>
+                <td class="text-right">Type</td>
+                <td class="text-right">Amount</td>
+                <td class="text-right">Rate</td>
+                <td class="text-right">Total</td>
+                <td class="text-right">Amount USD</td>
+                <td class="text-right">Rate USD</td>
+                <td class="text-right">Total USD</td>
+                <td class="text-right">Quote USD Price</td>
+                <td class="text-right">Base USD Price</td>
             </tr>
         </thead>
         <tbody>
             {% for trade in object_list %}
                 <tr>
-                    <td>{{ trade.date_time }}</td>
-                    <td>{{ trade.pair.exchange }}</td>
-                    <td>{{ trade.pair.quote_currency.code }}</td>
-                    <td>{{ trade.pair.base_currency.code }}</td>
-                    <td>{{ trade.order_type }}</td>
-                    <td>{{ trade.amount }}</td>
-                    <td>{{ trade.rate }}</td>
-                    <td>{{ trade.total }}</td>
-                    <td>{{ trade.adjusted_amount }}</td>
-                    <td {% if 1.1 < trade.adjusted_rate %}
-                            class="danger"
-                        {% endif %}
-                        {% if 0.9 > trade.adjusted_rate %}
-                            class="danger"
-                        {% endif %}>
-                        {{ trade.adjusted_rate }}</td>
-                    <td>{{ trade.adjusted_total }}</td>
-                    <td>{% if trade.quote_price %}1 {{ trade.pair.quote_currency.code }} = ${{ trade.quote_price }}{% endif %}</td>
-                    <td>{% if trade.base_price %}1 {{ trade.pair.base_currency.code }} = ${{ trade.base_price }}{% endif %}</td>
+                    <td class="text-right">{{ trade.date_time|date:"o-m-d H:i:s T" }}</td>
+                    <td class="text-right">{{ trade.pair.exchange }}</td>
+                    <td class="text-right">{{ trade.pair.quote_currency.code }}</td>
+                    <td class="text-right">{{ trade.pair.base_currency.code }}</td>
+                    <td class="text-right">{{ trade.order_type }}</td>
+                    <td class="text-right">{{ trade.amount|floatformat:trade.pair.quote_currency.decimal_places|intcomma }}</td>
+                    <td class="text-right">{{ trade.rate|floatformat:trade.pair.base_currency.decimal_places|intcomma }}</td>
+                    <td class="text-right">{{ trade.total|floatformat:trade.pair.base_currency.decimal_places|intcomma }}</td>
+                    <td class="text-right">{{ trade.adjusted_amount|floatformat:2|intcomma }}</td>
+                    <td class="text-right {% if 1.1 < trade.adjusted_rate %}danger{% elif 0.9 > trade.adjusted_rate %}danger{% else %}success{% endif %}">{{ trade.adjusted_rate|floatformat:2|intcomma }}</td>
+                    <td class="text-right">{{ trade.adjusted_total|floatformat:2|intcomma }}</td>
+                    <td class="text-right">{% if trade.quote_price %}1 {{ trade.pair.quote_currency.code }} = ${{ trade.quote_price|floatformat:2|intcomma }}{% endif %}</td>
+                    <td class="text-right">{% if trade.base_price %}1 {{ trade.pair.base_currency.code }} = ${{ trade.base_price|floatformat:2|intcomma }}{% endif %}</td>
                 </tr>
             {% endfor %}
         </tbody>

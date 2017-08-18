@@ -5,7 +5,7 @@ from django.shortcuts import render
 from django.utils.timezone import make_aware
 from django.views import View
 
-from charts.models import Balance, CurrencyValue
+from charts.models import Balance, CurrencyValue, Trade
 
 
 class LiquidityOperations(View):
@@ -15,7 +15,6 @@ class LiquidityOperations(View):
         latest_balances_dedupe = []
         latest_balances = []
         for exchange in connection.tenant.exchanges.all():
-            print(exchange)
             for pair in exchange.pairs.all():
                 latest_balance = Balance.objects.get_closest_to(
                     pair,
@@ -37,6 +36,22 @@ class LiquidityOperations(View):
                             datetime.datetime.now()
                         ).usd_value
                         quote_amount_usd = quote_amount * quote_value
+                    else:
+                        try:
+                            trade = Trade.objects.get_closest_to(
+                                pair,
+                                datetime.datetime.now()
+                            )
+                            if pair.base_currency.get_usd_value:
+                                closest_value = CurrencyValue.objects.get_closest_to(
+                                    trade.pair.base_currency,
+                                    trade.date_time
+                                ).usd_value
+                                if trade.rate and closest_value:
+                                    quote_value = trade.rate * closest_value
+                        except Trade.DoesNotExist:
+                            pass
+
                     latest_balances.append(
                         {
                             'currency': pair.quote_currency,
@@ -61,6 +76,22 @@ class LiquidityOperations(View):
                             datetime.datetime.now()
                         ).usd_value
                         base_amount_usd = base_amount * base_value
+                    else:
+                        try:
+                            trade = Trade.objects.get_closest_to(
+                                pair,
+                                datetime.datetime.now()
+                            )
+                            if pair.base_currency.get_usd_value:
+                                closest_value = CurrencyValue.objects.get_closest_to(
+                                    trade.pair.base_currency,
+                                    trade.date_time
+                                ).usd_value
+                                if trade.rate and closest_value:
+                                    base_value = trade.rate * closest_value
+                        except Trade.DoesNotExist:
+                            pass
+
                     latest_balances.append(
                         {
                             'currency': pair.base_currency,

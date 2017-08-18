@@ -74,12 +74,7 @@ MEDIA_ROOT = '/data/media'
 MEDIA_URL = '/media/'
 DEFAULT_FILE_STORAGE = 'daio.storages.DaioStorage'
 
-AWS_ACCESS_KEY_ID = 'AKIAJKYMJLESKDXC4BLA'
-AWS_SECRET_ACCESS_KEY = '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'
-AWS_STORAGE_BUCKET_NAME = 'crypto-daio'
-AWS_S3_REGION_NAME = 'eu-west-1'
 AWS_QUERYSTRING_AUTH = False
-
 
 MIDDLEWARE_CLASSES = [
     'tenant_schemas.middleware.TenantMiddleware',

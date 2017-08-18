@@ -112,6 +112,8 @@ class NAVChart(View):
             for date in x_values:
                 series_data['y{}'.format(index)].append(
                     float(value_data[date][address.address])
+                    if value_data[date][address.address]
+                    else float(0)
                 )
             series_data['name{}'.format(index)] = '{} balance'.format(
                 address.address

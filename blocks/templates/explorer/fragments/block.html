@@ -1,9 +1,9 @@
-<td class="height"><a href="{% url 'block' block.height %}">{{ block.height }}</a></td>
-<td class="hash">{{ block.hash|slice:":8" }}</td>
-<td class="time">{{ block.time|timesince }}</td>
-<td class="transactions">{{ block.transactions.all.count }}</td>
-<td class="coinage">{{ block.coinage_destroyed }}</td>
-<td class="valid">
+<td class="height text-right"><a href="{% url 'block' block.height %}">{{ block.height }}</a></td>
+<td class="hash text-right">{{ block.hash|slice:":8" }}</td>
+<td class="time text-right">{{ block.time|date:"o-m-d H:i:s T" }}</td>
+<td class="transactions text-right">{{ block.transactions.all.count }}</td>
+<td class="coinage text-right">{{ block.coinage_destroyed }}</td>
+<td class="valid text-right">
     {% if block.is_valid %}
         <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
     {% else %}

@@ -14,12 +14,12 @@ Latest Blocks
                 <table id="latest-blocks-table" class="table table-striped table-bordered table-hover table-condensed">
                     <thead>
                         <tr>
-                            <td>Height</td>
-                            <td>Hash</td>
-                            <td>Age</td>
-                            <td>Num. Trans</td>
-                            <td>SDD</td>
-                            <td>Valid</td>
+                            <td class="text-right">Height</td>
+                            <td class="text-right">Hash</td>
+                            <td class="text-right">Age</td>
+                            <td class="text-right">Num. Trans</td>
+                            <td class="text-right">SDD</td>
+                            <td class="text-right">Valid</td>
                         </tr>
                     </thead>
                     <tbody>
@@ -31,7 +31,7 @@ Latest Blocks
                     </tbody>
                 </table>
             </div>
-            <h5><a href="{% url 'all_blocks' %}">All Blocks</a></h5>
+            <h5><a href="{% url 'blocks' %}">All Blocks</a></h5>
         </div>
     </div>
 {% endblock %}
