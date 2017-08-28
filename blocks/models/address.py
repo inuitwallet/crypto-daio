@@ -40,9 +40,10 @@ class Address(models.Model):
         ).filter(
             output__address=self
         ).order_by(
-            'tx_id'
+            'tx_id',
+            '-time'
         )
-        paginator = Paginator(transactions, 20)
+        paginator = Paginator(transactions, 50)
         return paginator.page(page)
 
 
