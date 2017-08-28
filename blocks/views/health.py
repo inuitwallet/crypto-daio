@@ -4,8 +4,7 @@ from django.db import connection
 from django.shortcuts import render
 from django.views import View
 
-from blocks.models import Peer, Info
-from models import Orphan
+from blocks.models import Peer, Info, Orphan
 
 
 class HealthView(View):
@@ -18,6 +17,8 @@ class HealthView(View):
         peers = Peer.objects.all().order_by('-height')
         for peer in peers:
             peer.height_diff = peer.height - info.max_height
+
+        # calculate when we should expect the next block
 
         # get 30 day difficulty
         times = []
