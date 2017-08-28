@@ -111,7 +111,7 @@ class HealthView(View):
                 'chain': connection.tenant,
                 'top_block': top_block,
                 'next_block_time': next_block_time,
-                'next_block_time_delta': next_block_time_delta.seconds / 60,
+                'next_block_time_delta': round(next_block_time_delta.seconds / 60, 1),
                 'peers': peers,
                 'orphan_chart_data': orphan_chart_data,
                 'difficulty_chart_data': difficulty_chart_data,
