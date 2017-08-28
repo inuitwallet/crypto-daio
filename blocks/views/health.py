@@ -2,6 +2,7 @@ import datetime
 import time
 from django.db import connection
 from django.shortcuts import render
+from django.utils.timezone import make_aware
 from django.views import View
 
 from blocks.models import Peer, Info, Orphan
@@ -27,7 +28,7 @@ class HealthView(View):
         get_date = datetime.datetime.now() - datetime.timedelta(days=30)
         while get_date < datetime.datetime.now():
             info = Info.objects.get_closest_to(
-                target=get_date
+                target=make_aware(get_date)
             )
             times.append(info.time_added)
             difficulties.append(info.difficulty)
