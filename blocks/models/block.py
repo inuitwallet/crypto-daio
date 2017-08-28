@@ -12,7 +12,7 @@ from django.db.models import Max
 from django.utils.timezone import make_aware
 from django.db.utils import IntegrityError
 
-from blocks.models import Transaction
+from blocks.models import Transaction, Orphan
 
 logger = logging.getLogger(__name__)
 
@@ -143,7 +143,7 @@ class Block(models.Model):
                     next_block.save(validate=False)
 
                 # register this block hash as an Orphan
-                #Orphan.objects.get_or_create(hash=height_block.hash)
+                Orphan.objects.get_or_create(hash=height_block.hash)
 
             except Block.DoesNotExist:
                 logger.info('no existing block at {}'.format(self.height))
