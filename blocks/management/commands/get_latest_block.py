@@ -74,6 +74,9 @@ class Command(BaseCommand):
             'height__max'
         )
 
+        if not current_highest_block:
+            current_highest_block = -1
+
         while max_height > current_highest_block:
             current_highest_block += 1
             rpc_hash = send_rpc(
