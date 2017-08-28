@@ -1,14 +1,12 @@
 import json
+import logging
 
 from django.template.loader import render_to_string
 
-from blocks.models import Address
+logger = logging.getLogger(__name__)
 
 
-def get_address_details(message_dict, message):
-    address = message_dict['stream']
-    address_object = Address.objects.get(address=address)
-    # update the balance too
+def get_address_balance(address_object, message):
     message.reply_channel.send(
         {
             'text': json.dumps(
@@ -20,6 +18,9 @@ def get_address_details(message_dict, message):
         },
         immediately=True
     )
+
+
+def get_address_details(address_object, message):
     for tx in address_object.transactions().object_list:
         message.reply_channel.send(
             {
@@ -27,13 +28,10 @@ def get_address_details(message_dict, message):
                     {
                         'message_type': 'address_transaction',
                         'html': render_to_string(
-                            'explorer/fragments/transaction.html',
-                            {
-                                'tx': tx
-                            }
+                            'explorer/fragments/address_transaction.html',
+                            {'tx': tx}
                         )
                     }
                 )
-            },
-            immediately=True
+            }
         )
