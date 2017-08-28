@@ -32,7 +32,10 @@ def ws_connect(message):
 
 def ws_receive(message):
     message_dict = json.loads(message['text'])
-    tenant = get_tenant_model().objects.get(domain_url=message_dict['payload']['host'])
+    domain_url = message_dict['payload']['host']
+    if domain_url == 'explorer.nubits.com':
+        domain_url = 'nu.crypto-daio.co.uk'
+    tenant = get_tenant_model().objects.get(domain_url=domain_url)
     with tenant_context(tenant):
         if message['path'] == '/get_block_transactions/':
             get_block_transactions(message_dict, message)
