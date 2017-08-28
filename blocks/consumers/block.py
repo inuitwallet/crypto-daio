@@ -1,12 +1,9 @@
 import logging
 
-import itertools
-from asgiref.base_layer import BaseChannelLayer
-from channels import Channel
 from tenant_schemas.utils import schema_context
 
 from blocks.models import Block, Transaction
-from blocks.utils.rpc import send_rpc, get_block_hash
+from blocks.utils.rpc import get_block_hash, send_rpc
 
 logger = logging.getLogger(__name__)
 
