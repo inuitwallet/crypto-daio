@@ -34,7 +34,7 @@ class HealthView(View):
         difficulties = []
         orphans = []
         get_date = now() - datetime.timedelta(days=30)
-        while get_date < datetime.datetime.now():
+        while get_date < now():
             info = Info.objects.get_closest_to(
                 target=get_date
             )
