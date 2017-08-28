@@ -4,22 +4,18 @@
     <div class="col-md-12">
         {% with valid=tx.is_valid %}
         <div class="row tx-header {% if not valid %}invalid{% endif %}">
-            <div class="col-md-6 tx-id">
+            <div class="col-md-7 tx-id">
                 {{ tx.index }} : {{ tx.tx_id }}
-                {% if not valid %}
-                    <form method="post">
-                        {% csrf_token %}
-                        <input type="hidden" name="tx_pk" value="{{ tx.pk }}" />
-                        <button type="submit">Validate</button>
-                    </form>
-                {% endif %}
             </div>
-            <div class="col-md-6 text-right tx-time">
+            <div class="col-md-3 details-link">
+                <a class="show-extra-detail" data="{{ tx.tx_id }}">Show Advanced Details</a>
+            </div>
+            <div class="col-md-2 text-right tx-time">
                 {{ tx.time }}
             </div>
         </div>
         {% endwith %}
-        <div class="row tx-info spacer">
+        <div class="row tx-extra-detail spacer full-detail-{{ tx.tx_id }}">
             <div class="col-md-10 col-md-offset-1">
                 <div class="row">
                     {% if not tx.is_coinbase %}
@@ -38,22 +34,15 @@
                     {% endif %}
                 </div>
             </div>
-        </div>
-        <div class="row tx-extra-detail spacer full-detail-{{ tx.tx_id }}">
-            <div class="col-md-6 inputs">
+            <div class="col-md-5 col-md-offset-1 inputs">
                 {% for tx_input in tx.inputs.all %}
                     {% include 'explorer/fragments/tx_input.html' %}
                 {% endfor %}
             </div>
-            <div class="col-md-6 outputs word-wrap">
+            <div class="col-md-5 col-md-offset-1 outputs word-wrap">
                 {% for tx_output in tx.outputs.all %}
                     {% include 'explorer/fragments/tx_output.html' %}
                 {% endfor %}
-            </div>
-        </div>
-        <div class="row spacer">
-            <div class="col-md-12 text-center">
-                <a class="show-extra-detail" data="{{ tx.tx_id }}">More Detail</a>
             </div>
         </div>
         <div class="row tx-short-body spacer min-detail-{{ tx.tx_id }}">
