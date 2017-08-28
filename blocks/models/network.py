@@ -1,4 +1,6 @@
+
 from django.db import models
+from django.utils.timezone import now
 
 
 class InfoManager(models.Manager):
@@ -98,4 +100,6 @@ class Orphan(models.Model):
         unique=True,
         db_index=True,
     )
-    date_time = models.DateTimeField(auto_now_add=True)
+    date_time = models.DateTimeField(
+        default=now
+    )
