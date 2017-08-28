@@ -1,6 +1,6 @@
 <td class="height text-right"><a href="{% url 'block' block.height %}">{{ block.height }}</a></td>
 <td class="hash text-right">{{ block.hash|slice:":8" }}</td>
-<td class="time text-right">{{ block.time|date:"o-m-d H:i:s T" }}</td>
+<td class="time text-right">{{ block.time|date:"o-m-d H:i:s T" }} {% if block.time %}({{ block.time|timesince }}){% endif %}</td>
 <td class="transactions text-right">{{ block.transactions.all.count }}</td>
 <td class="coinage text-right">{{ block.coinage_destroyed }}</td>
 <td class="valid text-right">
