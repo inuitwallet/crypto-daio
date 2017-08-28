@@ -1,34 +1,71 @@
 {% extends 'base.html' %}
 
+{% load nvd3_tags %}
+
 {% block title %}
 Network Health
 {% endblock %}
 
+{% block head %}
+    {% include_chart_jscss %}
+    {% load_chart difficulty_chart_data.chart_type difficulty_chart_data.series_data 'difficulty' difficulty_chart_data.extra %}
+    {% load_chart orphan_chart_data.chart_type orphan_chart_data.series_data 'orphans' orphan_chart_data.extra %}
+{% endblock %}
+
 {% block content %}
     <div class="row">
+        <div class="col-md-12">
+            <div class="row text-center">
+                <h2>30 Day Difficulty</h2>
+            </div>
+            <div class="row">
+                <div class="graph">
+                    {% include_container 'difficulty' 500 '100%' %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <div class="row text-center">
+                <h2>Number of Orphan blocks</h2>
+            </div>
+            <div class="row">
+                <div class="graph">
+                    {% include_container 'orphans' 500 '100%' %}
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
         <div class="col-md-10 col-md-offset-1">
-            <table class="table table-striped table-bordered table-hover table-condensed">
-                <thead>
-                    <tr>
-                        <td class="text-right">Address:Port</td>
-                        <td class="text-right">Height</td>
-                        <td class="text-right">Sub Version</td>
-                        <td class="text-right">Last Receive</td>
-                        <td class="text-right">Last Send</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for peer in peers %}
+            <div class="row text-center">
+                <h2>Peer Information</h2>
+            </div>
+            <div class="row">
+                <table class="table table-striped table-bordered table-hover table-condensed">
+                    <thead>
                         <tr>
-                            <td class="text-right">{{ peer.address }}:{{ peer.port }}</td>
-                            <td class="text-right">{{ peer.height }} <span class="{% if peer.height_diff < 0 %}label label-danger{% elif peer.height_diff > 0 %}label label-success{% endif %}">{{ peer.height_diff }}</span></td>
-                            <td class="text-right">{{ peer.sub_version }}</td>
-                            <td class="text-right">{{ peer.last_receive|date:"o-m-d H:i:s T" }} {% if peer.last_receive %}({{ peer.last_receive|timesince }}){% endif %}</td>
-                            <td class="text-right">{{ peer.last_send|date:"o-m-d H:i:s T" }} {% if peer.last_send %}({{ peer.last_send|timesince }}){% endif %}</td>
+                            <td class="text-right">Address:Port</td>
+                            <td class="text-right">Height</td>
+                            <td class="text-right">Sub Version</td>
+                            <td class="text-right">Last Receive</td>
+                            <td class="text-right">Last Send</td>
                         </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {% for peer in peers %}
+                            <tr>
+                                <td class="text-right">{{ peer.address }}:{{ peer.port }}</td>
+                                <td class="text-right">{{ peer.height }} <span class="{% if peer.height_diff < 0 %}label label-danger{% elif peer.height_diff > 0 %}label label-success{% endif %}">{{ peer.height_diff }}</span></td>
+                                <td class="text-right">{{ peer.sub_version }}</td>
+                                <td class="text-right">{{ peer.last_receive|timesince }}</td>
+                                <td class="text-right">{{ peer.last_send|timesince }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 {% endblock %}
