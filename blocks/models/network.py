@@ -30,7 +30,7 @@ class InfoManager(models.Manager):
                 "There is no closest value because there are no values."
             )
 
-        if closest_greater.date_time - target > target - closest_less.date_time:
+        if closest_greater.time_added - target > target - closest_less.time_added:
             return closest_less
         else:
             return closest_greater
