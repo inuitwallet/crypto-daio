@@ -14,15 +14,17 @@ $(function() {
     transactions_div.on('click', extra_detail, function (e) {
         var tx_id = $(e.target).attr("data");
         var detail = $(e.target).text();
-        if (detail === "More Detail") {
-            $(".min-detail-" + tx_id).hide('slow');
-            $(".full-detail-" + tx_id).show('slow');
-            $(e.target).text("Less Detail")
+        if (detail === "Show Advanced Details") {
+            $(".min-detail-" + tx_id).fadeOut('fast', function() {
+                $(".full-detail-" + tx_id).fadeIn('fast');
+                $(e.target).text("Hide Advanced Details");
+            });
         }
-        if (detail === "Less Detail") {
-            $(".full-detail-" + tx_id).hide('slow');
-            $(".min-detail-" + tx_id).show('slow');
-            $(e.target).text("More Detail")
+        if (detail === "Hide Advanced Details") {
+            $(".full-detail-" + tx_id).fadeOut('fast', function() {
+                $(".min-detail-" + tx_id).fadeIn('fast');
+                $(e.target).text("Show Advanced Details");
+            });
         }
 
     });
