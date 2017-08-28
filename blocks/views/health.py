@@ -6,20 +6,29 @@ from django.utils.timezone import make_aware
 from django.views import View
 
 from blocks.models import Peer, Info, Orphan
+from models import Block
 
 
 class HealthView(View):
 
     @staticmethod
     def get(request):
-        # get the latest info object
-        info = Info.objects.all().order_by('-time_added').first()
-        # calculate the peers distance from our latest block
+        # calculate when we should expect the next block
+        top_block = Block.objects.exclude(
+            height=None
+        ).exclude(
+            time=None
+        ).order_by(
+            '-height'
+        ).first()
+
+        next_block_time = top_block.time + datetime.timedelta(minutes=1)
+        next_block_time_delta = next_block_time - make_aware(datetime.datetime.now())
+
+        # use the top height to update the peers with their distance from the top block
         peers = Peer.objects.all().order_by('-height')
         for peer in peers:
-            peer.height_diff = peer.height - info.max_height
-
-        # calculate when we should expect the next block
+            peer.height_diff = peer.height - top_block.height
 
         # get 30 day difficulty
         times = []
@@ -101,6 +110,9 @@ class HealthView(View):
             'explorer/health.html',
             {
                 'chain': connection.tenant,
+                'top_block': top_block,
+                'next_block_time': next_block_time,
+                'next_block_time_delta': next_block_time_delta,
                 'peers': peers,
                 'orphan_chart_data': orphan_chart_data,
                 'difficulty_chart_data': difficulty_chart_data,
