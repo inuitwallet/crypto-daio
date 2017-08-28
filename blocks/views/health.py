@@ -5,8 +5,7 @@ from django.shortcuts import render
 from django.utils.timezone import make_aware
 from django.views import View
 
-from blocks.models import Peer, Info, Orphan
-from models import Block
+from blocks.models import Peer, Info, Orphan, Block
 
 
 class HealthView(View):
