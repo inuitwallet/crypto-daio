@@ -141,6 +141,10 @@ class Block(models.Model):
                 for next_block in Block.objects.filter(previous_block=height_block):
                     next_block.previous_block = None
                     next_block.save(validate=False)
+
+                # register this block hash as an Orphan
+                #Orphan.objects.get_or_create(hash=height_block.hash)
+
             except Block.DoesNotExist:
                 logger.info('no existing block at {}'.format(self.height))
 

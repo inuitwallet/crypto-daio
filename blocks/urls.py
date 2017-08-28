@@ -25,5 +25,7 @@ urlpatterns = [
 
     url(r'^search$', Search.as_view(), name='search'),
 
+    url(r'^health$', HealthView.as_view(), name='health'),
+
     url(r'^menu/charts$', ChartsView.as_view(), name='charts_menu'),
 ]

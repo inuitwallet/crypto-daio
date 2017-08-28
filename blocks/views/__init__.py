@@ -1,8 +1,9 @@
-from .addresses import AddressDetailView
-from .blocks import BlockDetailView, LatestBlocksList, All_Blocks
-from .charts import ChartsView
-from .notify import Notify
-from .search import Search
+from blocks.views.addresses import AddressDetailView
+from blocks.views.blocks import BlockDetailView, LatestBlocksList, All_Blocks
+from blocks.views.charts import ChartsView
+from blocks.views.notify import Notify
+from blocks.views.search import Search
+from blocks.views.health import HealthView
 
 __all__ = [
     'AddressDetailView',
@@ -11,5 +12,6 @@ __all__ = [
     'LatestBlocksList',
     'ChartsView',
     'Notify',
-    'Search'
+    'Search',
+    'HealthView',
 ]
