@@ -2,7 +2,7 @@ import datetime
 import time
 from django.db import connection
 from django.shortcuts import render
-from django.utils.timezone import make_aware
+from django.utils.timezone import now
 from django.views import View
 
 from blocks.models import Peer, Info, Orphan, Block
@@ -22,7 +22,7 @@ class HealthView(View):
         ).first()
 
         next_block_time = top_block.time + datetime.timedelta(minutes=1)
-        next_block_time_delta = next_block_time - make_aware(datetime.datetime.now())
+        next_block_time_delta = next_block_time - now()
 
         # use the top height to update the peers with their distance from the top block
         peers = Peer.objects.all().order_by('-height')
@@ -33,10 +33,10 @@ class HealthView(View):
         times = []
         difficulties = []
         orphans = []
-        get_date = datetime.datetime.now() - datetime.timedelta(days=30)
+        get_date = now() - datetime.timedelta(days=30)
         while get_date < datetime.datetime.now():
             info = Info.objects.get_closest_to(
-                target=make_aware(get_date)
+                target=get_date
             )
             times.append(info.time_added)
             difficulties.append(info.difficulty)
