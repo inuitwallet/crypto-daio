@@ -1,4 +1,5 @@
 import datetime
+import hashlib
 import time
 from django.db import connection
 from django.shortcuts import render
@@ -28,6 +29,9 @@ class HealthView(View):
         peers = Peer.objects.all().order_by('-height')
         for peer in peers:
             peer.height_diff = peer.height - top_block.height
+            peer.identifier = hashlib.md5(
+                '{}:{}'.format(peer.address, peer.port).encode('utf-8')
+            ).hexdigest()[:10]
 
         # get 30 day difficulty
         times = []
