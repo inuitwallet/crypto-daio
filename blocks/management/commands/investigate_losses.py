@@ -221,15 +221,24 @@ class Command(BaseCommand):
         :param options:
         :return:
         """
-        # get the spent outputs from compromised addresses and track them
-        for address in COMPROMISED_ADDRESSES:
-            logger.info('working on {}'.format(address))
-            a = Address.objects.get(address=address)
-            txs = self.get_transactions(a)
-            for tx in txs:
-                print(tx.address_inputs)
-                print(tx.address_outputs)
-
+        with open('losses.csv', 'w+') as losses_file:
+            loss_writer = csv.writer(losses_file)
+            loss_writer.writerow(['Date', 'Block', 'TX', 'Inputs', 'Outputs'])
+            for address in COMPROMISED_ADDRESSES:
+                logger.info('working on {}'.format(address))
+                a = Address.objects.get(address=address)
+                txs = self.get_transactions(a)
+                for tx in txs:
+                    loss_writer.writerow(
+                        [
+                            tx.block.time,
+                            tx.block.height,
+                            tx.tx_id,
+                            tx.address_inputs,
+                            tx.address_outputs
+                        ]
+                    )
+        print('done')
 
             # spent = self.get_spent_outputs(a)
             # logger.info('{} spent outputs found'.format(len(spent)))
