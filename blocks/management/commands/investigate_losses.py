@@ -214,7 +214,10 @@ class Command(BaseCommand):
             spent = self.get_spent_outputs(a)
             for inp in spent:
                 logger.info(
-                    '{} input in block {}'.format(inp.previous_output, inp.block)
+                    '{} input in block {}'.format(
+                        inp.previous_output,
+                        inp.transaction.block
+                    )
                 )
         #self.gather_tx_data()
         #self.get_balances()
