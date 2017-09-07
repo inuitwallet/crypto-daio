@@ -218,19 +218,16 @@ class Command(BaseCommand):
                 if inp.transaction not in deets:
                     deets[inp.transaction] = {
                         'input': 0,
-                        'spent_outputs': [],
-                        'unspent_outputs': {}
+                        'spent_outputs': 0,
+                        'unspent_outputs': 0
                     }
                 deets[inp.transaction]['input'] += inp.previous_output.value
-                # for output in inp.transaction.outputs.all():
-                #     try:
-                #         if output.input:
-                #             deets[inp.transaction]['spent_outputs'].append(output.input)
-                #     except TxInput.DoesNotExist:
-                #         if output.address not in deets[inp.transaction]['unspent_outputs']:
-                #             deets[inp.transaction]['unspent_outputs'][output.address] = 0
-                #         deets[inp.transaction]['unspent_outputs'][output.address] += output.value
-
+                for output in inp.transaction.outputs.all():
+                    try:
+                        if output.input:
+                            deets[inp.transaction]['spent_outputs'] += output.value
+                    except TxInput.DoesNotExist:
+                        deets[inp.transaction]['unspent_outputs'] += output.value
             print(deets)
         #self.gather_tx_data()
         #self.get_balances()
