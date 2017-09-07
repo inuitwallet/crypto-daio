@@ -195,6 +195,8 @@ class Command(BaseCommand):
         for output in address.outputs.all():
             try:
                 if output.input:
+                    if output.input.transaction.index == 1:
+                        continue
                     spent.append(output.input)
             except TxInput.DoesNotExist:
                 pass
