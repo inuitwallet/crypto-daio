@@ -227,10 +227,8 @@ class Command(BaseCommand):
             a = Address.objects.get(address=address)
             txs = self.get_transactions(a)
             for tx in txs:
-                addr_inputs = tx.address_inputs
-                print(addr_inputs.get(address))
-                addr_outputs = tx.address_outputs
-                print(addr_outputs)
+                print(tx.address_inputs)
+                print(tx.address_outputs)
 
 
             # spent = self.get_spent_outputs(a)
