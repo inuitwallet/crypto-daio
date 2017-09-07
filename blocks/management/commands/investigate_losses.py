@@ -190,6 +190,16 @@ class Command(BaseCommand):
         ]
         print([address for address in bad_addresses if address in COMPROMISED_ADDRESSES])
 
+    def get_spent_outputs(self, address):
+        spent = []
+        for output in address.outputs.all():
+            try:
+                if output.input:
+                    spent.append(output.input)
+            except TxInput.DoesNotExist:
+                pass
+        return spent
+
     def handle(self, *args, **options):
         """
         investigate the losses by tracking activity through the blockchain
@@ -197,7 +207,17 @@ class Command(BaseCommand):
         :param options:
         :return:
         """
+        # get the spent outputs from compromised addresses and track them
+        for address in COMPROMISED_ADDRESSES:
+            logger.info('working on {}'.format(address))
+            a = Address.objects.get(address=address)
+            spent = self.get_spent_outputs(a)
+            for inp in spent:
+                logger.info(
+                    '{} input in block {}'.format(inp.previous_output, inp.block)
+                )
         #self.gather_tx_data()
         #self.get_balances()
         #self.get_bad_txs()
-        self.dedupe()
+        #self.dedupe()
+
