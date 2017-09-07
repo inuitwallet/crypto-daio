@@ -5,6 +5,7 @@ from django.core.management import BaseCommand
 from django.utils import timezone
 
 from blocks.models import Address, TxInput
+from models import Transaction
 
 logger = logging.getLogger(__name__)
 
@@ -202,6 +203,18 @@ class Command(BaseCommand):
                 pass
         return spent
 
+    def get_transactions(self, address):
+        return Transaction.objects.distinct(
+            'tx_id'
+        ).filter(
+            output__address=self
+        ).exclude(
+            index=1
+        ).order_by(
+            'tx_id',
+            '-time'
+        )
+
     def handle(self, *args, **options):
         """
         investigate the losses by tracking activity through the blockchain
@@ -213,24 +226,32 @@ class Command(BaseCommand):
         for address in COMPROMISED_ADDRESSES:
             logger.info('working on {}'.format(address))
             a = Address.objects.get(address=address)
-            spent = self.get_spent_outputs(a)
-            logger.info('{} spent outputs found'.format(len(spent)))
-            deets = {}
-            for inp in spent:
-                if inp.transaction not in deets:
-                    deets[inp.transaction] = {
-                        'input': 0,
-                        'spent_outputs': 0,
-                        'unspent_outputs': 0
-                    }
-                deets[inp.transaction]['input'] += inp.previous_output.value
-                for output in inp.transaction.outputs.all():
-                    try:
-                        if output.input:
-                            deets[inp.transaction]['spent_outputs'] += output.value
-                    except TxInput.DoesNotExist:
-                        deets[inp.transaction]['unspent_outputs'] += output.value
-            print(deets)
+            txs = self.get_transactions(a)
+            for tx in txs:
+                addr_inputs = tx.address_inputs
+                print(addr_inputs.get(address))
+                addr_outputs = tx.address_outputs
+                print(addr_outputs)
+
+
+            # spent = self.get_spent_outputs(a)
+            # logger.info('{} spent outputs found'.format(len(spent)))
+            # deets = {}
+            # for inp in spent:
+            #     if inp.transaction not in deets:
+            #         deets[inp.transaction] = {
+            #             'input': 0,
+            #             'spent_outputs': 0,
+            #             'unspent_outputs': 0
+            #         }
+            #     deets[inp.transaction]['input'] += inp.previous_output.value
+            #     for output in inp.transaction.outputs.all():
+            #         try:
+            #             if output.input:
+            #                 deets[inp.transaction]['spent_outputs'] += output.value
+            #         except TxInput.DoesNotExist:
+            #             deets[inp.transaction]['unspent_outputs'] += output.value
+            # print(deets)
         #self.gather_tx_data()
         #self.get_balances()
         #self.get_bad_txs()
