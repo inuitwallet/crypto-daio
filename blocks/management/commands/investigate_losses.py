@@ -212,13 +212,13 @@ class Command(BaseCommand):
             logger.info('working on {}'.format(address))
             a = Address.objects.get(address=address)
             spent = self.get_spent_outputs(a)
+            logger.info('{} spent outputs found'.format(len(spent)))
+            deets = {}
             for inp in spent:
-                logger.info(
-                    '{} input in block {}'.format(
-                        inp.previous_output,
-                        inp.transaction.block
-                    )
-                )
+                if inp.transaction not in deets:
+                    deets[inp.transaction] = 0
+                deets[inp.transaction] = inp.previous_output.value
+            print(deets)
         #self.gather_tx_data()
         #self.get_balances()
         #self.get_bad_txs()
