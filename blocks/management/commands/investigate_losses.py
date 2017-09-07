@@ -206,7 +206,7 @@ class Command(BaseCommand):
         return Transaction.objects.distinct(
             'tx_id'
         ).filter(
-            output__address=self
+            output__address=address
         ).exclude(
             index=1
         ).order_by(
