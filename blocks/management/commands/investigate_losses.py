@@ -226,14 +226,21 @@ class Command(BaseCommand):
             a = Address.objects.get(address=address)
             txs = self.get_transactions(a)
             for tx in txs:
-                logger.info('block {}: {} input {}.'.format(
-                    tx.block.height, address, tx.address_inputs.get(address)
+                logger.info('block {}: {} input {} of {}.'.format(
+                    tx.block.height,
+                    address,
+                    tx.address_inputs.get(address),
+                    tx.total_input
                 ))
                 outs = tx.address_outputs
                 for addr in outs:
                     if addr == address:
                         continue
-                    logger.info('\t{} output to {}'.format(outs.get(addr), addr))
+                    logger.info('\t{} of {} output to {}'.format(
+                        outs.get(addr),
+                        tx.total_output,
+                        addr
+                    ))
         print('done')
 
             # spent = self.get_spent_outputs(a)
