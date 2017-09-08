@@ -223,7 +223,7 @@ class Command(BaseCommand):
         """
         with open('losses.csv', 'w+') as losses_file:
             loss_writer = csv.writer(losses_file)
-            loss_writer.writerow(['Block', 'Date', 'Address', 'Input', 'Output'])
+            loss_writer.writerow(['Block', 'Date', 'Tx', 'Address', 'Input', 'Output'])
             for address in COMPROMISED_ADDRESSES:
                 logger.info('working on {}'.format(address))
                 a = Address.objects.get(address=address)
@@ -241,6 +241,7 @@ class Command(BaseCommand):
                         [
                             tx.block.height,
                             tx.block.time,
+                            tx.tx_id,
                             address,
                             '{} ({}%)'.format(
                                 tx.address_inputs.get(address),
@@ -260,6 +261,7 @@ class Command(BaseCommand):
                         ))
                         loss_writer.writerow(
                             [
+                                '',
                                 '',
                                 '',
                                 addr,
