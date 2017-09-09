@@ -81,6 +81,9 @@ class Command(BaseCommand):
         if tx.tx_id[:6] in scanned_transactions:
             return
 
+        if tx.index == 1:
+            return
+
         scanned_transactions.append(tx.tx_id[:6])
 
         logger.info(tx.tx_id)
