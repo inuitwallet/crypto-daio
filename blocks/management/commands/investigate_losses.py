@@ -229,49 +229,8 @@ class Command(BaseCommand):
                 a = Address.objects.get(address=address)
                 txs = self.get_transactions(a)
                 for tx in txs:
-                    perc = round((tx.address_inputs.get(address)/tx.total_input) * 100, 5)
-                    logger.info('block {}: {} input {} ({}%) of {}.'.format(
-                        tx.block.height,
-                        address,
-                        tx.address_inputs.get(address),
-                        perc,
-                        tx.total_input
-                    ))
-                    loss_writer.writerow(
-                        [
-                            tx.block.height,
-                            tx.block.time,
-                            tx.tx_id,
-                            address,
-                            '{} ({}%)'.format(
-                                tx.address_inputs.get(address),
-                                perc
-                            )
-                        ]
-                    )
+                    print(tx.time)
 
-                    outs = tx.address_outputs
-                    for addr in outs:
-                        if addr == address:
-                            continue
-                        logger.info('\t{} of {} output to {}'.format(
-                            outs.get(addr),
-                            tx.total_output,
-                            addr
-                        ))
-                        loss_writer.writerow(
-                            [
-                                '',
-                                '',
-                                '',
-                                addr,
-                                '',
-                                '{} ({}%)'.format(
-                                    outs.get(addr),
-                                    round((outs.get(addr) / tx.total_output) * 100, 5)
-                                )
-                            ]
-                        )
             print('done')
 
             # spent = self.get_spent_outputs(a)
