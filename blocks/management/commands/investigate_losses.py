@@ -102,7 +102,7 @@ class Command(BaseCommand):
                 'to': tx.tx_id[:6],
                 'value': address_inputs.get(input_address, 0) / 100000000,
                 'arrows': 'middle',
-                'title': tx.block,
+                'title': '{}@{}'.format(tx.block.height, tx.block.time),
                 'color': 'grey',
                 'physics': False
             })
@@ -123,7 +123,7 @@ class Command(BaseCommand):
                 'to': output_address,
                 'value': address_outputs.get(output_address, 0) / 100000000,
                 'arrows': 'middle',
-                'title': tx.block,
+                'title': '{}@{}'.format(tx.block.height, tx.block.time),
                 'color': 'grey',
                 'physics': False
             })
