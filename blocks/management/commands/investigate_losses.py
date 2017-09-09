@@ -75,7 +75,7 @@ class Command(BaseCommand):
         return distinct
 
     def handle_tx(self, tx):
-        logger.info('handling transaction {}'.format(tx.tx_id))
+        logger.info(tx.tx_id[:6])
 
         # add the Tx to the nodes
         if not any(node['id'] == tx.tx_id[:6] for node in nodes):
@@ -83,7 +83,6 @@ class Command(BaseCommand):
                 'id': tx.tx_id[:6],
                 'label': tx.tx_id,
                 'hidden': True,
-                'physics': False
             })
 
         address_inputs = tx.address_inputs
@@ -95,7 +94,6 @@ class Command(BaseCommand):
                     'id': input_address,
                     'label': input_address,
                     'color': '#dd6161' if input_address in TARGET_ADDRESSES else '#92d9e5',  # noqa
-                    'physics': False
                 })
             edges.append({
                 'from': input_address,
@@ -104,7 +102,6 @@ class Command(BaseCommand):
                 'arrows': 'middle',
                 'title': '{}@{}'.format(tx.block.height, tx.block.time),
                 'color': 'grey',
-                'physics': False
             })
 
         address_outputs = tx.address_outputs
@@ -116,7 +113,6 @@ class Command(BaseCommand):
                     'id': output_address,
                     'label': output_address,
                     'color': '#dd6161' if output_address in TARGET_ADDRESSES else '#92d9e5',  # noqa
-                    'physics': False
                 })
             edges.append({
                 'from': tx.tx_id[:6],
@@ -125,7 +121,6 @@ class Command(BaseCommand):
                 'arrows': 'middle',
                 'title': '{}@{}'.format(tx.block.height, tx.block.time),
                 'color': 'grey',
-                'physics': False
             })
 
         # for tx_output in tx.outputs.all():
@@ -148,7 +143,6 @@ class Command(BaseCommand):
                     'id': address,
                     'label': address,
                     'color': '#89ff91',
-                    'physics': False
                 })
 
         for address in COMPROMISED_ADDRESSES:
