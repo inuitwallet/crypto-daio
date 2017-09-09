@@ -255,7 +255,7 @@ class Command(BaseCommand):
                     edges.append({
                         'from': tx_input.previous_output.address.address,
                         'to': tx.tx_id,
-                        'value': tx_input.previous_output.value
+                        'value': tx_input.previous_output.value/100000000
                     })
 
                 for tx_output in tx.outputs.all():
@@ -274,7 +274,7 @@ class Command(BaseCommand):
                         edges.append({
                             'from': tx_output.transaction.tx_id,
                             'to': tx_output.address.address,
-                            'value': tx_output.value
+                            'value': tx_output.value/100000000
                         })
             json.dump(nodes, open('nodes.json', 'w+'))
             json.dump(edges, open('edges.json', 'w+'))
