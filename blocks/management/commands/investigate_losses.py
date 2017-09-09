@@ -79,7 +79,12 @@ class Command(BaseCommand):
 
         # add the Tx to the nodes
         if not any(node['id'] == tx.tx_id[:6] for node in nodes):
-            nodes.append({'id': tx.tx_id[:6], 'label': tx.tx_id, 'hidden': True})
+            nodes.append({
+                'id': tx.tx_id[:6],
+                'label': tx.tx_id,
+                'hidden': True,
+                'physics': False
+            })
 
         address_inputs = tx.address_inputs
         for input_address in address_inputs:
@@ -89,15 +94,17 @@ class Command(BaseCommand):
                 nodes.append({
                     'id': input_address,
                     'label': input_address,
-                    'color': 'red' if input_address in TARGET_ADDRESSES else 'blue',
+                    'color': '#dd6161' if input_address in TARGET_ADDRESSES else '#92d9e5',  # noqa
+                    'physics': False
                 })
             edges.append({
                 'from': input_address,
                 'to': tx.tx_id[:6],
                 'value': address_inputs.get(input_address, 0) / 100000000,
                 'arrows': 'middle',
-                'title': str(tx.time),
-                'color': 'grey'
+                'title': tx.block,
+                'color': 'grey',
+                'physics': False
             })
 
         address_outputs = tx.address_outputs
@@ -108,15 +115,17 @@ class Command(BaseCommand):
                 nodes.append({
                     'id': output_address,
                     'label': output_address,
-                    'color': 'red' if output_address in TARGET_ADDRESSES else 'blue',
+                    'color': '#dd6161' if output_address in TARGET_ADDRESSES else '#92d9e5',  # noqa
+                    'physics': False
                 })
             edges.append({
                 'from': tx.tx_id[:6],
                 'to': output_address,
                 'value': address_outputs.get(output_address, 0) / 100000000,
                 'arrows': 'middle',
-                'title': str(tx.time),
-                'color': 'grey'
+                'title': tx.block,
+                'color': 'grey',
+                'physics': False
             })
 
         # for tx_output in tx.outputs.all():
@@ -134,14 +143,16 @@ class Command(BaseCommand):
         :return:
         """
         for address in COMPROMISED_ADDRESSES:
-            logger.info('working on {}'.format(address))
-            # add the address to the nodes
             if not any(node['id'] == address for node in nodes):
                 nodes.append({
                     'id': address,
                     'label': address,
-                    'color': 'green',
+                    'color': '#89ff91',
+                    'physics': False
                 })
+
+        for address in COMPROMISED_ADDRESSES:
+            logger.info('working on {}'.format(address))
             a = Address.objects.get(address=address)
             txs = self.get_transactions(a)
 
