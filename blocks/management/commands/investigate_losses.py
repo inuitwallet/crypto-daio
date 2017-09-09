@@ -123,12 +123,13 @@ class Command(BaseCommand):
                 'color': 'grey',
             })
 
-        # for tx_output in tx.outputs.all():
-        #     try:
-        #         if tx_output.input:
-        #             self.handle_tx(tx_output.input.transaction)
-        #     except TxInput.DoesNotExist:
-        #         pass
+        for tx_output in tx.outputs.all():
+            try:
+                if tx_output.input:
+                    logger.info('found spent output')
+                    self.handle_tx(tx_output.input.transaction)
+            except TxInput.DoesNotExist:
+                pass
 
     def handle(self, *args, **options):
         """
