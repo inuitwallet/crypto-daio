@@ -234,4 +234,11 @@ class Command(BaseCommand):
             txs = self.get_transactions(a)
             for tx in txs:
                 logger.info(tx.inputs.all())
-                logger.info(tx.outputs.all())
+                for output in tx.outputs.all():
+                    try:
+                        if output.input:
+                            logger.info('spent')
+                            # calculate again for spending transaction
+                    except TxInput.DoesNotExist:
+                        logger.info('unspent')
+                        # this address is a new node
