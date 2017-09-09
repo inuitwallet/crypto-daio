@@ -96,7 +96,8 @@ class Command(BaseCommand):
                 'to': tx.tx_id[:6],
                 'value': address_inputs.get(input_address, 0) / 100000000,
                 'arrows': 'middle',
-                'title': str(tx.time)
+                'title': str(tx.time),
+                'color': 'grey'
             })
 
         address_outputs = tx.address_outputs
@@ -108,14 +109,14 @@ class Command(BaseCommand):
                     'id': output_address,
                     'label': output_address,
                     'color': 'red' if output_address in TARGET_ADDRESSES else 'blue',
-                    'shape': 'square'
                 })
             edges.append({
                 'from': tx.tx_id[:6],
                 'to': output_address,
                 'value': address_outputs.get(output_address, 0) / 100000000,
                 'arrows': 'middle',
-                'title': str(tx.time)
+                'title': str(tx.time),
+                'color': 'grey'
             })
 
         # for tx_output in tx.outputs.all():
@@ -140,7 +141,6 @@ class Command(BaseCommand):
                     'id': address,
                     'label': address,
                     'color': 'green',
-                    'shape': 'square'
                 })
             a = Address.objects.get(address=address)
             txs = self.get_transactions(a)
