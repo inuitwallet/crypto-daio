@@ -203,16 +203,21 @@ class Command(BaseCommand):
         return spent
 
     def get_transactions(self, address):
-        txs = Transaction.objects.distinct(
-            'tx_id'
-        ).filter(
+        txs = Transaction.objects.filter(
             input__previous_output__address=address
         ).exclude(
             index=1
         ).order_by(
-            'tx_id'
+            '-time'
         )
-        return txs.order_by('-time')
+
+        distinct = []
+        for tx in txs:
+            if tx in distinct:
+                continue
+            distinct.append(tx)
+
+        return distinct
 
     def handle(self, *args, **options):
         """
