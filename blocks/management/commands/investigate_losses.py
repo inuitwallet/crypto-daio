@@ -208,7 +208,7 @@ class Command(BaseCommand):
         ).exclude(
             index=1
         ).order_by(
-            '-time'
+            'time'
         )
 
         distinct = []
