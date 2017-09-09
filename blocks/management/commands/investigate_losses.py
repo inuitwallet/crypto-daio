@@ -83,7 +83,7 @@ class Command(BaseCommand):
 
         scanned_transactions.append(tx.tx_id[:6])
 
-        logger.info(tx.tx_id[:6])
+        logger.info(tx.tx_id)
 
         # add the Tx to the nodes
         if not any(node['id'] == tx.tx_id[:6] for node in nodes):
