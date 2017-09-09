@@ -51,6 +51,8 @@ TARGET_ADDRESSES = [
 nodes = []
 edges = []
 
+scanned_transactions = []
+
 
 class Command(BaseCommand):
     @staticmethod
@@ -74,6 +76,11 @@ class Command(BaseCommand):
         return distinct
 
     def handle_tx(self, tx):
+        if tx.tx_id[:6] in scanned_transactions:
+            return
+
+        scanned_transactions.append(tx.tx_id[:6])
+
         logger.info(tx.tx_id[:6])
 
         # add the Tx to the nodes
