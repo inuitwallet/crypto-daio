@@ -208,7 +208,7 @@ class Command(BaseCommand):
         ).exclude(
             index=1
         ).exclude(
-            output__address__in=TARGET_ADDRESSES
+            output__address__address__in=TARGET_ADDRESSES
         ).order_by(
             'time'
         )
