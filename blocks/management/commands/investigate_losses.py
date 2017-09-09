@@ -149,3 +149,5 @@ class Command(BaseCommand):
 
         json.dump(nodes, open('nodes.json', 'w+'))
         json.dump(edges, open('edges.json', 'w+'))
+
+        logger.info('Finished')
