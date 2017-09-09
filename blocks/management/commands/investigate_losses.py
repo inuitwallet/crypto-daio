@@ -115,7 +115,7 @@ class Command(BaseCommand):
                 'to': output_address,
                 'value': address_outputs.get(output_address, 0) / 100000000,
                 'arrows': 'middle',
-                'title': tx.time
+                'title': str(tx.time)
             })
 
         # for tx_output in tx.outputs.all():
