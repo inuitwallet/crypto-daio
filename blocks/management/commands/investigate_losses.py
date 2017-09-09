@@ -233,7 +233,5 @@ class Command(BaseCommand):
             a = Address.objects.get(address=address)
             txs = self.get_transactions(a)
             for tx in txs:
-                print(tx.time)
-
-        print('done')
-
+                logger.info(tx.inputs.all())
+                logger.info(tx.outputs.all())
