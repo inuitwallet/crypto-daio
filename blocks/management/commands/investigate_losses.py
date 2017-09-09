@@ -90,7 +90,6 @@ class Command(BaseCommand):
                     'id': input_address,
                     'label': input_address,
                     'color': 'red' if input_address in TARGET_ADDRESSES else 'blue',
-                    'shape': 'square'
                 })
             edges.append({
                 'from': input_address,
@@ -104,7 +103,7 @@ class Command(BaseCommand):
         for output_address in address_outputs:
             # for each output add an edge from the address to the tx.
             # Add the address if it doesn't exist
-            if not any(node['id'] == output_address for node in nodes):  # noqa
+            if not any(node['id'] == output_address for node in nodes):
                 nodes.append({
                     'id': output_address,
                     'label': output_address,
@@ -136,12 +135,13 @@ class Command(BaseCommand):
         for address in COMPROMISED_ADDRESSES:
             logger.info('working on {}'.format(address))
             # add the address to the nodes
-            nodes.append({
-                'id': address,
-                'label': address,
-                'color': 'green',
-                'shape': 'square'
-            })
+            if not any(node['id'] == address for node in nodes):
+                nodes.append({
+                    'id': address,
+                    'label': address,
+                    'color': 'green',
+                    'shape': 'square'
+                })
             a = Address.objects.get(address=address)
             txs = self.get_transactions(a)
 
