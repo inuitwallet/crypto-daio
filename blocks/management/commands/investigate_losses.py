@@ -241,12 +241,13 @@ class Command(BaseCommand):
 
             for tx in txs:
                 # add the Tx to the nodes
-                nodes.append({'id': tx.tx_id, 'label': tx.tx_id})
+                if not any(node['id'] == tx.tx_id for node in nodes):
+                    nodes.append({'id': tx.tx_id, 'label': tx.tx_id})
 
                 for tx_input in tx.inputs.all():
                     # for each input add an edge from the address to the tx.
                     # Add the address if it doesn't exist
-                    if not any(node['id'] == tx_input.previous_output.address for node in nodes):  # noqa
+                    if not any(node['id'] == tx_input.previous_output.address.address for node in nodes):  # noqa
                         nodes.append({
                             'id': tx_input.previous_output.address.address,
                             'label': tx_input.previous_output.address.address
