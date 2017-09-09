@@ -75,6 +75,8 @@ class Command(BaseCommand):
         return distinct
 
     def handle_tx(self, tx):
+        logger.info('handling transaction {}'.format(tx.tx_id))
+
         # add the Tx to the nodes
         if not any(node['id'] == tx.tx_id[:6] for node in nodes):
             nodes.append({'id': tx.tx_id[:6], 'label': tx.tx_id})
