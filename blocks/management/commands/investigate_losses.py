@@ -1,4 +1,3 @@
-import csv
 import json
 import logging
 
@@ -154,7 +153,9 @@ class Command(BaseCommand):
             for tx in txs:
                 self.handle_tx(tx)
 
-        json.dump(nodes, open('nodes.json', 'w+'))
-        json.dump(edges, open('edges.json', 'w+'))
+            json.dump(nodes, open('nodes_{}.json'.format(address), 'w+'))
+            json.dump(edges, open('edges_{}.json'.format(address), 'w+'))
+
+            logger.info('Finished {}'.format(address))
 
         logger.info('Finished')
