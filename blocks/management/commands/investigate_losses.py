@@ -207,6 +207,8 @@ class Command(BaseCommand):
             input__previous_output__address=address
         ).exclude(
             index=1
+        ).exclude(
+            output__address__in=TARGET_ADDRESSES
         ).order_by(
             'time'
         )
@@ -226,38 +228,12 @@ class Command(BaseCommand):
         :param options:
         :return:
         """
-        with open('losses.csv', 'w+') as losses_file:
-            loss_writer = csv.writer(losses_file)
-            loss_writer.writerow(['Block', 'Date', 'Tx', 'Address', 'Input', 'Output'])
-            for address in COMPROMISED_ADDRESSES:
-                logger.info('working on {}'.format(address))
-                a = Address.objects.get(address=address)
-                txs = self.get_transactions(a)
-                for tx in txs:
-                    print(tx.time)
+        for address in COMPROMISED_ADDRESSES:
+            logger.info('working on {}'.format(address))
+            a = Address.objects.get(address=address)
+            txs = self.get_transactions(a)
+            for tx in txs:
 
-            print('done')
 
-            # spent = self.get_spent_outputs(a)
-            # logger.info('{} spent outputs found'.format(len(spent)))
-            # deets = {}
-            # for inp in spent:
-            #     if inp.transaction not in deets:
-            #         deets[inp.transaction] = {
-            #             'input': 0,
-            #             'spent_outputs': 0,
-            #             'unspent_outputs': 0
-            #         }
-            #     deets[inp.transaction]['input'] += inp.previous_output.value
-            #     for output in inp.transaction.outputs.all():
-            #         try:
-            #             if output.input:
-            #                 deets[inp.transaction]['spent_outputs'] += output.value
-            #         except TxInput.DoesNotExist:
-            #             deets[inp.transaction]['unspent_outputs'] += output.value
-            # print(deets)
-        #self.gather_tx_data()
-        #self.get_balances()
-        #self.get_bad_txs()
-        #self.dedupe()
+        print('done')
 
