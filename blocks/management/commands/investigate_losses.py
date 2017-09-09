@@ -228,17 +228,49 @@ class Command(BaseCommand):
         :param options:
         :return:
         """
+        nodes = []
+        edges = []
+
         for address in COMPROMISED_ADDRESSES:
             logger.info('working on {}'.format(address))
+            # add the address to the nodes
+            nodes.append({'id': address, 'label': address})
             a = Address.objects.get(address=address)
             txs = self.get_transactions(a)
+
             for tx in txs:
-                logger.info(tx.inputs.all())
-                for output in tx.outputs.all():
+                # add the Tx to the nodes
+                nodes.append({'id': tx.tx_id, 'label': tx.tx_id})
+
+                for tx_input in tx.inputs.all():
+                    # for each input add an edge from the address to the tx.
+                    # Add the address if it doesn't exist
+                    if not any(node['id'] == tx_input.previous_output.address for node in nodes):  # noqa
+                        nodes.append({
+                            'id': tx_input.previous_output.address,
+                            'label': tx_input.previous_output.address
+                        })
+                    edges.append({
+                        'from': tx_input.previous_output.address,
+                        'to': tx.tx_id,
+                        'value': tx_input.previous_output.value
+                    })
+
+                for tx_output in tx.outputs.all():
                     try:
-                        if output.input:
+                        if tx_output.input:
                             logger.info('spent')
                             # calculate again for spending transaction
                     except TxInput.DoesNotExist:
-                        logger.info('unspent')
-                        # this address is a new node
+                        # unspent so add the address as a node
+                        # if necessary and add an edge
+                        if not any(node['id'] == tx_output.address for node in nodes):
+                            nodes.append({
+                                'id': tx_output.address,
+                                'label': tx_output.address
+                            })
+                        edges.append({
+                            'from': tx_output.transaction.tx_id,
+                            'to': tx_output.address,
+                            'value': tx_output.value
+                        })
