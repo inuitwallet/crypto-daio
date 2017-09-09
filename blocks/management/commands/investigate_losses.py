@@ -13,18 +13,18 @@ tz = timezone.get_current_timezone()
 
 COMPROMISED_ADDRESSES = [
     'SSajkovCPXwdw46nyJ7vpTDkwtRZJzyY2z',
-    'SNf4uyshit1fj8dWKVxHsKTgTrNR61RskY',
-    'SQTHenWRCF7tZQb5RQAbf3pVYN3Jq5RET4',
-    'ShGVUEJpyZBTgK6V5ZzBorv899R1LP7pqm',
-    'SNdbH9sUJ8z33iE8oNBCwCLfwP9tafyZh3',
-    'Sb84GHDPxy1dzE4VttDTrLwYLzLw4hEDUV',
-    'SUgGG6PYXeoXtrUU85rViuWbxsVczwQX7i',
-    'SRcyHX5JE1tprmtUNswHFsgWqwciwkqigk',
-    'SMv2C8x41mtkZvv5wNejdqSsBQPPTfPEDj',
-    'SQGuknAk53MpBMy9fuX632Kqi8FWoNMQ2v',
-    'SYrndApJNq5JrXGu83NQuzb3PHQoaeEwx8',
-    'SXQcdc5THvdUAdfmK4NEYQpvqANwz4iBHg',
-    'SeTPb7fj6PLn2E4aMa5TbR83Pw6MSs37fM',
+    # 'SNf4uyshit1fj8dWKVxHsKTgTrNR61RskY',
+    # 'SQTHenWRCF7tZQb5RQAbf3pVYN3Jq5RET4',
+    # 'ShGVUEJpyZBTgK6V5ZzBorv899R1LP7pqm',
+    # 'SNdbH9sUJ8z33iE8oNBCwCLfwP9tafyZh3',
+    # 'Sb84GHDPxy1dzE4VttDTrLwYLzLw4hEDUV',
+    # 'SUgGG6PYXeoXtrUU85rViuWbxsVczwQX7i',
+    # 'SRcyHX5JE1tprmtUNswHFsgWqwciwkqigk',
+    # 'SMv2C8x41mtkZvv5wNejdqSsBQPPTfPEDj',
+    # 'SQGuknAk53MpBMy9fuX632Kqi8FWoNMQ2v',
+    # 'SYrndApJNq5JrXGu83NQuzb3PHQoaeEwx8',
+    # 'SXQcdc5THvdUAdfmK4NEYQpvqANwz4iBHg',
+    # 'SeTPb7fj6PLn2E4aMa5TbR83Pw6MSs37fM',
 ]
 
 TARGET_ADDRESSES = [
@@ -79,7 +79,7 @@ class Command(BaseCommand):
 
         # add the Tx to the nodes
         if not any(node['id'] == tx.tx_id[:6] for node in nodes):
-            nodes.append({'id': tx.tx_id[:6], 'label': tx.tx_id})
+            nodes.append({'id': tx.tx_id[:6], 'label': tx.tx_id, 'hidden': True})
 
         address_inputs = tx.address_inputs
         for input_address in address_inputs:
@@ -88,12 +88,15 @@ class Command(BaseCommand):
             if not any(node['id'] == input_address for node in nodes):  # noqa
                 nodes.append({
                     'id': input_address,
-                    'label': input_address
+                    'label': input_address,
+                    'color': 'red' if input_address in TARGET_ADDRESSES else 'blue',
+                    'shape': 'square'
                 })
             edges.append({
                 'from': input_address,
                 'to': tx.tx_id[:6],
-                'value': address_inputs.get(input_address, 0) / 100000000
+                'value': address_inputs.get(input_address, 0) / 100000000,
+                'arrows': 'middle'
             })
 
         address_outputs = tx.address_outputs
@@ -103,20 +106,24 @@ class Command(BaseCommand):
             if not any(node['id'] == output_address for node in nodes):  # noqa
                 nodes.append({
                     'id': output_address,
-                    'label': output_address
+                    'label': output_address,
+                    'color': 'red' if output_address in TARGET_ADDRESSES else 'blue',
+                    'shape': 'square'
                 })
             edges.append({
                 'from': tx.tx_id[:6],
                 'to': output_address,
-                'value': address_outputs.get(output_address, 0) / 100000000
+                'value': address_outputs.get(output_address, 0) / 100000000,
+                'arrows': 'middle',
+                'title': tx.time
             })
 
-        for tx_output in tx.outputs.all():
-            try:
-                if tx_output.input:
-                    self.handle_tx(tx_output.input.transaction)
-            except TxInput.DoesNotExist:
-                pass
+        # for tx_output in tx.outputs.all():
+        #     try:
+        #         if tx_output.input:
+        #             self.handle_tx(tx_output.input.transaction)
+        #     except TxInput.DoesNotExist:
+        #         pass
 
     def handle(self, *args, **options):
         """
@@ -128,7 +135,12 @@ class Command(BaseCommand):
         for address in COMPROMISED_ADDRESSES:
             logger.info('working on {}'.format(address))
             # add the address to the nodes
-            nodes.append({'id': address, 'label': address})
+            nodes.append({
+                'id': address,
+                'label': address,
+                'color': 'green',
+                'shape': 'square'
+            })
             a = Address.objects.get(address=address)
             txs = self.get_transactions(a)
 
