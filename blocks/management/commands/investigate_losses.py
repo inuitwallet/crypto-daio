@@ -274,3 +274,8 @@ class Command(BaseCommand):
                             'to': tx_output.address,
                             'value': tx_output.value
                         })
+            print(nodes)
+            print(edges)
+
+        print(nodes)
+        print(edges)
