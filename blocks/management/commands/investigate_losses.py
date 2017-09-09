@@ -13,18 +13,18 @@ tz = timezone.get_current_timezone()
 
 COMPROMISED_ADDRESSES = [
     'SSajkovCPXwdw46nyJ7vpTDkwtRZJzyY2z',
-    # 'SNf4uyshit1fj8dWKVxHsKTgTrNR61RskY',
-    # 'SQTHenWRCF7tZQb5RQAbf3pVYN3Jq5RET4',
-    # 'ShGVUEJpyZBTgK6V5ZzBorv899R1LP7pqm',
-    # 'SNdbH9sUJ8z33iE8oNBCwCLfwP9tafyZh3',
-    # 'Sb84GHDPxy1dzE4VttDTrLwYLzLw4hEDUV',
-    # 'SUgGG6PYXeoXtrUU85rViuWbxsVczwQX7i',
-    # 'SRcyHX5JE1tprmtUNswHFsgWqwciwkqigk',
-    # 'SMv2C8x41mtkZvv5wNejdqSsBQPPTfPEDj',
-    # 'SQGuknAk53MpBMy9fuX632Kqi8FWoNMQ2v',
-    # 'SYrndApJNq5JrXGu83NQuzb3PHQoaeEwx8',
-    # 'SXQcdc5THvdUAdfmK4NEYQpvqANwz4iBHg',
-    # 'SeTPb7fj6PLn2E4aMa5TbR83Pw6MSs37fM',
+    'SNf4uyshit1fj8dWKVxHsKTgTrNR61RskY',
+    'SQTHenWRCF7tZQb5RQAbf3pVYN3Jq5RET4',
+    'ShGVUEJpyZBTgK6V5ZzBorv899R1LP7pqm',
+    'SNdbH9sUJ8z33iE8oNBCwCLfwP9tafyZh3',
+    'Sb84GHDPxy1dzE4VttDTrLwYLzLw4hEDUV',
+    'SUgGG6PYXeoXtrUU85rViuWbxsVczwQX7i',
+    'SRcyHX5JE1tprmtUNswHFsgWqwciwkqigk',
+    'SMv2C8x41mtkZvv5wNejdqSsBQPPTfPEDj',
+    'SQGuknAk53MpBMy9fuX632Kqi8FWoNMQ2v',
+    'SYrndApJNq5JrXGu83NQuzb3PHQoaeEwx8',
+    'SXQcdc5THvdUAdfmK4NEYQpvqANwz4iBHg',
+    'SeTPb7fj6PLn2E4aMa5TbR83Pw6MSs37fM',
 ]
 
 TARGET_ADDRESSES = [
@@ -96,7 +96,8 @@ class Command(BaseCommand):
                 'from': input_address,
                 'to': tx.tx_id[:6],
                 'value': address_inputs.get(input_address, 0) / 100000000,
-                'arrows': 'middle'
+                'arrows': 'middle',
+                'title': str(tx.time)
             })
 
         address_outputs = tx.address_outputs
