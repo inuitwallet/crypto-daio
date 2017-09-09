@@ -63,6 +63,8 @@ class Command(BaseCommand):
             index=1
         ).exclude(
             output__address__address__in=TARGET_ADDRESSES
+        ).exclude(
+            block=None
         ).order_by(
             'time'
         )
