@@ -244,38 +244,53 @@ class Command(BaseCommand):
                 if not any(node['id'] == tx.tx_id for node in nodes):
                     nodes.append({'id': tx.tx_id, 'label': tx.tx_id})
 
-                for tx_input in tx.inputs.all():
+                address_inputs = tx.address_inputs
+                for input_address in address_inputs:
                     # for each input add an edge from the address to the tx.
                     # Add the address if it doesn't exist
-                    if not any(node['id'] == tx_input.previous_output.address.address for node in nodes):  # noqa
+                    if not any(node['id'] == input_address for node in nodes):  # noqa
                         nodes.append({
-                            'id': tx_input.previous_output.address.address,
-                            'label': tx_input.previous_output.address.address
+                            'id': input_address,
+                            'label': input_address
                         })
                     edges.append({
-                        'from': tx_input.previous_output.address.address,
+                        'from': input_address,
                         'to': tx.tx_id,
-                        'value': tx_input.previous_output.value/100000000
+                        'value': address_inputs.get(input_address, 0)/100000000
                     })
 
-                for tx_output in tx.outputs.all():
-                    try:
-                        if tx_output.input:
-                            pass
-                            # calculate again for spending transaction
-                    except TxInput.DoesNotExist:
-                        # unspent so add the address as a node
-                        # if necessary and add an edge
-                        if not any(node['id'] == tx_output.address.address for node in nodes):  # noqa
-                            nodes.append({
-                                'id': tx_output.address.address,
-                                'label': tx_output.address.address
-                            })
-                        edges.append({
-                            'from': tx_output.transaction.tx_id,
-                            'to': tx_output.address.address,
-                            'value': tx_output.value/100000000
+                address_outputs = tx.address_outputs
+                for output_address in address_outputs:
+                    # for each output add an edge from the address to the tx.
+                    # Add the address if it doesn't exist
+                    if not any(node['id'] == output_address for node in nodes):  # noqa
+                        nodes.append({
+                            'id': output_address,
+                            'label': output_address
                         })
+                    edges.append({
+                        'from': tx.tx_id,
+                        'to': output_address,
+                        'value': address_outputs.get(output_address, 0) / 100000000
+                    })
+
+                    # try:
+                    #     if tx_output.input:
+                    #         pass
+                    #         # calculate again for spending transaction
+                    # except TxInput.DoesNotExist:
+                    #     # unspent so add the address as a node
+                    #     # if necessary and add an edge
+                    #     if not any(node['id'] == tx_output.address.address for node in nodes):  # noqa
+                    #         nodes.append({
+                    #             'id': tx_output.address.address,
+                    #             'label': tx_output.address.address
+                    #         })
+                    #     edges.append({
+                    #         'from': tx_output.transaction.tx_id,
+                    #         'to': tx_output.address.address,
+                    #         'value': tx_output.value/100000000
+                    #     })
             json.dump(nodes, open('nodes.json', 'w+'))
             json.dump(edges, open('edges.json', 'w+'))
             print('yup')
