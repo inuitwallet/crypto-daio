@@ -1,4 +1,5 @@
 import csv
+import json
 import logging
 
 from django.core.management import BaseCommand
@@ -247,11 +248,11 @@ class Command(BaseCommand):
                     # Add the address if it doesn't exist
                     if not any(node['id'] == tx_input.previous_output.address for node in nodes):  # noqa
                         nodes.append({
-                            'id': tx_input.previous_output.address,
-                            'label': tx_input.previous_output.address
+                            'id': tx_input.previous_output.address.address,
+                            'label': tx_input.previous_output.address.address
                         })
                     edges.append({
-                        'from': tx_input.previous_output.address,
+                        'from': tx_input.previous_output.address.address,
                         'to': tx.tx_id,
                         'value': tx_input.previous_output.value
                     })
@@ -259,23 +260,24 @@ class Command(BaseCommand):
                 for tx_output in tx.outputs.all():
                     try:
                         if tx_output.input:
-                            logger.info('spent')
+                            pass
                             # calculate again for spending transaction
                     except TxInput.DoesNotExist:
                         # unspent so add the address as a node
                         # if necessary and add an edge
-                        if not any(node['id'] == tx_output.address for node in nodes):
+                        if not any(node['id'] == tx_output.address.address for node in nodes):  # noqa
                             nodes.append({
-                                'id': tx_output.address,
-                                'label': tx_output.address
+                                'id': tx_output.address.address,
+                                'label': tx_output.address.address
                             })
                         edges.append({
                             'from': tx_output.transaction.tx_id,
-                            'to': tx_output.address,
+                            'to': tx_output.address.address,
                             'value': tx_output.value
                         })
-            print(nodes)
-            print(edges)
+            json.dump(nodes, open('nodes.json', 'w+'))
+            json.dump(edges, open('edges.json', 'w+'))
+            print('yup')
 
         print(nodes)
         print(edges)
