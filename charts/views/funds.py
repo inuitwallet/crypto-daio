@@ -15,7 +15,7 @@ class Funds(View):
                 open(
                     os.path.join(
                         settings.BASE_DIR,
-                        'charts/data/nodes_SQTHenWRCF7tZQb5RQAbf3pVYN3Jq5RET4.json'
+                        'charts/data/nodes.json'
                     )
                 )
             )
@@ -25,7 +25,7 @@ class Funds(View):
                 open(
                     os.path.join(
                         settings.BASE_DIR,
-                        'charts/data/edges_SQTHenWRCF7tZQb5RQAbf3pVYN3Jq5RET4.json'
+                        'charts/data/edges.json'
                     )
                 )
             )

@@ -152,6 +152,8 @@ class Command(BaseCommand):
                         output_totals['spent'][tx_output.input.transaction] = 0
                     output_totals['spent'][tx_output.input.transaction] += tx_output.value
             except TxInput.DoesNotExist:
+                if not tx_output.address:
+                    continue
                 if tx_output.address.address not in output_totals['unspent']:
                     output_totals['unspent'][tx_output.address.address] = 0
                 output_totals['unspent'][tx_output.address.address] += tx_output.value
@@ -209,29 +211,46 @@ class Command(BaseCommand):
                     'color': '#89ff91',
                 })
 
-        for address in COMPROMISED_ADDRESSES:
-            logger.info('working on {}'.format(address))
-            a = Address.objects.get(address=address)
-            txs = self.get_transactions(a)
+        try:
+            for address in COMPROMISED_ADDRESSES:
+                logger.info('working on {}'.format(address))
+                a = Address.objects.get(address=address)
+                txs = self.get_transactions(a)
 
-            for tx in txs:
-                self.handle_tx(tx)
+                for tx in txs:
+                    self.handle_tx(tx)
 
             json.dump(nodes, open(
                 os.path.join(
                     settings.BASE_DIR,
-                    'charts/data/nodes_{}.json'.format(address)
+                    'charts/data/nodes.json'
                 ),
                 'w+'
             ))
             json.dump(edges, open(
                 os.path.join(
                     settings.BASE_DIR,
-                    'charts/data/edges_{}.json'.format(address)
+                    'charts/data/edges.json'
                 ),
                 'w+'
             ))
 
-            logger.info('Finished {}'.format(address))
+            logger.info('Finished')
 
-        logger.info('Finished')
+        except KeyboardInterrupt:
+            json.dump(nodes, open(
+                os.path.join(
+                    settings.BASE_DIR,
+                    'charts/data/nodes.json'
+                ),
+                'w+'
+            ))
+            json.dump(edges, open(
+                os.path.join(
+                    settings.BASE_DIR,
+                    'charts/data/edges.json'
+                ),
+                'w+'
+            ))
+
+            logger.info('Written')
