@@ -28,14 +28,7 @@
         nodes: nodes,
         edges: edges
     };
-    var options = {
-        physics: {
-            enabled: true,
-            stabilization: {
-                iterations: 50
-            }
-        }
-    };
+    var options = {};
 
     // initialize your network!
     var network = new vis.Network(container, data, options);
