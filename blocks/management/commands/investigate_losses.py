@@ -96,7 +96,7 @@ class Command(BaseCommand):
                 'id': tx.tx_id[:6],
                 'shape': 'dot',
                 'title': '{}'.format(tx),
-                'size': 1
+                'size': 3
             })
 
         address_inputs = tx.address_inputs
@@ -155,7 +155,7 @@ class Command(BaseCommand):
                     'id': transaction.tx_id[:6],
                     'shape': 'dot',
                     'title': '{}'.format(tx),
-                    'size': 1
+                    'size': 3
                 })
             edges.append({
                 'from': tx.tx_id[:6],
@@ -190,9 +190,7 @@ class Command(BaseCommand):
                 txs = self.get_transactions(a)
 
                 for tx in txs:
-                    logger.info(tx.total_output)
-
-                for tx in txs:
+                    logger.info('handling direct transaction {}'.format(tx))
                     self.handle_tx(tx)
 
             json.dump(nodes, open(
