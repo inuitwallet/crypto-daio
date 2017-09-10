@@ -105,7 +105,7 @@ class Command(BaseCommand):
             # for each input add an edge from the address to the tx.
             # Add the address if it doesn't exist
             if not any(node['id'] == input_address for node in nodes):  # noqa
-                balance = in_addr.balance
+                balance = in_addr.balance / 100000000
                 nodes.append({
                     'id': input_address,
                     'label': input_address,
@@ -131,7 +131,7 @@ class Command(BaseCommand):
             # for each output add an edge from the address to the tx.
             # Add the address if it doesn't exist
             if not any(node['id'] == output_address for node in nodes):
-                balance = out_addr.balance
+                balance = out_addr.balance / 100000000
                 nodes.append({
                     'id': output_address,
                     'label': output_address,
@@ -169,7 +169,7 @@ class Command(BaseCommand):
         for address in COMPROMISED_ADDRESSES:
             logger.info('adding origin node {}'.format(address))
             a = Address.objects.get(address=address)
-            balance = a.balance
+            balance = a.balance / 100000000
             if not any(node['id'] == address for node in nodes):
                 nodes.append({
                     'id': address,

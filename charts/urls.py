@@ -22,4 +22,9 @@ urlpatterns = [
         LiquidityOperations.as_view(),
         name='liquidity_operations'
     ),
+    url(
+        r'^funds$',
+        Funds.as_view(),
+        name='funds'
+    )
 ]
