@@ -98,7 +98,8 @@ class Command(BaseCommand):
         if not any(node['id'] == tx.tx_id[:6] for node in nodes):
             nodes.append({
                 'id': tx.tx_id[:6],
-                'shape': 'square'
+                'shape': 'dot',
+                'title': '{}'.format(tx)
             })
 
         address_inputs = tx.address_inputs
@@ -115,34 +116,8 @@ class Command(BaseCommand):
                 'from': input_address,
                 'to': tx.tx_id[:6],
                 'value': address_inputs.get(input_address, 0) / 100000000,
-                'title': 'block {} > {} NSR'.format(
-                    tx.block.height,
-                    address_inputs.get(input_address, 0) / 100000000
-                ),
                 'color': 'grey',
             })
-
-        # address_outputs = tx.address_outputs
-        # for output_address in address_outputs:
-        #     # for each output add an edge from the address to the tx.
-        #     # Add the address if it doesn't exist
-        #     if not any(node['id'] == output_address for node in nodes):
-        #         nodes.append({
-        #             'id': output_address,
-        #             'label': output_address,
-        #             'color': '#dd6161' if output_address in TARGET_ADDRESSES else '#92d9e5',  # noqa
-        #         })
-        #     edges.append({
-        #         'from': tx.tx_id[:6],
-        #         'to': output_address,
-        #         'value': address_outputs.get(output_address, 0) / 100000000,
-        #         'arrows': 'middle',
-        #         'color': 'grey',
-        #         'title': 'block {} > {} NSR'.format(
-        #             tx.block.height,
-        #             address_outputs.get(output_address, 0) / 100000000
-        #         ),
-        #     })
 
         output_totals = {'spent': {}, 'unspent': {}}
         for tx_output in tx.outputs.all():
@@ -169,10 +144,6 @@ class Command(BaseCommand):
                 'from': tx.tx_id[:6],
                 'to': address,
                 'value': output_totals['unspent'].get(address, 0) / 100000000,
-                'title': 'block {} > {} NSR'.format(
-                    tx.block.height,
-                    output_totals['unspent'].get(address, 0) / 100000000
-                ),
                 'color': 'grey',
             })
 
@@ -181,16 +152,13 @@ class Command(BaseCommand):
             if not any(node['id'] == transaction.tx_id[:6] for node in nodes):
                 nodes.append({
                     'id': transaction.tx_id[:6],
-                    'shape': 'square'
+                    'shape': 'dot',
+                    'title': '{}'.format(tx)
                 })
             edges.append({
                 'from': tx.tx_id[:6],
                 'to': transaction.tx_id[:6],
                 'value': output_totals['spent'].get(transaction, 0) / 100000000,
-                'title': 'block {} > {} NSR'.format(
-                    tx.block.height,
-                    output_totals['spent'].get(transaction, 0) / 100000000
-                ),
                 'color': 'grey',
             })
             self.handle_tx(transaction)
