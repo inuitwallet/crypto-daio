@@ -111,7 +111,6 @@ class Command(BaseCommand):
                     'label': input_address,
                     'color': '#dd6161' if input_address in TARGET_ADDRESSES else '#92d9e5',  # noqa
                     'value': balance,
-                    'mass': balance,
                     'shape': 'circle'
                 })
             edges.append({
@@ -138,7 +137,6 @@ class Command(BaseCommand):
                     'label': output_address,
                     'color': '#dd6161' if output_address in TARGET_ADDRESSES else '#92d9e5',  # noqa
                     'value': balance,
-                    'mass': balance,
                     'shape': 'circle'
                 })
             edges.append({
@@ -179,7 +177,6 @@ class Command(BaseCommand):
                     'color': '#89ff91',
                     'value': balance,
                     'shape': 'circle',
-                    'mass': balance
                 })
 
         for address in COMPROMISED_ADDRESSES:
