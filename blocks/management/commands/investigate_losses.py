@@ -123,35 +123,40 @@ class Command(BaseCommand):
                 'color': 'grey',
             })
 
-        address_outputs = tx.address_outputs
-        for output_address in address_outputs:
-            # for each output add an edge from the address to the tx.
-            # Add the address if it doesn't exist
-            if not any(node['id'] == output_address for node in nodes):
-                nodes.append({
-                    'id': output_address,
-                    'label': output_address,
-                    'color': '#dd6161' if output_address in TARGET_ADDRESSES else '#92d9e5',  # noqa
-                })
-            edges.append({
-                'from': tx.tx_id[:6],
-                'to': output_address,
-                'value': address_outputs.get(output_address, 0) / 100000000,
-                'arrows': 'middle',
-                'color': 'grey',
-                'title': 'block {} > {} NSR'.format(
-                    tx.block.height,
-                    address_outputs.get(output_address, 0) / 100000000
-                ),
-            })
+        # address_outputs = tx.address_outputs
+        # for output_address in address_outputs:
+        #     # for each output add an edge from the address to the tx.
+        #     # Add the address if it doesn't exist
+        #     if not any(node['id'] == output_address for node in nodes):
+        #         nodes.append({
+        #             'id': output_address,
+        #             'label': output_address,
+        #             'color': '#dd6161' if output_address in TARGET_ADDRESSES else '#92d9e5',  # noqa
+        #         })
+        #     edges.append({
+        #         'from': tx.tx_id[:6],
+        #         'to': output_address,
+        #         'value': address_outputs.get(output_address, 0) / 100000000,
+        #         'arrows': 'middle',
+        #         'color': 'grey',
+        #         'title': 'block {} > {} NSR'.format(
+        #             tx.block.height,
+        #             address_outputs.get(output_address, 0) / 100000000
+        #         ),
+        #     })
 
-        # for tx_output in tx.outputs.all():
-        #     try:
-        #         if tx_output.input:
-        #             logger.info('found spent output')
-        #             self.handle_tx(tx_output.input.transaction)
-        #     except TxInput.DoesNotExist:
-        #         pass
+        output_totals = {'spent': [], 'unspent': {}}
+        for tx_output in tx.outputs.all():
+            try:
+                if tx_output.input:
+                    if tx_output.input.transaction not in output_totals['spent']:
+                        output_totals['spent'].append(tx_output.input.transaction)
+            except TxInput.DoesNotExist:
+                if tx_output.address.address not in output_totals['unspent']:
+                    output_totals['unspent'][tx_output.address.address] = 0
+                output_totals['unspent'][tx_output.address.address] += tx_output.value
+
+        print(output_totals)
 
     def handle(self, *args, **options):
         """
@@ -162,7 +167,6 @@ class Command(BaseCommand):
         """
         for address in COMPROMISED_ADDRESSES:
             logger.info('adding origin node {}'.format(address))
-            a = Address.objects.get(address=address)
             if not any(node['id'] == address for node in nodes):
                 nodes.append({
                     'id': address,
