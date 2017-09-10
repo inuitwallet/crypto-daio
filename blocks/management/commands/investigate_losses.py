@@ -105,19 +105,16 @@ class Command(BaseCommand):
             # for each input add an edge from the address to the tx.
             # Add the address if it doesn't exist
             if not any(node['id'] == input_address for node in nodes):  # noqa
-                balance = in_addr.balance / 100000000
                 nodes.append({
                     'id': input_address,
                     'label': input_address,
                     'color': '#dd6161' if input_address in TARGET_ADDRESSES else '#92d9e5',  # noqa
-                    'value': balance,
                     'shape': 'circle'
                 })
             edges.append({
                 'from': input_address,
                 'to': tx.tx_id[:6],
                 'value': address_inputs.get(input_address, 0) / 100000000,
-                'arrows': 'middle',
                 'title': 'block {} > {} NSR'.format(
                     tx.block.height,
                     address_inputs.get(input_address, 0) / 100000000
