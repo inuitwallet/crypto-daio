@@ -1,6 +1,9 @@
 import json
 import logging
 
+import os
+
+from django.conf import settings
 from django.core.management import BaseCommand
 from django.utils import timezone
 
@@ -108,7 +111,6 @@ class Command(BaseCommand):
                     'id': input_address,
                     'label': input_address,
                     'color': '#dd6161' if input_address in TARGET_ADDRESSES else '#92d9e5',  # noqa
-                    'shape': 'circle'
                 })
             edges.append({
                 'from': input_address,
@@ -130,7 +132,6 @@ class Command(BaseCommand):
                     'id': output_address,
                     'label': output_address,
                     'color': '#dd6161' if output_address in TARGET_ADDRESSES else '#92d9e5',  # noqa
-                    'shape': 'circle'
                 })
             edges.append({
                 'from': tx.tx_id[:6],
@@ -167,7 +168,6 @@ class Command(BaseCommand):
                     'id': address,
                     'label': address,
                     'color': '#89ff91',
-                    'shape': 'circle',
                 })
 
         for address in COMPROMISED_ADDRESSES:
@@ -178,8 +178,20 @@ class Command(BaseCommand):
             for tx in txs:
                 self.handle_tx(tx)
 
-            json.dump(nodes, open('nodes_{}.json'.format(address), 'w+'))
-            json.dump(edges, open('edges_{}.json'.format(address), 'w+'))
+            json.dump(nodes, open(
+                os.path.join(
+                    settings.BASE_DIR,
+                    'charts/data/nodes_{}.json'.format(address)
+                ),
+                'w+'
+            ))
+            json.dump(edges, open(
+                os.path.join(
+                    settings.BASE_DIR,
+                    'charts/data/edges_{}.json'.format(address)
+                ),
+                'w+'
+            ))
 
             logger.info('Finished {}'.format(address))
 
