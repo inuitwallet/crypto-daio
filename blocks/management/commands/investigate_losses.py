@@ -60,7 +60,9 @@ scanned_transactions = []
 class Command(BaseCommand):
     @staticmethod
     def get_transactions(address):
-        txs = Transaction.objects.filter(
+        txs = Transaction.objects.distinct(
+            'tx_id'
+        ).filter(
             input__previous_output__address=address
         ).exclude(
             index=1
@@ -69,16 +71,10 @@ class Command(BaseCommand):
         ).exclude(
             block=None
         ).order_by(
-            'time'
+            'tx_id'
         )
 
-        distinct = []
-        for tx in txs:
-            if tx in distinct:
-                continue
-            distinct.append(tx)
-
-        return distinct
+        return sorted(txs, key=lambda tx: tx.total_output)
 
     def handle_tx(self, tx):
         if tx.tx_id[:6] in scanned_transactions:
@@ -192,6 +188,9 @@ class Command(BaseCommand):
                 logger.info('working on {}'.format(address))
                 a = Address.objects.get(address=address)
                 txs = self.get_transactions(a)
+
+                for tx in txs:
+                    logger.info(tx.total_output)
 
                 for tx in txs:
                     self.handle_tx(tx)
