@@ -101,7 +101,6 @@ class Command(BaseCommand):
 
         address_inputs = tx.address_inputs
         for input_address in address_inputs:
-            in_addr = Address.objects.get(address=input_address)
             # for each input add an edge from the address to the tx.
             # Add the address if it doesn't exist
             if not any(node['id'] == input_address for node in nodes):  # noqa
@@ -124,16 +123,13 @@ class Command(BaseCommand):
 
         address_outputs = tx.address_outputs
         for output_address in address_outputs:
-            out_addr = Address.objects.get(address=output_address)
             # for each output add an edge from the address to the tx.
             # Add the address if it doesn't exist
             if not any(node['id'] == output_address for node in nodes):
-                balance = out_addr.balance / 100000000
                 nodes.append({
                     'id': output_address,
                     'label': output_address,
                     'color': '#dd6161' if output_address in TARGET_ADDRESSES else '#92d9e5',  # noqa
-                    'value': balance,
                     'shape': 'circle'
                 })
             edges.append({
@@ -166,13 +162,11 @@ class Command(BaseCommand):
         for address in COMPROMISED_ADDRESSES:
             logger.info('adding origin node {}'.format(address))
             a = Address.objects.get(address=address)
-            balance = a.balance / 100000000
             if not any(node['id'] == address for node in nodes):
                 nodes.append({
                     'id': address,
                     'label': address,
                     'color': '#89ff91',
-                    'value': balance,
                     'shape': 'circle',
                 })
 
