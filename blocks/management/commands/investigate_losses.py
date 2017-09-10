@@ -105,11 +105,14 @@ class Command(BaseCommand):
             # for each input add an edge from the address to the tx.
             # Add the address if it doesn't exist
             if not any(node['id'] == input_address for node in nodes):  # noqa
+                balance = in_addr.balance
                 nodes.append({
                     'id': input_address,
                     'label': input_address,
                     'color': '#dd6161' if input_address in TARGET_ADDRESSES else '#92d9e5',  # noqa
-                    'value': in_addr.balance
+                    'value': balance,
+                    'mass': balance,
+                    'shape': 'circle'
                 })
             edges.append({
                 'from': input_address,
@@ -129,11 +132,14 @@ class Command(BaseCommand):
             # for each output add an edge from the address to the tx.
             # Add the address if it doesn't exist
             if not any(node['id'] == output_address for node in nodes):
+                balance = out_addr.balance
                 nodes.append({
                     'id': output_address,
                     'label': output_address,
                     'color': '#dd6161' if output_address in TARGET_ADDRESSES else '#92d9e5',  # noqa
-                    'value': out_addr.balance
+                    'value': balance,
+                    'mass': balance,
+                    'shape': 'circle'
                 })
             edges.append({
                 'from': tx.tx_id[:6],
@@ -165,12 +171,15 @@ class Command(BaseCommand):
         for address in COMPROMISED_ADDRESSES:
             logger.info('adding origin node {}'.format(address))
             a = Address.objects.get(address=address)
+            balance = a.balance
             if not any(node['id'] == address for node in nodes):
                 nodes.append({
                     'id': address,
                     'label': address,
                     'color': '#89ff91',
-                    'value': a.balance
+                    'value': balance,
+                    'shape': 'circle',
+                    'mass': balance
                 })
 
         for address in COMPROMISED_ADDRESSES:
