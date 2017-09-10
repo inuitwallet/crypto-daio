@@ -148,9 +148,9 @@ class Command(BaseCommand):
         for tx_output in tx.outputs.all():
             try:
                 if tx_output.input:
-                    if tx_output.input.transaction.tx_id[:6] not in output_totals['spent']:  # noqa
-                        output_totals['spent'][tx_output.input.transaction.tx_id[:6]] = 0
-                    output_totals['spent'][tx_output.input.transaction.tx_id[:6]] += tx_output.value  # noqa
+                    if tx_output.input.transaction not in output_totals['spent']:
+                        output_totals['spent'][tx_output.input.transaction] = 0
+                    output_totals['spent'][tx_output.input.transaction] += tx_output.value
             except TxInput.DoesNotExist:
                 if tx_output.address.address not in output_totals['unspent']:
                     output_totals['unspent'][tx_output.address.address] = 0
@@ -176,14 +176,14 @@ class Command(BaseCommand):
 
         for transaction in output_totals['spent']:
             # add the Tx to the nodes
-            if not any(node['id'] == transaction for node in nodes):
+            if not any(node['id'] == transaction.tx_id[:6] for node in nodes):
                 nodes.append({
-                    'id': transaction,
+                    'id': transaction.tx_id[:6],
                     'shape': 'square'
                 })
             edges.append({
                 'from': tx.tx_id[:6],
-                'to': transaction,
+                'to': transaction.tx_id[:6],
                 'value': output_totals['spent'].get(transaction, 0) / 100000000,
                 'title': 'block {} > {} NSR'.format(
                     tx.block.height,
@@ -191,6 +191,7 @@ class Command(BaseCommand):
                 ),
                 'color': 'grey',
             })
+            self.handle_tx(transaction)
 
     def handle(self, *args, **options):
         """
