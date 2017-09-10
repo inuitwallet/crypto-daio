@@ -99,7 +99,7 @@ class Command(BaseCommand):
             nodes.append({
                 'id': tx.tx_id[:6],
                 'label': tx.tx_id,
-                'hidden': True,
+                'shape': 'square'
             })
 
         address_inputs = tx.address_inputs
