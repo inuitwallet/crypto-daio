@@ -145,12 +145,13 @@ class Command(BaseCommand):
         #         ),
         #     })
 
-        output_totals = {'spent': [], 'unspent': {}}
+        output_totals = {'spent': {}, 'unspent': {}}
         for tx_output in tx.outputs.all():
             try:
                 if tx_output.input:
                     if tx_output.input.transaction not in output_totals['spent']:
-                        output_totals['spent'].append(tx_output.input.transaction)
+                        output_totals['spent'][tx_output.input.transaction] = 0
+                    output_totals['spent'][tx_output.input.transaction] += tx_output.value
             except TxInput.DoesNotExist:
                 if tx_output.address.address not in output_totals['unspent']:
                     output_totals['unspent'][tx_output.address.address] = 0
