@@ -163,6 +163,7 @@ class Command(BaseCommand):
         :return:
         """
         for address in COMPROMISED_ADDRESSES:
+            logger.info('adding origin node {}'.format(address))
             a = Address.objects.get(address=address)
             if not any(node['id'] == address for node in nodes):
                 nodes.append({
