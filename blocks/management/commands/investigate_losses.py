@@ -99,7 +99,8 @@ class Command(BaseCommand):
             nodes.append({
                 'id': tx.tx_id[:6],
                 'shape': 'dot',
-                'title': '{}'.format(tx)
+                'title': '{}'.format(tx),
+                'size': 5
             })
 
         address_inputs = tx.address_inputs
@@ -116,6 +117,7 @@ class Command(BaseCommand):
                 'from': input_address,
                 'to': tx.tx_id[:6],
                 'value': address_inputs.get(input_address, 0) / 100000000,
+                'title': address_inputs.get(input_address, 0) / 100000000,
                 'color': 'grey',
             })
 
@@ -144,6 +146,7 @@ class Command(BaseCommand):
                 'from': tx.tx_id[:6],
                 'to': address,
                 'value': output_totals['unspent'].get(address, 0) / 100000000,
+                'title': output_totals['unspent'].get(address, 0) / 100000000,
                 'color': 'grey',
             })
 
@@ -153,12 +156,14 @@ class Command(BaseCommand):
                 nodes.append({
                     'id': transaction.tx_id[:6],
                     'shape': 'dot',
-                    'title': '{}'.format(tx)
+                    'title': '{}'.format(tx),
+                    'size': 5
                 })
             edges.append({
                 'from': tx.tx_id[:6],
                 'to': transaction.tx_id[:6],
                 'value': output_totals['spent'].get(transaction, 0) / 100000000,
+                'title': output_totals['spent'].get(transaction, 0) / 100000000,
                 'color': 'grey',
             })
             self.handle_tx(transaction)
