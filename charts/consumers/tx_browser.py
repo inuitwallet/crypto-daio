@@ -177,8 +177,6 @@ def recalc_browser(message_dict, message):
 
     # otherwise we use the main_node transaction to calculate onward
     else:
-        logger.info('#################         {}'.format(main_node.get('id')))
-        logger.info(Transaction.objects.filter(tx_id=main_node.get('id')))
         tx = Transaction.objects.filter(tx_id=main_node.get('id')).first()
         txs = [tx]
         for output in tx.outputs.all():
@@ -188,7 +186,6 @@ def recalc_browser(message_dict, message):
                         txs.append(output.input.transaction)
             except TxInput.DoesNotExist:
                 pass
-        logger.info(txs)
         for tx in txs:
             nodes, edges, scanned_transactions = handle_tx(
                 tx,
@@ -196,6 +193,9 @@ def recalc_browser(message_dict, message):
                 edges,
                 scanned_transactions
             )
+            logger.info(nodes)
+            logger.info(edges)
+            logger.info(scanned_transactions)
 
     message.reply_channel.send(
         {
