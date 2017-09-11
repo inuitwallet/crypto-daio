@@ -194,7 +194,7 @@ def recalc_browser(message_dict, message):
                 tx,
                 nodes,
                 edges,
-                scanned_transactions,
+                scanned_transactions
             )
 
     message.reply_channel.send(
