@@ -1,4 +1,5 @@
 import json
+import logging
 
 from channels import Group, Channel
 from tenant_schemas.utils import get_tenant_model, tenant_context
@@ -8,6 +9,8 @@ from .ui import (
     get_block_transactions,
 )
 from daio.models import Chain
+
+logger = logging.getLogger(__name__)
 
 
 def get_schema_from_host(message):
@@ -46,7 +49,7 @@ def ws_receive(message):
             return
 
         if message['path'] == '/tx_browser/':
-            print('hello?')
+            logger.error('hello?')
 
 
 def ws_disconnect(message):
