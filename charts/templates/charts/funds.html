@@ -76,9 +76,10 @@
     });
 
     network.on("selectNode", function(e) {
-        for(var node in e.nodes){
+
+        e.nodes.foreach(function(node) {
             console.log(network.getConnectedNodes(node));
-        }
+        });
 
         webSocketBridge.stream('browser').send(
             {
