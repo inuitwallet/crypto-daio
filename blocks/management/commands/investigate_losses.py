@@ -76,7 +76,7 @@ class Command(BaseCommand):
 
         return sorted(txs, key=lambda tx: tx.total_input, reverse=True)
 
-    def handle_tx(self, tx):
+    def handle_tx(self, tx, base_address=None):
         if tx in scanned_transactions:
             return
 
@@ -97,6 +97,14 @@ class Command(BaseCommand):
                 'shape': 'dot',
                 'title': '{}'.format(tx),
                 'size': 3
+            })
+
+        if base_address:
+            edges.append({
+                'from': base_address,
+                'to': tx.tx_id,
+                'color': 'grey',
+                'arrows': 'middle'
             })
 
         address_inputs = tx.address_inputs
@@ -193,7 +201,7 @@ class Command(BaseCommand):
 
                 for tx in txs:
                     logger.info('handling direct transaction {}'.format(tx))
-                    self.handle_tx(tx)
+                    self.handle_tx(tx, address)
 
             json.dump(nodes, open(
                 os.path.join(

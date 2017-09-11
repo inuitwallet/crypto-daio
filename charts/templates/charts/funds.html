@@ -17,7 +17,7 @@
     <script type="text/javascript" src='{% static "channels/js/websocketbridge.js" %}'></script>
 </head>
 <body>
-<div id="mynetwork"></div>
+<div id="tx_browser"></div>
 
 <script type="text/javascript">
     // create an array with nodes
@@ -26,7 +26,7 @@
     var edges = new vis.DataSet({{ edges|safe }});
 
     // create a network
-    var container = document.getElementById('mynetwork');
+    var container = document.getElementById('tx_browser');
 
     // provide the data in the vis format
     var data = {
@@ -65,8 +65,9 @@
 
     webSocketBridge.socket.addEventListener('open', function() {
         webSocketBridge.listen(function(data) {
-            if (data["message_type"] === "block_transaction"){
-                transactions_div.append(data["html"]);
+            if (data["message_type"] === "new_browser"){
+                network.setData(data["nodes"], data["edges"]);
+                network.redraw();
             }
         });
     });
