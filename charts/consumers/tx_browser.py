@@ -4,7 +4,7 @@ logger = logging.getLogger(__name__)
 
 
 def recalc_browser(message_dict, message):
-    '''
+    """
     {
         'stream': 'browser',
         'payload': {
@@ -34,9 +34,9 @@ def recalc_browser(message_dict, message):
     :param message_dict:
     :param message:
     :return:
-    '''
-    edges = message_dict['payload'].get('edges', [])
-    for edge in edges:
-        logger.info(edge)
+    """
+    seed_nodes = message_dict['payload'].get('seed_nodes', [])
+    for node in seed_nodes:
+        logger.info(node)
 
 

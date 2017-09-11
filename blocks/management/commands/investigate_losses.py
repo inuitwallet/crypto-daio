@@ -108,6 +108,7 @@ class Command(BaseCommand):
                     'id': input_address,
                     'label': input_address,
                     'color': '#dd6161' if input_address in TARGET_ADDRESSES else '#92d9e5',  # noqa
+                    'title': 'Address'
                 })
             edges.append({
                 'from': input_address,
@@ -138,6 +139,7 @@ class Command(BaseCommand):
                     'id': address,
                     'label': address,
                     'color': '#dd6161' if address in TARGET_ADDRESSES else '#92d9e5',
+                    'title': 'Address'
                 })
             edges.append({
                 'from': tx.tx_id,
@@ -180,6 +182,7 @@ class Command(BaseCommand):
                     'id': address,
                     'label': address,
                     'color': '#89ff91',
+                    'title': 'Address'
                 })
 
         try:

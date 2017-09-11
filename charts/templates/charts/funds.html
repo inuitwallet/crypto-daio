@@ -77,18 +77,29 @@
 
     network.on("selectNode", function(e) {
 
+        var seed_nodes = new Array();
         e.nodes.forEach(function(node) {
+            var main_node = nodes.get(node);
+            if (main_node.title === 'Address') {
+                seed_nodes.add(main_node.id);
+            } else {
+                seed_nodes.add(main_node.title);
+            }
             network.getConnectedNodes(node, 'from').forEach(function(parent_node) {
                 var this_node = nodes.get(parent_node);
                 console.log(this_node.title);
+                if (this_node.title === 'Address') {
+                    seed_nodes.add(this_node.id);
+                } else {
+                    seed_nodes.add(this_node.title);
+                }
             });
         });
 
         webSocketBridge.stream('browser').send(
             {
                 'host': window.location.hostname,
-                'nodes': e.nodes,
-                'edges': e.edges
+                'seed_nodes': seed_nodes
             }
         );
     });
