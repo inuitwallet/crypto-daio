@@ -24,7 +24,7 @@ def get_address_transactions(address, from_block):
     return sorted(txs, key=lambda tx: tx.total_input, reverse=True)
 
 
-def handle_tx(tx, base_address, nodes, edges, scanned_transactions):
+def handle_tx(tx, nodes, edges, scanned_transactions, base_address=None):
     if tx in scanned_transactions:
         return
 
@@ -169,13 +169,31 @@ def recalc_browser(message_dict, message):
         for tx in txs:
             nodes, edges, scanned_transactions = handle_tx(
                 tx,
-                is_address,
                 nodes,
                 edges,
-                scanned_transactions
+                scanned_transactions,
+                is_address
             )
 
     # otherwise we use the main_node transaction to calculate onward
+    else:
+        tx = Transaction.objects.filter(tx_id=main_node.get('title')).first()
+        txs = [tx]
+        for output in tx.outputs.all():
+            try:
+                if output.input:
+                    txs.append(output.input.transaction)
+            except TxInput.DoesNotExist:
+                pass
+
+        for tx in txs:
+            nodes, edges, scanned_transactions = handle_tx(
+                tx,
+                nodes,
+                edges,
+                scanned_transactions,
+                None
+            )
 
     message.reply_channel.send(
         {
