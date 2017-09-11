@@ -67,6 +67,7 @@
         webSocketBridge.listen(function(data) {
             if (data["message_type"] === "new_browser"){
                 console.log(data["nodes"]);
+                console.log(data["edges"]);
                 network.setData(data["nodes"], data["edges"]);
 {#                network.redraw();#}
             }
