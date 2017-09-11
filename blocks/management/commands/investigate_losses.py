@@ -77,7 +77,7 @@ class Command(BaseCommand):
         return sorted(txs, key=lambda tx: tx.total_input, reverse=True)
 
     def handle_tx(self, tx):
-        if tx.tx_id[:6] in scanned_transactions:
+        if tx.tx_id in scanned_transactions:
             return
 
         if tx.index == 1:
