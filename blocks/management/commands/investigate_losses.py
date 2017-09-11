@@ -76,7 +76,7 @@ class Command(BaseCommand):
 
         return sorted(txs, key=lambda tx: tx.total_input, reverse=True)
 
-    def handle_tx(self, tx):
+    def handle_tx(self, tx, depth):
         if tx.tx_id[:6] in scanned_transactions:
             return
 
@@ -85,6 +85,8 @@ class Command(BaseCommand):
 
         if not tx.block:
             return
+
+        depth += 1
 
         scanned_transactions.append(tx.tx_id[:6])
 
@@ -165,7 +167,8 @@ class Command(BaseCommand):
                 'color': 'grey',
                 'arrows': 'middle'
             })
-            self.handle_tx(transaction)
+            if depth <= 3:
+                self.handle_tx(transaction, depth)
 
     def handle(self, *args, **options):
         """
@@ -191,7 +194,7 @@ class Command(BaseCommand):
 
                 for tx in txs:
                     logger.info('handling direct transaction {}'.format(tx))
-                    self.handle_tx(tx)
+                    self.handle_tx(tx, depth=0)
 
             json.dump(nodes, open(
                 os.path.join(
