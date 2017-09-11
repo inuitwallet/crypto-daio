@@ -36,6 +36,7 @@ def recalc_browser(message_dict, message):
     :return:
     """
     seed_nodes = message_dict['payload'].get('seed_nodes', [])
+    logger.info(seed_nodes)
     for node in seed_nodes:
         logger.info(node)
 
