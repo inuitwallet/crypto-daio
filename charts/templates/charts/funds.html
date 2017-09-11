@@ -81,17 +81,17 @@
         e.nodes.forEach(function(node) {
             var main_node = nodes.get(node);
             if (main_node.title === 'Address') {
-                seed_nodes.add(main_node.id);
+                seed_nodes.push(main_node.id);
             } else {
-                seed_nodes.add(main_node.title);
+                seed_nodes.push(main_node.title);
             }
             network.getConnectedNodes(node, 'from').forEach(function(parent_node) {
                 var this_node = nodes.get(parent_node);
                 console.log(this_node.title);
                 if (this_node.title === 'Address') {
-                    seed_nodes.add(this_node.id);
+                    seed_nodes.push(this_node.id);
                 } else {
-                    seed_nodes.add(this_node.title);
+                    seed_nodes.push(this_node.title);
                 }
             });
         });
