@@ -28,23 +28,7 @@
         nodes: nodes,
         edges: edges
     };
-    var options = {
-        physics: {
-            adaptiveTimestep: true,
-            barnesHut: {
-                gravitationalConstant: -8000,
-                springConstant: 0.04,
-                springLength: 95
-            },
-            stabilization: {
-                iterations: 987
-            }
-        },
-        layout: {
-            randomSeed: 191006,
-            improvedLayout: true
-        }
-    };
+    var options = { };
 
     // initialize your network!
     var network = new vis.Network(container, data, options);
