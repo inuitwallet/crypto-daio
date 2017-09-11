@@ -24,7 +24,7 @@ def get_address_transactions(address, from_block):
     return sorted(txs, key=lambda tx: tx.total_input, reverse=True)
 
 
-def handle_tx(tx, nodes, edges, scanned_transactions, base_address=None):
+def handle_tx(tx, nodes, edges, scanned_transactions):
     if tx in scanned_transactions:
         return
 
@@ -45,14 +45,6 @@ def handle_tx(tx, nodes, edges, scanned_transactions, base_address=None):
             'shape': 'dot',
             'title': '{}'.format(tx),
             'size': 3
-        })
-
-    if base_address:
-        edges.append({
-            'from': base_address,
-            'to': tx.tx_id,
-            'color': 'grey',
-            'arrows': 'middle'
         })
 
     address_inputs = tx.address_inputs
@@ -172,7 +164,6 @@ def recalc_browser(message_dict, message):
                 nodes,
                 edges,
                 scanned_transactions,
-                is_address
             )
 
     # otherwise we use the main_node transaction to calculate onward
