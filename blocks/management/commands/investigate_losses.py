@@ -167,7 +167,7 @@ class Command(BaseCommand):
                 'color': 'grey',
                 'arrows': 'middle'
             })
-            if depth <= 3:
+            if depth <= 1:
                 self.handle_tx(transaction, depth)
 
     def handle(self, *args, **options):
