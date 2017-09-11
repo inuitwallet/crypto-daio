@@ -58,6 +58,10 @@
     network.on("stabilizationIterationsDone", function () {
         network.setOptions( { physics: false } );
     });
+
+    network.on("selectNode", function(e) {
+        console.log(e);
+    });
 </script>
 </body>
 </html>
