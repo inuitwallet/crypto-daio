@@ -184,7 +184,8 @@ def recalc_browser(message_dict, message):
         for output in tx.outputs.all():
             try:
                 if output.input:
-                    txs.append(output.input.transaction)
+                    if output.input.transaction not in txs:
+                        txs.append(output.input.transaction)
             except TxInput.DoesNotExist:
                 pass
         logger.info(txs)
