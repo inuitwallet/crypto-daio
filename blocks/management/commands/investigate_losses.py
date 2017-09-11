@@ -77,7 +77,7 @@ class Command(BaseCommand):
         return sorted(txs, key=lambda tx: tx.total_input, reverse=True)
 
     def handle_tx(self, tx):
-        if tx.tx_id in scanned_transactions:
+        if tx in scanned_transactions:
             return
 
         if tx.index == 1:
@@ -86,7 +86,7 @@ class Command(BaseCommand):
         if not tx.block:
             return
 
-        scanned_transactions.append(tx.tx_id)
+        scanned_transactions.append(tx)
 
         logger.info(tx.tx_id)
 
@@ -150,6 +150,7 @@ class Command(BaseCommand):
 
         for transaction in output_totals['spent']:
             # add the Tx to the nodes
+            print(transaction.tx_id)
             if not any(node['id'] == transaction.tx_id for node in nodes):
                 nodes.append({
                     'id': transaction.tx_id,
