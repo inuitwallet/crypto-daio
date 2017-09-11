@@ -79,7 +79,7 @@
 
         e.nodes.forEach(function(node) {
             network.getConnectedNodes(node, 'from').forEach(function(parent_node) {
-                var this_node = network.get(parent_node);
+                var this_node = nodes.get(parent_node);
                 console.log(this_node.title);
             });
         });
