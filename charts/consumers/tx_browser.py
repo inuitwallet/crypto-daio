@@ -165,6 +165,7 @@ def recalc_browser(message_dict, message):
                 minimum_block = block_number
 
         txs = get_address_transactions(is_address, minimum_block)
+        logger.info(txs)
         for tx in txs:
             nodes, edges, scanned_transactions = handle_tx(
                 tx,
