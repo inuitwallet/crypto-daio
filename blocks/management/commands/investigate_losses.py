@@ -86,14 +86,14 @@ class Command(BaseCommand):
         if not tx.block:
             return
 
-        scanned_transactions.append(tx.tx_id[:6])
+        scanned_transactions.append(tx.tx_id)
 
         logger.info(tx.tx_id)
 
         # add the Tx to the nodes
-        if not any(node['id'] == tx.tx_id[:6] for node in nodes):
+        if not any(node['id'] == tx.tx_id for node in nodes):
             nodes.append({
-                'id': tx.tx_id[:6],
+                'id': tx.tx_id,
                 'shape': 'dot',
                 'title': '{}'.format(tx),
                 'size': 3
@@ -111,7 +111,7 @@ class Command(BaseCommand):
                 })
             edges.append({
                 'from': input_address,
-                'to': tx.tx_id[:6],
+                'to': tx.tx_id,
                 'value': address_inputs.get(input_address, 0) / 100000000,
                 'title': address_inputs.get(input_address, 0) / 100000000,
                 'color': '#2cf948',
@@ -140,7 +140,7 @@ class Command(BaseCommand):
                     'color': '#dd6161' if address in TARGET_ADDRESSES else '#92d9e5',
                 })
             edges.append({
-                'from': tx.tx_id[:6],
+                'from': tx.tx_id,
                 'to': address,
                 'value': output_totals['unspent'].get(address, 0) / 100000000,
                 'title': output_totals['unspent'].get(address, 0) / 100000000,
@@ -150,16 +150,16 @@ class Command(BaseCommand):
 
         for transaction in output_totals['spent']:
             # add the Tx to the nodes
-            if not any(node['id'] == transaction.tx_id[:6] for node in nodes):
+            if not any(node['id'] == transaction.tx_id for node in nodes):
                 nodes.append({
-                    'id': transaction.tx_id[:6],
+                    'id': transaction.tx_id,
                     'shape': 'dot',
                     'title': '{}'.format(tx),
                     'size': 3
                 })
             edges.append({
-                'from': tx.tx_id[:6],
-                'to': transaction.tx_id[:6],
+                'from': tx.tx_id,
+                'to': transaction.tx_id,
                 'value': output_totals['spent'].get(transaction, 0) / 100000000,
                 'title': output_totals['spent'].get(transaction, 0) / 100000000,
                 'color': '#f4a84b',
