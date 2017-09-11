@@ -76,8 +76,8 @@
     });
 
     network.on("selectNode", function(e) {
-        for(var edge in e.edges){
-            console.log(edge);
+        for(var node in e.nodes){
+            console.log(network.getConnectedNodes(node));
         }
 
         webSocketBridge.stream('browser').send(
