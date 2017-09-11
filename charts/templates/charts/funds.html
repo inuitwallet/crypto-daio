@@ -76,7 +76,10 @@
     });
 
     network.on("selectNode", function(e) {
-        console.log(e.nodes[0]);
+        for(edge in e.edges){
+            console.log(edge);
+        }
+
         webSocketBridge.stream('browser').send(
             {
                 'host': window.location.hostname,
