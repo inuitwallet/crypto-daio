@@ -116,7 +116,7 @@ class Command(BaseCommand):
                 'to': tx.tx_id[:6],
                 'value': address_inputs.get(input_address, 0) / 100000000,
                 'title': address_inputs.get(input_address, 0) / 100000000,
-                'color': '#fceb6a',
+                'color': '#2cf948',
                 'arrows': 'middle'
             })
 
@@ -164,7 +164,7 @@ class Command(BaseCommand):
                 'to': transaction.tx_id[:6],
                 'value': output_totals['spent'].get(transaction, 0) / 100000000,
                 'title': output_totals['spent'].get(transaction, 0) / 100000000,
-                'color': 'grey',
+                'color': '#d86868',
                 'arrows': 'middle'
             })
             #if depth <= 1:
