@@ -58,16 +58,16 @@
     // initialize your network!
     var network = new vis.Network(container, data, options);
 
-    const webSocketBridge = new channels.WebSocketBridge();
-    webSocketBridge.connect('/tx_browser/');
-
-    webSocketBridge.socket.addEventListener('open', function() {
-        webSocketBridge.listen(function(data) {
-            if (data["message_type"] === "block_transaction"){
-                transactions_div.append(data["html"]);
-            }
-        });
-    });
+{#    const webSocketBridge = new channels.WebSocketBridge();#}
+{#    webSocketBridge.connect('/tx_browser/');#}
+{##}
+{#    webSocketBridge.socket.addEventListener('open', function() {#}
+{#        webSocketBridge.listen(function(data) {#}
+{#            if (data["message_type"] === "block_transaction"){#}
+{#                transactions_div.append(data["html"]);#}
+{#            }#}
+{#        });#}
+{#    });#}
 
     network.on("stabilizationIterationsDone", function () {
         network.setOptions( { physics: false } );
