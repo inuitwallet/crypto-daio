@@ -177,6 +177,8 @@ def recalc_browser(message_dict, message):
 
     # otherwise we use the main_node transaction to calculate onward
     else:
+        logger.info('#################         {}'.format(main_node.get('title')))
+        logger.info(Transaction.objects.filter(tx_id=main_node.get('title')))
         tx = Transaction.objects.filter(tx_id=main_node.get('title')).first()
         txs = [tx]
         for output in tx.outputs.all():
