@@ -1,8 +1,7 @@
 import json
 import logging
 
-from blocks.models import Transaction
-from models import TxInput
+from blocks.models import Transaction, TxInput
 
 logger = logging.getLogger(__name__)
 
