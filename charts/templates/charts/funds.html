@@ -78,7 +78,9 @@
     network.on("selectNode", function(e) {
 
         e.nodes.forEach(function(node) {
-            console.log(network.getConnectedNodes(node, 'from'));
+            network.getConnectedNodes(node, 'from').forEach(function(parent_node) {
+                console.log(parent_node.title);
+            });
         });
 
         webSocketBridge.stream('browser').send(
