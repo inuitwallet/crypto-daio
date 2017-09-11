@@ -187,15 +187,15 @@ def recalc_browser(message_dict, message):
             except TxInput.DoesNotExist:
                 pass
         for tx in txs:
+            logger.info(nodes)
+            logger.info(edges)
+            logger.info(scanned_transactions)
             nodes, edges, scanned_transactions = handle_tx(
                 tx,
                 nodes,
                 edges,
                 scanned_transactions
             )
-            logger.info(nodes)
-            logger.info(edges)
-            logger.info(scanned_transactions)
 
     message.reply_channel.send(
         {
