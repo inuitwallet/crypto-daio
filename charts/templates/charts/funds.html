@@ -77,10 +77,10 @@
 
     network.on("selectNode", function(e) {
 
-        var seed_nodes = new Array();
+        var seed_nodes = [];
+        var main_node = '';
         e.nodes.forEach(function(node) {
-            var main_node = nodes.get(node);
-            seed_nodes.push(main_node);
+            main_node = nodes.get(node);
             network.getConnectedNodes(node, 'from').forEach(function(parent_node) {
                 var this_node = nodes.get(parent_node);
                 seed_nodes.push(this_node);
@@ -90,6 +90,7 @@
         webSocketBridge.stream('browser').send(
             {
                 'host': window.location.hostname,
+                'main_node': main_node,
                 'seed_nodes': seed_nodes
             }
         );
