@@ -150,12 +150,11 @@ class Command(BaseCommand):
 
         for transaction in output_totals['spent']:
             # add the Tx to the nodes
-            print(transaction.tx_id)
             if not any(node['id'] == transaction.tx_id for node in nodes):
                 nodes.append({
                     'id': transaction.tx_id,
                     'shape': 'dot',
-                    'title': '{}'.format(tx),
+                    'title': '{}'.format(transaction),
                     'size': 3
                 })
             edges.append({
