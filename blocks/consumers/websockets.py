@@ -1,16 +1,14 @@
 import json
-import logging
 
 from channels import Group, Channel
 from tenant_schemas.utils import get_tenant_model, tenant_context
 
+from charts.consumers.tx_browser import recalc_browser
 from .ui import (
     get_address_details,
     get_block_transactions,
 )
 from daio.models import Chain
-
-logger = logging.getLogger(__name__)
 
 
 def get_schema_from_host(message):
@@ -49,7 +47,7 @@ def ws_receive(message):
             return
 
         if message['path'] == '/tx_browser/':
-            logger.error(message_dict, message)
+            recalc_browser(message_dict, message)
 
 
 def ws_disconnect(message):
