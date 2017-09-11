@@ -45,6 +45,9 @@ def ws_receive(message):
             get_address_details(message_dict, message)
             return
 
+        if message['path'] == '/tx_browser/':
+            print('hello?')
+
 
 def ws_disconnect(message):
     for chain in Chain.objects.all():

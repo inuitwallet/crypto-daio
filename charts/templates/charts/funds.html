@@ -71,6 +71,10 @@
         });
     });
 
+    network.on("stabilizationIterationsDone", function () {
+        network.setOptions( { physics: false } );
+    });
+
     network.on("selectNode", function(e) {
         console.log(e.nodes[0]);
         webSocketBridge.stream('browser').send({'host': window.location.hostname});
