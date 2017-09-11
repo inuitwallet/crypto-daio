@@ -77,7 +77,13 @@
 
     network.on("selectNode", function(e) {
         console.log(e.nodes[0]);
-        webSocketBridge.stream('browser').send({'host': window.location.hostname});
+        webSocketBridge.stream('browser').send(
+            {
+                'host': window.location.hostname,
+                'nodes': e.nodes,
+                'edges': e.edges
+            }
+        );
     });
 </script>
 </body>

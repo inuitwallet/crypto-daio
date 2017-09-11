@@ -49,7 +49,7 @@ def ws_receive(message):
             return
 
         if message['path'] == '/tx_browser/':
-            logger.error('hello?')
+            logger.error(message_dict, message)
 
 
 def ws_disconnect(message):
