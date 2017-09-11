@@ -10,7 +10,7 @@ def get_address_transactions(address, from_block):
     txs = Transaction.objects.distinct(
         'tx_id'
     ).filter(
-        input__previous_output__address=address
+        input__previous_output__address__address=address
     ).exclude(
         index=1
     ).exclude(
