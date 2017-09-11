@@ -77,7 +77,7 @@
 
     network.on("selectNode", function(e) {
 
-        e.nodes.foreach(function(node) {
+        e.nodes.forEach(function(node) {
             console.log(network.getConnectedNodes(node));
         });
 
