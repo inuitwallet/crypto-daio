@@ -6,7 +6,7 @@ from blocks.models import Transaction, TxInput
 logger = logging.getLogger(__name__)
 
 
-def get_address_transactions(address, from_block):
+def get_address_transactions(address, from_block=0):
     txs = Transaction.objects.distinct(
         'tx_id'
     ).filter(
@@ -16,7 +16,7 @@ def get_address_transactions(address, from_block):
     ).exclude(
         block=None
     ).exclude(
-        block__height__gte=from_block
+        block__height__lt=from_block
     ).order_by(
         'tx_id'
     )
@@ -202,6 +202,129 @@ def recalc_browser(message_dict, message):
     )
 
 
+def send_tx(message, tx):
+    message.reply_channel.send(
+        {
+            'text': json.dumps(
+                {
+                    'message_type': 'node',
+                    'node': {
+                        'id': tx.tx_id,
+                        'shape': 'dot',
+                        'title': '{}'.format(tx),
+                        'size': 5
+                    }
+                }
+            )
+        },
+        immediately=True
+    )
+
+
+def send_address(message, address):
+    message.reply_channel.send(
+        {
+            'text': json.dumps(
+                {
+                    'message_type': 'node',
+                    'node': {
+                        'id': address,
+                        'label': address,
+                        'color': '#92d9e5',
+                        'title': 'Address'
+                    }
+                }
+            )
+        },
+        immediately=True
+    )
+
+
+def send_edge(message, edge_from, edge_to, edge_value, colour):
+    message.reply_channel.send(
+        {
+            'text': json.dumps(
+                {
+                    'message_type': 'edge',
+                    'edge': {
+                        'from': edge_from,
+                        'to': edge_to,
+                        'value': edge_value,
+                        'title': edge_value,
+                        'color': colour,  #f4a84b #d86868
+                        'arrows': 'middle'
+                    }
+                }
+            )
+        },
+        immediately=True
+    )
+
+
+def add_onward_nodes(message_dict, message):
+    node = message_dict['payload'].get('node')
+
+    if not node:
+        return
+
+    # an address has a label
+    is_address = node.get('label')
+
+    if is_address:
+        # node is an address so get the onward transactions
+        txs = get_address_transactions(is_address)
+        for tx in txs:
+            send_tx(
+                message,
+                tx
+            )
+            address_inputs = tx.address_inputs
+            for address in address_inputs:
+                send_address(message, address)
+                send_edge(
+                    message,
+                    address,
+                    tx.tx_id,
+                    address_inputs.get(address, 0),
+                    '#2cf948'
+                )
+    else:
+        # we have a transaction
+        output_totals = {'spent': {}, 'unspent': {}}
+        tx = Transaction.objects.filter(tx_id=node.get('id')).first()
+
+        for tx_output in tx.outputs.all():
+            try:
+                if tx_output.input:
+                    if tx_output.input.transaction not in output_totals['spent']:
+                        output_totals['spent'][tx_output.input.transaction] = 0
+                    output_totals['spent'][tx_output.input.transaction] += tx_output.display_value
+            except TxInput.DoesNotExist:
+                if not tx_output.address:
+                    continue
+                if tx_output.address.address not in output_totals['unspent']:
+                    output_totals['unspent'][tx_output.address.address] = 0
+                output_totals['unspent'][tx_output.address.address] += tx_output.display_value
+
+        for address in output_totals['unspent']:
+            send_address(message, address)
+            send_edge(
+                message,
+                tx.tx_id,
+                address,
+                output_totals['unspent'].get(address, 0),
+                '#d86868'
+            )
+
+        for transaction in output_totals['spent']:
+            send_tx(message, transaction)
+            send_edge(
+                message,
+                tx.tx_id,
+                transaction.tx_id,
+                output_totals['spent'].get(transaction, 0),
+                '#f4a84b'
+            )
 
 
 

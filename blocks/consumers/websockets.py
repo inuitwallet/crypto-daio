@@ -3,7 +3,7 @@ import json
 from channels import Group, Channel
 from tenant_schemas.utils import get_tenant_model, tenant_context
 
-from charts.consumers.tx_browser import recalc_browser
+from charts.consumers.tx_browser import add_onward_nodes
 from .ui import (
     get_address_details,
     get_block_transactions,
@@ -47,7 +47,7 @@ def ws_receive(message):
             return
 
         if message['path'] == '/tx_browser/':
-            recalc_browser(message_dict, message)
+            add_onward_nodes(message_dict, message)
 
 
 def ws_disconnect(message):
