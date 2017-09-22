@@ -344,25 +344,25 @@ def add_onward_nodes(message_dict, message):
                         output_totals['unspent'][
                             tx_output.address.address] += tx_output.display_value  # noqa
 
-                for address in output_totals['unspent']:
-                    send_address(message, address)
-                    send_edge(
-                        message,
-                        tx.block.height,
-                        address,
-                        output_totals['unspent'].get(address, 0),
-                        '#d86868'
-                    )
-
-                for block in output_totals['spent']:
-                    send_block(message, block)
-                    send_edge(
-                        message,
-                        tx.block.height,
-                        block.height,
-                        output_totals['spent'].get(block, 0),
-                        '#f4a84b'
+            for address in output_totals['unspent']:
+                send_address(message, address)
+                send_edge(
+                    message,
+                    tx.block.height,
+                    address,
+                    output_totals['unspent'].get(address, 0),
+                    '#d86868'
                 )
+
+            for block in output_totals['spent']:
+                send_block(message, block)
+                send_edge(
+                    message,
+                    tx.block.height,
+                    block.height,
+                    output_totals['spent'].get(block, 0),
+                    '#f4a84b'
+            )
 
         else:
             # we have a transaction
