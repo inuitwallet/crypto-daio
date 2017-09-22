@@ -21,7 +21,7 @@ def get_address_balance(address_object, message):
 
 
 def get_address_details(address_object, message):
-    for tx in address_object.transactions().object_list:
+    for tx in address_object.transactions():
         message.reply_channel.send(
             {
                 'text': json.dumps(

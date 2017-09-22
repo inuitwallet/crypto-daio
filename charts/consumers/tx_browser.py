@@ -231,7 +231,7 @@ def send_address(message, address):
                         'id': address,
                         'label': address,
                         'color': '#92d9e5',
-                        'title': 'Address'
+                        'title': 'Address',
                     }
                 }
             )
@@ -247,12 +247,13 @@ def send_edge(message, edge_from, edge_to, edge_value, colour):
                 {
                     'message_type': 'edge',
                     'edge': {
+                        'id': '{}:{}:{}:{}'.format(edge_from, edge_to, edge_value, colour),
                         'from': edge_from,
                         'to': edge_to,
                         'value': edge_value,
                         'title': edge_value,
                         'color': colour,  #f4a84b #d86868
-                        'arrows': 'middle'
+                        'arrows': 'to'
                     }
                 }
             )
@@ -327,4 +328,14 @@ def add_onward_nodes(message_dict, message):
             )
 
 
+    message.reply_channel.send(
+        {
+            'text': json.dumps(
+                {
+                    'message_type': 'stabilize',
+                }
+            )
+        },
+        immediately=True
+    )
 

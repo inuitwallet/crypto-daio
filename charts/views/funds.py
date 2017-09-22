@@ -10,7 +10,7 @@ class Funds(View):
                 'id': address,
                 'label': address,
                 'color': '#89ff91',
-                'title': 'Address'
+                'title': 'Address',
             } for address in [
                 'SSajkovCPXwdw46nyJ7vpTDkwtRZJzyY2z',
                 'SNf4uyshit1fj8dWKVxHsKTgTrNR61RskY',

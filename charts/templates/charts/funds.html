@@ -21,6 +21,8 @@
     <form>
         <input type="search" />
         <input type="submit" />
+    </form>
+    <button id="stabilize" onClick="network.stabilize()">Stabilize</button>
 </div>
 <div id="tx_browser"></div>
 
@@ -40,7 +42,6 @@
     };
     var options = {};
 
-
     // initialize your network!
     var network = new vis.Network(container, data, options);
 
@@ -56,32 +57,49 @@
             }
             if (data["message_type"] === "node"){
                 try {
-                    nodes.add(data["node"])
+                    nodes.add(data["node"]);
                 } catch (err) {
                     // node already exists
                 }
             }
             if (data["message_type"] === "edge"){
                 try {
-                    edges.add(data["edge"])
+		    edges.add(data["edge"]);
                 } catch (err) {
-                    console.log(err)
+                    // edge already exists
                 }
             }
+	    if (data["message_type"] === "stabilize"){
+		network.stabilize();
+		network.unselectAll();
+	    }
         });
     });
 
     network.on("selectNode", function(e) {
-        var childNodes = network.getConnectedNodes(e.nodes[0], "to");
-        if (childNodes.length === 0){
-            var node = nodes.get(e.nodes[0]);
-            webSocketBridge.stream('add_nodes').send(
-                {
-                    'host': window.location.hostname,
-                    'node': node
-                }
-            );
-        }
+        var node = nodes.get(e.nodes[0]);
+        webSocketBridge.stream('add_nodes').send(
+            {
+                'host': window.location.hostname,
+                'node': node
+            }
+        );
+    });
+
+    network.on("doubleClick", function(e) {
+	console.log(e);
+	
+	var childNodes = network.getConnectedNodes(e.nodes[0], "to");
+	childNodes.forEach(function(node) {
+	    nodes.remove(node);
+	});
+
+    	var connectedEdges = network.getConnectedEdges(e.nodes[0]);
+	connectedEdges.forEach(function(edge) {
+	    edges.remove(edge);
+	});
+	
+	nodes.remove(e.nodes[0]);
     });
 </script>
 </body>
