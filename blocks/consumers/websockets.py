@@ -4,7 +4,9 @@ from channels import Group, Channel
 from tenant_schemas.utils import get_tenant_model, tenant_context
 
 from charts.consumers.tx_browser import add_onward_nodes
+from blocks.models import Address
 from .ui import (
+    get_address_balance,
     get_address_details,
     get_block_transactions,
 )
@@ -43,11 +45,17 @@ def ws_receive(message):
             return
 
         if message['path'] == '/get_address_details/':
-            get_address_details(message_dict, message)
+            try:
+                address_object = Address.objects.get(address=message_dict.get('stream'))
+                get_address_balance(address_object, message)
+                get_address_details(address_object, message)
+            except Address.DoesNotExist:
+                pass
             return
 
         if message['path'] == '/tx_browser/':
             add_onward_nodes(message_dict, message)
+            return
 
 
 def ws_disconnect(message):

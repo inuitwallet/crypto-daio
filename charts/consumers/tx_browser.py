@@ -252,7 +252,7 @@ def send_edge(message, edge_from, edge_to, edge_value, colour):
                         'to': edge_to,
                         'value': edge_value,
                         'title': edge_value,
-                        'color': colour,  #f4a84b #d86868
+                        'color': colour,
                         'arrows': 'to'
                     }
                 }
