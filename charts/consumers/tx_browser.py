@@ -1,7 +1,7 @@
 import json
 import logging
 
-from blocks.models import Transaction, TxInput
+from blocks.models import Transaction, TxInput, Block
 
 logger = logging.getLogger(__name__)
 
@@ -211,7 +211,26 @@ def send_tx(message, tx):
                     'node': {
                         'id': tx.tx_id,
                         'shape': 'dot',
-                        'title': '{}'.format(tx),
+                        'title': 'Transaction {}'.format(tx),
+                        'size': 5
+                    }
+                }
+            )
+        },
+        immediately=True
+    )
+
+
+def send_block(message, block):
+    message.reply_channel.send(
+        {
+            'text': json.dumps(
+                {
+                    'message_type': 'node',
+                    'node': {
+                        'id': block.height,
+                        'shape': 'square',
+                        'title': 'Block {}'.format(block),
                         'size': 5
                     }
                 }
@@ -231,7 +250,7 @@ def send_address(message, address):
                         'id': address,
                         'label': address,
                         'color': '#92d9e5',
-                        'title': 'Address',
+                        'title': 'Address {}'.format(address),
                     }
                 }
             )
@@ -274,59 +293,114 @@ def add_onward_nodes(message_dict, message):
     if is_address:
         # node is an address so get the onward transactions
         txs = get_address_transactions(is_address)
+        blocks = {}
         for tx in txs:
-            send_tx(
-                message,
-                tx
-            )
+            if tx.block.height not in blocks:
+                blocks[tx.block.height] = 0
+                send_block(message, tx.block)
+
             address_inputs = tx.address_inputs
+
             for address in address_inputs:
+                blocks[tx.block.height] += address_inputs.get(address, 0)
+
+        for block in blocks:
+            send_edge(
+                message,
+                is_address,
+                block,
+                blocks.get(block, 0),
+                '#2cf948'
+            )
+
+            #address_inputs = tx.address_inputs
+            #for address in address_inputs:
+            #    send_address(message, address)
+            #    send_edge(
+            #        message,
+            #        address,
+            #        tx.tx_id,
+            #        address_inputs.get(address, 0),
+            #        '#2cf948'
+            #    )
+    else:
+        if 'Block' in node.get('title'):
+            # we have a Block
+            block = Block.objects.filter(height=node.get('id')).first()
+            output_totals = {'spent': {}, 'unspent': {}}
+
+            for tx in block.transactions.all():
+
+                for tx_output in tx.outputs.all():
+                    try:
+                        if tx_output.input.transaction.block not in output_totals['spent']:
+                            output_totals['spent'][tx_output.input.transaction.block] = 0
+                        output_totals['spent'][tx_output.input.transaction.block] += tx_output.display_value  # noqa
+                    except TxInput.DoesNotExist:
+                        if not tx_output.address:
+                            continue
+                        if tx_output.address.address not in output_totals['unspent']:
+                            output_totals['unspent'][tx_output.address.address] = 0
+                        output_totals['unspent'][
+                            tx_output.address.address] += tx_output.display_value  # noqa
+
+                for address in output_totals['unspent']:
+                    send_address(message, address)
+                    send_edge(
+                        message,
+                        tx.block.height,
+                        address,
+                        output_totals['unspent'].get(address, 0),
+                        '#d86868'
+                    )
+
+                for block in output_totals['spent']:
+                    send_block(message, block)
+                    send_edge(
+                        message,
+                        tx.block.height,
+                        block.height,
+                        output_totals['spent'].get(block, 0),
+                        '#f4a84b'
+                )
+
+        else:
+            # we have a transaction
+            output_totals = {'spent': {}, 'unspent': {}}
+            tx = Transaction.objects.filter(tx_id=node.get('id')).first()
+
+            for tx_output in tx.outputs.all():
+                try:
+                    if tx_output.input:
+                        if tx_output.input.transaction not in output_totals['spent']:
+                            output_totals['spent'][tx_output.input.transaction] = 0
+                        output_totals['spent'][tx_output.input.transaction] += tx_output.display_value  # noqa
+                except TxInput.DoesNotExist:
+                    if not tx_output.address:
+                        continue
+                    if tx_output.address.address not in output_totals['unspent']:
+                        output_totals['unspent'][tx_output.address.address] = 0
+                    output_totals['unspent'][tx_output.address.address] += tx_output.display_value  # noqa
+
+            for address in output_totals['unspent']:
                 send_address(message, address)
                 send_edge(
                     message,
-                    address,
                     tx.tx_id,
-                    address_inputs.get(address, 0),
-                    '#2cf948'
+                    address,
+                    output_totals['unspent'].get(address, 0),
+                    '#d86868'
                 )
-    else:
-        # we have a transaction
-        output_totals = {'spent': {}, 'unspent': {}}
-        tx = Transaction.objects.filter(tx_id=node.get('id')).first()
 
-        for tx_output in tx.outputs.all():
-            try:
-                if tx_output.input:
-                    if tx_output.input.transaction not in output_totals['spent']:
-                        output_totals['spent'][tx_output.input.transaction] = 0
-                    output_totals['spent'][tx_output.input.transaction] += tx_output.display_value
-            except TxInput.DoesNotExist:
-                if not tx_output.address:
-                    continue
-                if tx_output.address.address not in output_totals['unspent']:
-                    output_totals['unspent'][tx_output.address.address] = 0
-                output_totals['unspent'][tx_output.address.address] += tx_output.display_value
-
-        for address in output_totals['unspent']:
-            send_address(message, address)
-            send_edge(
-                message,
-                tx.tx_id,
-                address,
-                output_totals['unspent'].get(address, 0),
-                '#d86868'
-            )
-
-        for transaction in output_totals['spent']:
-            send_tx(message, transaction)
-            send_edge(
-                message,
-                tx.tx_id,
-                transaction.tx_id,
-                output_totals['spent'].get(transaction, 0),
-                '#f4a84b'
-            )
-
+            for transaction in output_totals['spent']:
+                send_tx(message, transaction)
+                send_edge(
+                    message,
+                    tx.tx_id,
+                    transaction.tx_id,
+                    output_totals['spent'].get(transaction, 0),
+                    '#f4a84b'
+                )
 
     message.reply_channel.send(
         {
