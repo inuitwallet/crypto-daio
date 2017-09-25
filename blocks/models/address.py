@@ -1,5 +1,6 @@
 import logging
 
+from caching.base import CachingMixin, CachingManager
 from django.core.paginator import Paginator
 from django.db import models
 from blocks.models import Transaction
@@ -8,12 +9,14 @@ from blocks.models import TxInput
 logger = logging.getLogger(__name__)
 
 
-class Address(models.Model):
+class Address(CachingMixin, models.Model):
     address = models.CharField(
         max_length=610,
         unique=True,
         db_index=True,
     )
+
+    objects = CachingManager()
 
     def __str__(self):
         return self.address
@@ -47,7 +50,7 @@ class Address(models.Model):
         return paginator.page(page)
 
 
-class WatchAddress(models.Model):
+class WatchAddress(CachingMixin, models.Model):
     address = models.ForeignKey(
         Address,
         related_name='watch_addresses',
@@ -63,3 +66,5 @@ class WatchAddress(models.Model):
     complete = models.BooleanField(
         default=False,
     )
+
+    objects = CachingManager()

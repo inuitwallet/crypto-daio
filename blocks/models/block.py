@@ -6,6 +6,7 @@ from datetime import datetime
 
 import psycopg2
 from asgiref.base_layer import BaseChannelLayer
+from caching.base import CachingMixin, CachingManager
 from channels import Channel
 from django.db import models, connection
 from django.db.models import Max
@@ -18,7 +19,7 @@ from blocks.models import TxInput
 logger = logging.getLogger(__name__)
 
 
-class Block(models.Model):
+class Block(CachingMixin, models.Model):
     """
     Object definition of a block
     """
@@ -109,6 +110,8 @@ class Block(models.Model):
         blank=True,
         null=True,
     )
+
+    objects = CachingManager()
 
     def __str__(self):
         return '{}:{}'.format(self.height, self.hash[:8])

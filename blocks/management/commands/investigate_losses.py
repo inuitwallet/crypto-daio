@@ -205,7 +205,9 @@ class Command(BaseCommand):
             'time'
         )
         earliest_tx = transactions[0]
+        latest_tx = transactions[len(transactions)]
         logger.info('{} is the earliest transaction'.format(earliest_tx))
+        logger.info('{} is the latest transaction'.format(latest_tx))
 
         # using these transactions get the amounts input and output
         for transaction in transactions:

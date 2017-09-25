@@ -5,6 +5,7 @@ bpython
 channels
 django
 django-bower
+django-cache-machine
 django-jet
 django-redis
 django-redisboard

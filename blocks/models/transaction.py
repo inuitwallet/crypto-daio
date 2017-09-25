@@ -5,8 +5,8 @@ import time
 from datetime import datetime
 
 from asgiref.base_layer import BaseChannelLayer
+from caching.base import CachingManager, CachingMixin
 from channels import Channel
-from decimal import Decimal
 from django.db import models, connection, IntegrityError
 from django.db.models import Sum
 from django.utils.timezone import make_aware
@@ -17,7 +17,7 @@ from daio.models import Coin
 logger = logging.getLogger(__name__)
 
 
-class Transaction(models.Model):
+class Transaction(CachingMixin, models.Model):
     """
     A transaction within a block
     belongs to one block but can have multiple inputs and outputs
@@ -59,6 +59,8 @@ class Transaction(models.Model):
         related_name='coin',
         related_query_name='coins'
     )
+
+    objects = CachingManager()
 
     def __str__(self):
         return '{}:{}@{}'.format(self.index, self.tx_id[:8], self.block)
@@ -439,7 +441,7 @@ class Transaction(models.Model):
         return False
 
 
-class TxOutput(models.Model):
+class TxOutput(CachingMixin, models.Model):
     transaction = models.ForeignKey(
         Transaction,
         related_name='outputs',
@@ -478,6 +480,8 @@ class TxOutput(models.Model):
         null=True,
     )
 
+    objects = CachingManager()
+
     def __str__(self):
         return '{}:{}@{}'.format(self.index, self.value, self.transaction)
 
@@ -490,7 +494,7 @@ class TxOutput(models.Model):
         return self.value / 10000
 
 
-class TxInput(models.Model):
+class TxInput(CachingMixin, models.Model):
     """
     A transaction input.
     Belongs to a single transaction
@@ -525,6 +529,8 @@ class TxInput(models.Model):
         blank=True,
         default='',
     )
+
+    objects = CachingManager()
 
     def __str__(self):
         return '{}@{}'.format(self.index, self.transaction)

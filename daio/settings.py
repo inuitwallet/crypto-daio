@@ -238,3 +238,14 @@ STATICFILES_STORAGE = 'daio.storages.DaioStorage'
 MESSAGE_TAGS = {
     messages.ERROR: 'danger'
 }
+
+CACHES = {
+    'default': {
+        'BACKEND': 'caching.backends.memcached.MemcachedCache',
+        'LOCATION': 'localhost:11211',
+    },
+}
+
+CACHE_COUNT_TIMEOUT = 60  # seconds, not too long.
+CACHE_MACHINE_USE_REDIS = True
+REDIS_BACKEND = 'redis://localhost:6379'
