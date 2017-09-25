@@ -55,7 +55,7 @@
                     nodes.add(data["node"]);
                 } catch (err) {
                     // node already exists
-                    console.log("node " + data['node'] + " already exists")
+                    console.log("node " + data["node"]["id"] + " already exists")
                 }
             }
             if (data["message_type"] === "edge"){
@@ -63,6 +63,7 @@
 		            edges.add(data["edge"]);
                 } catch (err) {
                     // edge already exists
+                    console.log("edge " + data["edge"]["id"] + " already exists")
                 }
             }
 	    if (data["message_type"] === "stabilize"){
