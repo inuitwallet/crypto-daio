@@ -6,8 +6,9 @@ from .exchange import (
     Withdrawal,
     Pair,
     Currency,
-    CurrencyValue
+    CurrencyValue,
 )
+from .sockets import UserSocket
 from .trade import Trade, Order
 from .watched_address import WatchedAddress, WatchedAddressBalance
 
@@ -21,6 +22,7 @@ __all__ = [
     'Pair',
     'Trade',
     'Order',
+    'UserSocket',
     'WatchedAddress',
     'WatchedAddressBalance'
 ]

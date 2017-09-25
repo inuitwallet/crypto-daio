@@ -1,103 +1,131 @@
-<html>
+{% extends 'base.html' %}
 
 {% load static %}
-<head>
+
+{% block title %}Fund Movement{% endblock %}
+
+{% block head %}
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.20.1/vis.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.20.1/vis.min.css" rel="stylesheet" type="text/css" />
-
     <style type="text/css">
-        #mynetwork {
+        #tx_browser {
             width: 100%;
-            height: 100%;
+            height : 100vh;
             border: none;
         }
+        #console {
+            width: 100%;
+            height: 100px;
+            font-size: 8pt;
+        }
     </style>
+{% endblock %}
+{% block content %}
+    <div class="row">
+        <div class="col-md-12">
+            <textarea id="console"></textarea>
+            <button id="stabilize" onClick="network.stabilize()">Stabilize</button>
+            <button id="stop" onClick="stopNodes()">Stop</button>
+            <button id="redraw" onClick="network.redraw()">Redraw</button>
+            <button id="destroy" onClick="network.destroy()">Destroy</button>
+        </div>
+    </div>
+    <div id="tx_browser">
 
-     <!-- Channels Websockets -->
-    <script type="text/javascript" src='{% static "channels/js/websocketbridge.js" %}'></script>
-</head>
-<body>
-<div id="entry-bar">
-    <form>
-        <input type="search" />
-        <input type="submit" />
-    </form>
-    <button id="stabilize" onClick="network.stabilize()">Stabilize</button>
-</div>
-<div id="tx_browser"></div>
+    </div>
 
-<script type="text/javascript">
-    // create an array with nodes
-    var nodes = new vis.DataSet({{ nodes|safe }});
-    // create an array with edges
-    var edges = new vis.DataSet({{ edges|safe }});
 
-    // create a network
-    var container = document.getElementById('tx_browser');
+    <script type="text/javascript">
+        // create an array with nodes
+        var nodes = new vis.DataSet({{ nodes|safe }});
+        // create an array with edges
+        var edges = new vis.DataSet({{ edges|safe }});
 
-    // provide the data in the vis format
-    var data = {
-        nodes: nodes,
-        edges: edges
-    };
-    var options = {};
+        // create a network
+        var container = document.getElementById('tx_browser');
 
-    // initialize your network!
-    var network = new vis.Network(container, data, options);
+        // provide the data in the vis format
+        var data = {
+            nodes: nodes,
+            edges: edges
+        };
+        var options = {};
 
-    const webSocketBridge = new channels.WebSocketBridge();
-    webSocketBridge.connect('/tx_browser/');
+        // initialize network!
+        var network = new vis.Network(container, data, options);
 
-    webSocketBridge.socket.addEventListener('open', function() {
-        webSocketBridge.listen(function(data) {
-            if (data["message_type"] === "node"){
-                try {
-                    nodes.add(data["node"]);
-                } catch (err) {
-                    // node already exists
-                    console.log("node " + data["node"]["id"] + " already exists")
+        const webSocketBridge = new channels.WebSocketBridge();
+        webSocketBridge.connect('/tx_browser/');
+
+        //get the console
+        var console = document.getElementById('console');
+
+        // helper function to write to the console
+        function consoleWrite(text){
+            console.append(new Date() + " - " + text + "\n");
+            console.scrollTop = console.scrollHeight;
+        }
+
+        function stopNodes(){
+            webSocketBridge.stream('stop_nodes').send(
+                {
+                    'host': window.location.hostname
                 }
-            }
-            if (data["message_type"] === "edge"){
-                try {
-		            edges.add(data["edge"]);
-                } catch (err) {
-                    // edge already exists
-                    console.log("edge " + data["edge"]["id"] + " already exists")
+            );
+        }
+
+        webSocketBridge.socket.addEventListener('open', function() {
+            webSocketBridge.listen(function(data) {
+                if (data["message_type"] === "node"){
+                    try {
+                        nodes.add(data["node"]);
+                    } catch (err) {
+                        // node already exists
+                        consoleWrite(data["node"]["id"] + " already exists")
+                    }
                 }
-            }
-	    if (data["message_type"] === "stabilize"){
-		network.stabilize();
-		network.unselectAll();
-	    }
+                if (data["message_type"] === "edge"){
+                    try {
+                        edges.add(data["edge"]);
+                    } catch (err) {
+                        // edge already exists
+                        consoleWrite("connection from " + data["edge"]["from"] + " to " + data["edge"]["to"] + " already exists")
+                    }
+                }
+                if (data["message_type"] === "stabilize"){
+                    network.stabilize();
+                    network.unselectAll();
+                }
+                if (data["message_type"] === "console"){
+                    consoleWrite(data['text'])
+                }
+            });
         });
-    });
 
-    network.on("selectNode", function(e) {
-        var node = nodes.get(e.nodes[0]);
-        webSocketBridge.stream('add_nodes').send(
-            {
-                'host': window.location.hostname,
-                'node': node
-            }
-        );
-    });
+        network.on("selectNode", function(e) {
+            var node = nodes.get(e.nodes[0]);
+            webSocketBridge.stream('add_nodes').send(
+                {
+                    'host': window.location.hostname,
+                    'node': node
+                }
+            );
+        });
 
-    network.on("doubleClick", function(e) {
-	console.log(e);
-	
-	var childNodes = network.getConnectedNodes(e.nodes[0], "to");
-	childNodes.forEach(function(node) {
-	    nodes.remove(node);
-	});
+        network.on("doubleClick", function(e) {
+        console.log(e);
 
-	var connectedEdges = network.getConnectedEdges(e.nodes[0]);
-	connectedEdges.forEach(function(edge) {
-	    edges.remove(edge);
-	});
-	
-	nodes.remove(e.nodes[0]);
-    });
-</script>
-</body>
-</html>
+        var childNodes = network.getConnectedNodes(e.nodes[0], "to");
+        childNodes.forEach(function(node) {
+            nodes.remove(node);
+        });
+
+        var connectedEdges = network.getConnectedEdges(e.nodes[0]);
+        connectedEdges.forEach(function(edge) {
+            edges.remove(edge);
+        });
+
+        nodes.remove(e.nodes[0]);
+        });
+    </script>
+{% endblock %}

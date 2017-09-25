@@ -5,6 +5,7 @@ from tenant_schemas.utils import get_tenant_model, tenant_context
 
 from charts.consumers.tx_browser import add_onward_nodes
 from blocks.models import Address
+from charts.models import UserSocket
 from .ui import (
     get_address_balance,
     get_address_details,
@@ -42,6 +43,7 @@ def ws_receive(message):
     with tenant_context(tenant):
         if message['path'] == '/get_block_transactions/':
             get_block_transactions(message_dict, message)
+
             return
 
         if message['path'] == '/get_address_details/':
@@ -51,10 +53,23 @@ def ws_receive(message):
                 get_address_details(address_object, message)
             except Address.DoesNotExist:
                 pass
+
             return
 
         if message['path'] == '/tx_browser/':
-            add_onward_nodes(message_dict, message)
+            if message_dict.get('stream') == 'add_nodes':
+                add_onward_nodes(message_dict, message)
+
+            if message_dict.get('stream') == 'stop_nodes':
+                try:
+                    user_socket = UserSocket.objects.get(
+                        reply_channel=message.reply_channel
+                    )
+                    user_socket.tx_browser_running = False
+                    user_socket.save()
+                except UserSocket.DoesNotExist:
+                    pass
+
             return
 
 
