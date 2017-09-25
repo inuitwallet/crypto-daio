@@ -195,15 +195,40 @@ class Command(BaseCommand):
         # just balances
 
         # get the transactions that have a compromised address as an input
-        for address in COMPROMISED_ADDRESSES:
-            logger.info('Address {}'.format(address))
-            transactions = Transaction.objects.filter(
-                input__previous_output__address__address=address
-            ).exclude(
-                block=None
-            ).filter(
-                output__address__address__in=TARGET_ADDRESSES
-            ).order_by(
-                'time'
-            )
-            logger.info(transactions[0], transactions[0].time)
+        transactions = Transaction.objects.filter(
+            input__previous_output__address__address__in=COMPROMISED_ADDRESSES
+        ).exclude(
+            block=None
+        ).filter(
+            output__address__address__in=TARGET_ADDRESSES
+        ).order_by(
+            'time'
+        )
+        earliest_tx = transactions[0]
+        logger.info('{} is the earliest transaction'.format(earliest_tx))
+
+        # using these transactions get the amounts input and output
+        for transaction in transactions:
+            logger.info('In transaction {}'.format(transaction))
+            address_inputs = transaction.address_inputs
+            for address in address_inputs:
+                if address not in COMPROMISED_ADDRESSES:
+                    continue
+                logger.info(
+                    '\t{} went in from {}'.format(address_inputs.get(address, 0), address)
+                )
+            address_outputs = transaction.address_outputs
+            for address in address_outputs:
+                if address not in TARGET_ADDRESSES:
+                    continue
+                logger.info(
+                    '\t{} came out to {}'.format(address_outputs.get(address, 0), address)
+                )
+
+        # then report on balances:
+        for address in TARGET_ADDRESSES + COMPROMISED_ADDRESSES:
+            logger.info('{} has current balance of {}'.format(address, address.balance))
+
+
+
+
