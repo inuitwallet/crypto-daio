@@ -202,6 +202,8 @@ class Command(BaseCommand):
             )
             for transaction in transactions:
                 for tx_output in transaction.outputs.all():
+                    if not tx_output.address:
+                        continue
                     if tx_output.address.address in TARGET_ADDRESSES:
                         all_transactions.append(transaction)
 
