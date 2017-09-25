@@ -202,14 +202,11 @@ class Command(BaseCommand):
                 input__previous_output__address__address=address
             ).exclude(
                 block=None
+            ).filter(
+                output__address__address__in=TARGET_ADDRESSES
             )
             for transaction in transactions:
-                logger.info('Transaction {}'.format(transaction))
-                for tx_output in transaction.outputs.all():
-                    if not tx_output.address:
-                        continue
-                    if tx_output.address.address in TARGET_ADDRESSES:
-                        all_transactions.append(transaction)
+                all_transactions.append(transaction)
 
         sorted_transactions = sorted(all_transactions, key=lambda x: x.time)
         print(
