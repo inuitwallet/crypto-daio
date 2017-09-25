@@ -166,6 +166,8 @@ def handle_block(message, block):
     for spent_block in spent:
         if not check_continue(message):
             return
+        if not spent_block.height:
+            continue
         send_console(message, 'Spent output {} from {} to {}'.format(
             spent[spent_block],
             block.height,
