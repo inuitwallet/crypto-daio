@@ -351,12 +351,14 @@ def add_onward_nodes(message_dict, message):
 
     if node_type == 'Address':
         for block in yield_address_blocks(node_value):
-            # we have a new block so create the new node
-            send_block(message, block)
             # we need to see the value of funds that was input from this address
             input_value = 0
             print('New Block')
             for tx in block.transactions.all():
+                # only deal with fund movement transactions. ignore POW and POS tx
+                if tx.index < 2:
+                    continue
+
                 for tx_input in tx.inputs.all():
                     if not tx_input.previous_output:
                         continue
@@ -364,7 +366,12 @@ def add_onward_nodes(message_dict, message):
                         continue
                     if tx_input.previous_output.address.address == node_value:
                         input_value += tx_input.previous_output.display_value
-            # we have the value so create the edge
+
+            if input_value == 0:
+                continue
+
+            # we have the value so create the block and edge the recurse on the block
+            send_block(message, block)
             send_edge(
                 message=message,
                 edge_from=node_value,
