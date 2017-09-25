@@ -183,57 +183,35 @@ class Command(BaseCommand):
         :param options:
         :return:
         """
+        # 1 At which date was a transaction made from a compromised to target address
+        # get all transaction that have a compromised address as an input
+        # of those look at only the ones that have a compromised address as an output
+        # earliest 1 wins
+
+        # 2 How much per compromised address was sent to a target address?
+        # using transactions from 1. look at amounts input and output
+
+        # 3 How much remains at each target address and each compromised address?
+        # just balances
+
+        # get the transactions that have a compromised address as an input
+        all_transactions = []
         for address in COMPROMISED_ADDRESSES:
-            logger.info('adding origin node {}'.format(address))
-            if not any(node['id'] == address for node in nodes):
-                nodes.append({
-                    'id': address,
-                    'label': address,
-                    'color': '#89ff91',
-                    'title': 'Address'
-                })
+            transactions = Transaction.objects.filter(
+                input__previous_output__address__address=address
+            )
+            for transaction in transactions:
+                for tx_output in transaction.outputs.all():
+                    if tx_output.address.address in TARGET_ADDRESSES:
+                        all_transactions.append(transaction)
 
-        try:
-            for address in COMPROMISED_ADDRESSES:
-                logger.info('working on {}'.format(address))
-                a = Address.objects.get(address=address)
-                txs = self.get_transactions(a)
+        sorted_transactions = sorted(all_transactions, key=lambda x: x.time)
+        print(
+            sorted_transactions[0],
+            sorted_transactions[0].time
+        )
+        print(
+            sorted_transactions[len(sorted_transactions)],
+            sorted_transactions[len(sorted_transactions)].time
+        )
 
-                for tx in txs:
-                    logger.info('handling direct transaction {}'.format(tx))
-                    self.handle_tx(tx, address)
-
-            json.dump(nodes, open(
-                os.path.join(
-                    settings.BASE_DIR,
-                    'charts/data/nodes.json'
-                ),
-                'w+'
-            ))
-            json.dump(edges, open(
-                os.path.join(
-                    settings.BASE_DIR,
-                    'charts/data/edges.json'
-                ),
-                'w+'
-            ))
-
-            logger.info('Finished')
-
-        except KeyboardInterrupt:
-            json.dump(nodes, open(
-                os.path.join(
-                    settings.BASE_DIR,
-                    'charts/data/nodes.json'
-                ),
-                'w+'
-            ))
-            json.dump(edges, open(
-                os.path.join(
-                    settings.BASE_DIR,
-                    'charts/data/edges.json'
-                ),
-                'w+'
-            ))
-
-            logger.info('Written')
