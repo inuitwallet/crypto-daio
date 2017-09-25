@@ -49,6 +49,8 @@ def yield_address_blocks(address, from_block=0):
     ).order_by('height')
 
     for block in blocks:
+        if not block.height:
+            continue
         if block.height < from_block:
             continue
         yield block
