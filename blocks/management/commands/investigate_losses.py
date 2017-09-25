@@ -195,7 +195,6 @@ class Command(BaseCommand):
         # just balances
 
         # get the transactions that have a compromised address as an input
-        all_transactions = []
         for address in COMPROMISED_ADDRESSES:
             logger.info('Address {}'.format(address))
             transactions = Transaction.objects.filter(
@@ -207,5 +206,4 @@ class Command(BaseCommand):
             ).order_by(
                 'time'
             )
-            for transaction in transactions:
-                print(transaction.time)
+            logger.info(transactions[0], transactions[0].time)
