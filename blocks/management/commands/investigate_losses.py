@@ -204,17 +204,8 @@ class Command(BaseCommand):
                 block=None
             ).filter(
                 output__address__address__in=TARGET_ADDRESSES
+            ).order_by(
+                'time'
             )
             for transaction in transactions:
-                all_transactions.append(transaction)
-
-        sorted_transactions = sorted(all_transactions, key=lambda x: x.time)
-        print(
-            sorted_transactions[0],
-            sorted_transactions[0].time
-        )
-        print(
-            sorted_transactions[len(sorted_transactions)],
-            sorted_transactions[len(sorted_transactions)].time
-        )
-
+                print(transaction.time)
