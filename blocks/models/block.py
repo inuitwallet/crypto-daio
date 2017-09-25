@@ -13,6 +13,7 @@ from django.utils.timezone import make_aware
 from django.db.utils import IntegrityError
 
 from blocks.models import Transaction, Orphan
+from blocks.models import TxInput
 
 logger = logging.getLogger(__name__)
 
@@ -418,3 +419,23 @@ class Block(models.Model):
                 coin_total['value'] += tx.balance
             totals.append(coin_total)
         return totals
+
+    @property
+    def outputs(self):
+        outputs = {'spent': {}, 'unspent': {}}
+        for tx in self.transactions.all():
+            for tx_output in tx.outputs.all():
+                try:
+                    # if this works the output is spent
+                    if tx_output.input.transaction.block not in outputs['spent']:
+                        outputs['spent'][tx_output.input.transaction.block] = 0
+                    outputs['spent'][tx_output.input.transaction.block] += tx_output.display_value  # noqa
+                except TxInput.DoesNotExist:
+                    # accessing output.input fails if output is unspent
+                    if not tx_output.address:
+                        continue
+                    if tx_output.address not in outputs['unspent']:
+                        outputs['unspent'][tx_output.address] = 0
+                    outputs['unspent'][tx_output.address] += tx_output.display_value
+        return outputs
+
