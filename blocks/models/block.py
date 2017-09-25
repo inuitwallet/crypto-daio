@@ -424,6 +424,8 @@ class Block(models.Model):
     def outputs(self):
         outputs = {'spent': {}, 'unspent': {}}
         for tx in self.transactions.all():
+            if tx.index < 2:
+                continue
             for tx_output in tx.outputs.all():
                 try:
                     # if this works the output is spent
