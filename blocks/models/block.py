@@ -427,15 +427,15 @@ class Block(models.Model):
             if tx.index < 2:
                 continue
             for tx_output in tx.outputs.all():
-                if not tx_output.input.transaction.block:
-                    try:
-                        tx_output.input.transaction.delete()
-                        continue
-                    except IntegrityError:
-                        continue
-                if not tx_output.input.transaction.block.height:
-                    continue
                 try:
+                    if not tx_output.input.transaction.block:
+                        try:
+                            tx_output.input.transaction.delete()
+                            continue
+                        except IntegrityError:
+                            continue
+                    if not tx_output.input.transaction.block.height:
+                        continue
                     # if this works the output is spent
                     if tx_output.input.transaction.block not in outputs['spent']:
                         outputs['spent'][tx_output.input.transaction.block] = 0
