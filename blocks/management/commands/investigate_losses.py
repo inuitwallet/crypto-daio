@@ -197,10 +197,14 @@ class Command(BaseCommand):
         # get the transactions that have a compromised address as an input
         all_transactions = []
         for address in COMPROMISED_ADDRESSES:
+            logger.info('Address {}'.format(address))
             transactions = Transaction.objects.filter(
                 input__previous_output__address__address=address
+            ).exclude(
+                block=None
             )
             for transaction in transactions:
+                logger.info('Transaction {}'.format(transaction))
                 for tx_output in transaction.outputs.all():
                     if not tx_output.address:
                         continue
