@@ -50,21 +50,17 @@
 
     webSocketBridge.socket.addEventListener('open', function() {
         webSocketBridge.listen(function(data) {
-            if (data["message_type"] === "new_browser"){
-                console.log(data["nodes"]);
-                console.log(data["edges"]);
-                network.setData(data["nodes"], data["edges"]);
-            }
             if (data["message_type"] === "node"){
                 try {
                     nodes.add(data["node"]);
                 } catch (err) {
                     // node already exists
+                    console.log("node " + data['node'] + " already exists")
                 }
             }
             if (data["message_type"] === "edge"){
                 try {
-		    edges.add(data["edge"]);
+		            edges.add(data["edge"]);
                 } catch (err) {
                     // edge already exists
                 }
@@ -94,7 +90,7 @@
 	    nodes.remove(node);
 	});
 
-    	var connectedEdges = network.getConnectedEdges(e.nodes[0]);
+	var connectedEdges = network.getConnectedEdges(e.nodes[0]);
 	connectedEdges.forEach(function(edge) {
 	    edges.remove(edge);
 	});
