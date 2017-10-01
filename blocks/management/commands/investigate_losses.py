@@ -195,6 +195,7 @@ class Command(BaseCommand):
         # just balances
 
         # get the transactions that have a compromised address as an input
+        logger.info("getting transactions")
         transactions = Transaction.objects.filter(
             input__previous_output__address__address__in=COMPROMISED_ADDRESSES
         ).exclude(

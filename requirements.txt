@@ -17,6 +17,7 @@ google-api-python-client==1.4.1
 pbkdf2
 Pillow
 psycopg2
+python-memcached
 requests[security]
 service_identity
 -e git+https://github.com/areski/django-nvd3.git@develop#egg=django-nvd3

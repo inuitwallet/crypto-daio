@@ -2,7 +2,7 @@ from charts.models import WatchedAddressBalance
 from blocks.models import Address
 
 
-class USNBT(object):
+class CNNBT(object):
     @staticmethod
     def get_address_balance(watched_address):
         try:

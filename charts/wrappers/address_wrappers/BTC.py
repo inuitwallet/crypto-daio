@@ -4,11 +4,8 @@ from charts.models import WatchedAddressBalance
 
 
 class BTC(object):
-
-    def __init__(self):
-        self.supported_currencies = ['BTC']
-
-    def get_address_balance(self, watched_address):
+    @staticmethod
+    def get_address_balance(watched_address):
         response = requests.get(
             url='https://blockchain.info/q/addressbalance/{}'.format(
                 watched_address.address
