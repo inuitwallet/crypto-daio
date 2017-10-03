@@ -152,7 +152,7 @@ def fix_next_block(block, chain):
     try:
         next_block = Block.objects.get(hash=next_hash)
     except Block.DoesNotExist:
-        next_block = Block(hash=next_hash)
+        next_block = Block.objects.create(hash=next_hash)
 
     block.next_block = next_block
     block.save()
