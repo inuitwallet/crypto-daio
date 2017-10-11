@@ -29,12 +29,18 @@ class Address(CachingMixin, models.Model):
     def balance(self):
         balance = 0
         for output in self.outputs.all():
-            # output.transaction.save()
+            if not output.transaction.block:
+                continue
+
+            if not output.transaction.block.height:
+                continue
+
             try:
                 if output.input:
                     continue
             except TxInput.DoesNotExist:
                 balance += output.display_value
+
         return balance
 
     def transactions(self, page=1):

@@ -24,7 +24,7 @@ blocked_addresses = [
     'SewzCfwc36oFTXH9jL1VTUHsEPrJpnB2x2',
     'SYy3bPPGqf3NipGyVRcgcu6rq7RKHoyh5Y',
     'SQ7JRP54iQeLCHR8tujDJsAndKeiuyAqbi',
-    'BJDirPFfohpTRXTiTzw8gfZjV9qy3CRqpM',
+   # 'BJDirPFfohpTRXTiTzw8gfZjV9qy3CRqpM',
 ]
 
 logger = logging.getLogger(__name__)
