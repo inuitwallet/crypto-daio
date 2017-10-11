@@ -40,7 +40,7 @@ class Command(BaseCommand):
                 logger.warning('{} does not exist'.format(address))
                 continue
 
-            balance = blocked_address.balance()
+            balance = blocked_address.balance
             logger.info('{} has a balance of {}'.format(address, balance))
             total_balance += balance
 
