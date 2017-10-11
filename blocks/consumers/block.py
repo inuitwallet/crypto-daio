@@ -110,7 +110,7 @@ def fix_previous_block(block, chain):
     try:
         prev_block = Block.objects.get(hash=prev_hash)
     except Block.DoesNotExist:
-        prev_block = Block(hash=prev_hash)
+        prev_block = Block.objects.create(hash=prev_hash)
 
     try:
         prev_height_block = Block.objects.get(height=block.height - 1)
