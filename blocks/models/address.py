@@ -3,6 +3,8 @@ import logging
 from caching.base import CachingMixin, CachingManager
 from django.core.paginator import Paginator
 from django.db import models
+from django.db.models import Sum
+
 from blocks.models import Transaction
 from blocks.models import TxInput
 
@@ -27,21 +29,44 @@ class Address(CachingMixin, models.Model):
 
     @property
     def balance(self):
-        balance = 0
-        for output in self.outputs.all():
-            if not output.transaction.block:
-                continue
+        balance = self.outputs.filter(
+            input__isnull=True,
+            transaction__block__isnull=False,
+            transaction__block__height__isnull=False
+        ).aggregate(
+            Sum('value')
+        )
 
-            if not output.transaction.block.height:
-                continue
+        print(balance)
 
-            try:
-                if output.input:
-                    continue
-            except TxInput.DoesNotExist:
-                balance += output.display_value
+        return balance['value__sum'] / 10000
 
-        return balance
+        # print('unspent = {}'.format(outputs.count()))
+        # print('all = {}'.format(self.outputs.all().count()))
+        #
+        # for output in outputs:
+        #     if not output.transaction.block:
+        #         continue
+        #
+        #     if not output.transaction.block.height:
+        #         continue
+        #
+        #     balance += output.display_value
+        #
+        # # for output in self.outputs.all():
+        # #     if not output.transaction.block:
+        # #         continue
+        # #
+        # #     if not output.transaction.block.height:
+        # #         continue
+        # #
+        # #     try:
+        # #         if output.input:
+        # #             continue
+        # #     except TxInput.DoesNotExist:
+        # #         balance += output.display_value
+        #
+        # return balance
 
     def transactions(self, page=1):
         transactions = Transaction.objects.distinct(

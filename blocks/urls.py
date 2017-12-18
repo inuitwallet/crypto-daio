@@ -1,4 +1,4 @@
-from django.conf.urls import url
+from django.conf.urls import url, include
 from blocks.views import *
 
 block_hash_pattern = r'([A-Za-z0-9]{64})'
@@ -28,4 +28,7 @@ urlpatterns = [
     url(r'^health$', HealthView.as_view(), name='health'),
 
     url(r'^menu/charts$', ChartsView.as_view(), name='charts_menu'),
+
+    # API
+    url(r'^api/v1/', include('api.urls.v1'))
 ]

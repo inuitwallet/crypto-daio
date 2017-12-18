@@ -67,7 +67,7 @@ Info Panel
 Menu
  */
 nav {
-    height: 4vh;
+    min-height: 4vh;
     position: relative;
     left: 10px;
 }
