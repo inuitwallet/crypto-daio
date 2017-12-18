@@ -30,5 +30,5 @@ urlpatterns = [
     url(r'^menu/charts$', ChartsView.as_view(), name='charts_menu'),
 
     # API
-    url(r'^api/v1/', include('api.urls.v1'))
+    url(r'^api/v1/', include('blocks.api.urls.v1'))
 ]
