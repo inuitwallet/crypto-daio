@@ -395,6 +395,9 @@ class Transaction(CachingMixin, models.Model):
 
     @property
     def address_inputs(self):
+        if not self.block:
+            return
+
         address_inputs = {}
 
         for tin in self.inputs.all():
@@ -410,6 +413,9 @@ class Transaction(CachingMixin, models.Model):
 
     @property
     def address_outputs(self):
+        if not self.block:
+            return
+
         address_outputs = {}
 
         for address_tx in self.outputs.all().distinct(

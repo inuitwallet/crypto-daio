@@ -37,47 +37,18 @@ class Address(CachingMixin, models.Model):
             Sum('value')
         )
 
-        print(balance)
-
-        return balance['value__sum'] / 10000
-
-        # print('unspent = {}'.format(outputs.count()))
-        # print('all = {}'.format(self.outputs.all().count()))
-        #
-        # for output in outputs:
-        #     if not output.transaction.block:
-        #         continue
-        #
-        #     if not output.transaction.block.height:
-        #         continue
-        #
-        #     balance += output.display_value
-        #
-        # # for output in self.outputs.all():
-        # #     if not output.transaction.block:
-        # #         continue
-        # #
-        # #     if not output.transaction.block.height:
-        # #         continue
-        # #
-        # #     try:
-        # #         if output.input:
-        # #             continue
-        # #     except TxInput.DoesNotExist:
-        # #         balance += output.display_value
-        #
-        # return balance
+        return balance['value__sum']
 
     def transactions(self, page=1):
-        transactions = Transaction.objects.distinct(
-            'tx_id'
-        ).filter(
-            output__address=self
+        transactions = Transaction.objects.filter(
+            output__address=self,
+            block__isnull=False,
+            block__height__isnull=False
         ).order_by(
-            'tx_id',
             '-time'
         )
-        paginator = Paginator(transactions, 50)
+        paginator = Paginator(transactions, 10)
+
         return paginator.page(page)
 
 

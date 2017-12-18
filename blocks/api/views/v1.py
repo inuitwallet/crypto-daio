@@ -8,6 +8,4 @@ from blocks.models import Address
 class AddressBalance(View):
     def get(self, request, address):
         address_object = get_object_or_404(Address, address=address)
-        return JsonResponse(
-            {'address': address_object.address, 'balance': address_object.balance}
-        )
+        return JsonResponse({'balance': address_object.balance})
