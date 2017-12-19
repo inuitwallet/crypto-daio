@@ -1,69 +1,9 @@
 {% extends 'base.html' %}
 
-{% load nvd3_tags static block_extras chart_extras %}
-
 {% block title %}
     USD NAV
 {% endblock %}
 
-{% block head %}
-    {% include_chart_jscss %}
-    {% load_chart chart_type series_data 'usd_nav' extra %}
-    <!-- main stylesheet -->
-    <link rel="stylesheet" href="{% static 'charts/css/main.css' %}" />
-{% endblock %}
-
 {% block content %}
-    <div class="row spacer"></div>
-    <div class="row">
-        <div class="col-md-12">
-            <a href="{% url 'usd_nav' %}?span=129600&interval=10080" class="btn btn-default {% if span == 129600 %}btn-primary{% endif %}">90 days</a>
-            <a href="{% url 'usd_nav' %}" class="btn btn-default {% if span == 43200 %}btn-primary{% endif %}">30 days</a>
-            <a href="{% url 'usd_nav' %}?span=20160&interval=1440" class="btn btn-default {% if span == '20160' %}btn-primary{% endif %}">14 days</a>
-            <a href="{% url 'usd_nav' %}?span=10080&interval=720" class="btn btn-default {% if span == '10080' %}btn-primary{% endif %}">7 days</a>
-            <a href="{% url 'usd_nav' %}?span=1440&interval=60" class="btn btn-default {% if span == '1440' %}btn-primary{% endif %}">1 day</a>
-            <a href="{% url 'usd_nav' %}?span=720&interval=30" class="btn btn-default {% if span == '720' %}btn-primary{% endif %}">12 hours</a>
-            <a href="{% url 'usd_nav' %}?span=360&interval=15" class="btn btn-default {% if span == '360' %}btn-primary{% endif %}">6 hours</a>
-            <a href="{% url 'usd_nav' %}?span=60&interval=5" class="btn btn-default {% if span == '60' %}btn-primary{% endif %}">1 hour</a>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-12 text center">
-            <h2>{{ chain.name|title }} NAV in USD over {{ span|human_time }} at {{ interval|human_time }} intervals</h2>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-12">
-            <div class="graph">
-                {% include_container 'usd_nav' 500 '100%' %}
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="col-md-12">
-            <table class="table table-responsive table-bordered table-compact table-striped table-hover">
-                <thead>
-                    <tr>
-                        <td>Source</td>
-                        <td>Value</td>
-                        <td>USD Value</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for balance in balances %}
-                        {{ balance }}
-                        <tr>
-                            <td>{{ order.pair.exchange }}</td>
-                            <td>{{ order.pair.quote_currency.code }}</td>
-                            <td>{{ order.pair.base_currency.code }}</td>
-                            <td>{{ order.order_type }}</td>
-                            <td>{{ order.amount }}</td>
-                            <td>{{ order.rate }}</td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
+    <iframe src="https://grafana.crypto-daio.co.uk/dashboard/snapshot/usd-nav?orgId=0" width="100%" height="750" frameborder="0"></iframe>
 {% endblock %}
