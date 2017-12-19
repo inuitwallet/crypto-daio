@@ -1,92 +1,9 @@
 {% extends 'base.html' %}
 
-{% load nvd3_tags static chart_extras humanize %}
-
 {% block title %}
     Current Liquidity
 {% endblock %}
 
-{% block head %}
-    {% include_chart_jscss %}
-    {% load_chart chart_type series_data 'current_liquidity' extra %}
-    <!-- main stylesheet -->
-    <link rel="stylesheet" href="{% static 'charts/css/main.css' %}" />
-{% endblock %}
-
 {% block content %}
-    <div class="row">
-        <div class="col-md-12">
-            <div class="graph">
-                {% include_container 'current_liquidity' 500 '100%' %}
-            </div>
-        </div>
-    </div>
-    <div class="row">
-        <div class="col-md-6">
-            <div class="row">
-                <div class="col-md-12 text-center">
-                    <h3>Buy Orders</h3>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-12">
-                    <table class="table table-responsive table-bordered table-compact table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <td>Exchange</td>
-                                <td>Pair</td>
-                                <td>Amount</td>
-                                <td>Rate</td>
-                                <td>Total</td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for order in buy_orders %}
-                                <tr>
-                                    <td>{{ order.pair.exchange }}</td>
-                                    <td>{{ order.pair.quote_currency.code }}/{{ order.pair.base_currency.code }}</td>
-                                    <td>{{ order.amount|floatformat:8|intcomma }} {{ order.pair.quote_currency.code }}</td>
-                                    <td>{{ order.rate|floatformat:8|intcomma }} {{ order.pair.base_currency.code }}</td>
-                                    <td>{{ order.amount|multiply:order.rate|floatformat:8|intcomma }} {{ order.pair.base_currency.code }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="row">
-                <div class="col-md-12 text-center">
-                    <h3>Sell Orders</h3>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-12">
-                    <table class="table table-responsive table-bordered table-compact table-striped table-hover">
-                        <thead>
-                            <tr>
-                                <td>Exchange</td>
-                                <td>Pair</td>
-                                <td>Amount</td>
-                                <td>Rate</td>
-                                <td>Total</td>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for order in sell_orders %}
-                                <tr>
-                                    <td>{{ order.pair.exchange }}</td>
-                                    <td>{{ order.pair.quote_currency.code }}/{{ order.pair.base_currency.code }}</td>
-                                    <td>{{ order.amount|floatformat:8|intcomma }} {{ order.pair.quote_currency.code }}</td>
-                                    <td>{{ order.rate|floatformat:8|intcomma }} {{ order.pair.base_currency.code }}</td>
-                                    <td>{{ order.amount|multiply:order.rate|floatformat:8|intcomma }} {{ order.pair.base_currency.code }}</td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+    <iframe src="https://grafana.crypto-daio.co.uk/dashboard/snapshot/current-total-liquidity?orgId=0" width="100%" height="650" frameborder="0"></iframe>
 {% endblock %}
