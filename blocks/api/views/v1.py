@@ -23,3 +23,15 @@ class TotalSupply(View):
             '-time_added'
         ).first()
         return HttpResponse(latest_info.money_supply)
+
+
+class ParkedSupply(View):
+    @staticmethod
+    def get(request, coin):
+        coin_object = get_object_or_404(Coin, code=coin)
+        latest_info = Info.objects.filter(
+            unit=coin_object.unit_code
+        ).order_by(
+            '-time_added'
+        ).first()
+        return HttpResponse(latest_info.total_parked if latest_info.total_parked else 0)
