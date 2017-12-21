@@ -159,7 +159,7 @@ class CirculatingSupply(View):
 
         for address in network_owned_addresses:
             version_number = get_version_number(address.address)
-            logger.info(version_number, coin_object.magic_byte, address.address)
+            logger.info('{} == {} for {}'.format(version_number, coin_object.magic_byte, address.address))
             if version_number == coin_object.magic_byte:
                 total_network_owned_funds += Decimal(address.balance / 10000)
 
