@@ -43,7 +43,7 @@ class Address(CachingMixin, models.Model):
             Sum('value')
         )
 
-        return balance['value__sum']
+        return balance['value__sum'] if balance['value__sum'] else 0
 
     def transactions(self, page=1):
         transactions = Transaction.objects.filter(
