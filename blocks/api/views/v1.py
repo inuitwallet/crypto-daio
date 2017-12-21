@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from blocks.models import Address, Info, Transaction
 from daio.models import Coin
 from blocks.utils.rpc import send_rpc
-from pynubitools import get_version_number
+from blocks.pynubitools import get_version_number
 
 
 class AddressBalance(View):
