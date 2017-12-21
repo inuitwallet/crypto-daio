@@ -42,5 +42,10 @@ urlpatterns = [
         r'coin/(?P<coin>.*)/supply/circulating$',
         v1.CirculatingSupply.as_view(),
         name='v1.circulating_supply'
+    ),
+    url(
+        r'coin/(?P<coin>.*)/network_owned_addresses$',
+        v1.NetworkOwnedAddresses.as_view(),
+        name='v1.network_owned_addresses'
     )
 ]

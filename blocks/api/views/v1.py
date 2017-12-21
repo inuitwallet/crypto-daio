@@ -168,3 +168,25 @@ class CirculatingSupply(View):
                 coin_object.decimal_places
             )
         )
+
+
+class NetworkOwnedAddresses(View):
+    @staticmethod
+    def get(request, coin):
+        coin_object = get_object_or_404(Coin, code=coin)
+        network_owned_addresses = Address.objects.filter(network_owned=True)
+
+        return JsonResponse(
+            {
+                'network_owned_addresses': [
+                    {
+                        'address': address.address,
+                        'balance': round(
+                            Decimal(address.balance / 10000),
+                            coin_object.decimal_places
+                        )
+                    } for address in network_owned_addresses
+                    if get_version_number(address.address) == coin_object.magic_byte
+                ]
+            }
+        )
