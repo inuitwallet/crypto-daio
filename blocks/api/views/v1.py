@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 from blocks.models import Address, Info, Transaction
 from daio.models import Coin
-from utils.rpc import send_rpc
+from blocks.utils.rpc import send_rpc
 
 
 class AddressBalance(View):
