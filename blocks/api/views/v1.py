@@ -1,5 +1,4 @@
-import codecs
-
+import logging
 from decimal import Decimal
 from django.db import connection
 from django.http import JsonResponse, HttpResponse
@@ -11,6 +10,8 @@ from blocks.models import Address, Info, Transaction
 from daio.models import Coin
 from blocks.utils.rpc import send_rpc
 from blocks.pynubitools import get_version_number
+
+logger = logging.getLogger(__name__)
 
 
 class AddressBalance(View):
@@ -158,7 +159,7 @@ class CirculatingSupply(View):
 
         for address in network_owned_addresses:
             version_number = get_version_number(address.address)
-
+            logger.info(version_number, coin_object.magic_byte, address.address)
             if version_number == coin_object.magic_byte:
                 total_network_owned_funds += Decimal(address.balance / 10000)
 
