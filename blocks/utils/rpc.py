@@ -43,7 +43,7 @@ def send_rpc(data, schema_name, rpc_port=None, retry=0):
             error = result.get('error', None)
             if error:
                 logger.error(
-                    'rpc error sending {}: {}'.format(data, result.get('result'))
+                    'rpc error sending {}: {}'.format(data, error)
                 )
                 return False
             return result.get('result')
