@@ -18,6 +18,12 @@ class Address(CachingMixin, models.Model):
         db_index=True,
     )
 
+    # Addresses that are network owned are not counted in the
+    # 'Circulating Currency' calculation
+    network_owned = models.BooleanField(
+        default=False
+    )
+
     objects = CachingManager()
 
     def __str__(self):

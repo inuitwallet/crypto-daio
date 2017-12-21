@@ -1,3 +1,6 @@
+import codecs
+
+from decimal import Decimal
 from django.db import connection
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
@@ -7,6 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 from blocks.models import Address, Info, Transaction
 from daio.models import Coin
 from blocks.utils.rpc import send_rpc
+from pynubitools import get_version_number
 
 
 class AddressBalance(View):
@@ -133,3 +137,34 @@ class ParkedSupply(View):
             '-time_added'
         ).first()
         return HttpResponse(latest_info.total_parked if latest_info.total_parked else 0)
+
+
+class CirculatingSupply(View):
+    @staticmethod
+    def get(request, coin):
+        coin_object = get_object_or_404(Coin, code=coin)
+        latest_info = Info.objects.filter(
+            unit=coin_object.unit_code
+        ).order_by(
+            '-time_added'
+        ).first()
+
+        total_supply = latest_info.money_supply
+
+        parked = latest_info.total_parked if latest_info.total_parked else 0
+
+        network_owned_addresses = Address.objects.filter(network_owned=True)
+        total_network_owned_funds = 0
+
+        for address in network_owned_addresses:
+            version_number = get_version_number(address.address)
+
+            if version_number == coin_object.magic_byte:
+                total_network_owned_funds += Decimal(address.balance / 10000)
+
+        return HttpResponse(
+            round(
+                total_supply - (parked + total_network_owned_funds),
+                coin_object.decimal_places
+            )
+        )

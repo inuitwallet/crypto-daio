@@ -33,6 +33,10 @@ class Coin(models.Model):
         default=0
     )
     decimal_places = models.PositiveIntegerField(default=8)
+    # address_prefix = models.CharField(
+    #     max_length=10,
+    #     default='1'
+    # )
 
     def __str__(self):
         return self.code

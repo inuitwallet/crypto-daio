@@ -429,9 +429,19 @@ def b58check_to_bin(inp):
 
 def get_version_byte(inp):
     leadingzbytes = len(re.match('^1*', inp).group(0))
+    print(leadingzbytes)
+    data = b'\x00' * leadingzbytes + changebase(inp, 58, 256)
+    print(data)
+    assert bin_dbl_sha256(data[:-4])[:4] == data[-4:]
+    print(data[0])
+    return ord(data[0])
+
+
+def get_version_number(inp):
+    leadingzbytes = len(re.match('^1*', inp).group(0))
     data = b'\x00' * leadingzbytes + changebase(inp, 58, 256)
     assert bin_dbl_sha256(data[:-4])[:4] == data[-4:]
-    return ord(data[0])
+    return data[0]
 
 
 def hex_to_b58check(inp, magicbyte=0):
