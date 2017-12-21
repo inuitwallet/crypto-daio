@@ -158,11 +158,13 @@ class CirculatingSupply(View):
         total_network_owned_funds = 0
 
         for address in network_owned_addresses:
+            logger.info(address.address)
             version_number = get_version_number(address.address)
             logger.info('{} == {} for {}'.format(version_number, coin_object.magic_byte, address.address))
             if version_number == coin_object.magic_byte:
                 total_network_owned_funds += Decimal(address.balance / 10000)
 
+        logger.info(total_network_owned_funds)
         return HttpResponse(
             round(
                 total_supply - (parked + total_network_owned_funds),
