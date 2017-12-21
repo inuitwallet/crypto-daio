@@ -37,7 +37,7 @@ class AddressUnspent(View):
                             'tx': output.transaction.tx_id,
                             'n': output.index,
                             'script': output.script_pub_key_asm,
-                            'amount': output.value
+                            'amount': output.display_value
                         } for output in address_object.outputs.filter(
                             input__isnull=True,
                             transaction__block__isnull=False,
