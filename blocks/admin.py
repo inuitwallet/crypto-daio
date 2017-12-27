@@ -63,3 +63,38 @@ class NetworkFundAdmin(admin.ModelAdmin):
 
 
 admin.site.register(NetworkFund, NetworkFundAdmin)
+
+
+class CustodianVoteAdmin(admin.ModelAdmin):
+    list_display = ('block', 'address', 'amount')
+
+
+admin.site.register(CustodianVote, CustodianVoteAdmin)
+
+
+class MotionVoteAdmin(admin.ModelAdmin):
+    list_display = ('block', 'hash')
+
+
+admin.site.register(MotionVote, MotionVoteAdmin)
+
+
+class FeesVoteAdmin(admin.ModelAdmin):
+    list_display = ('block', 'coin', 'fee')
+
+
+admin.site.register(FeesVote, FeesVoteAdmin)
+
+
+class ParkRateVoteAdmin(admin.ModelAdmin):
+    list_display = ('block', 'coin')
+
+
+admin.site.register(ParkRateVote, ParkRateVoteAdmin)
+
+
+class ActiveParkRateAdmin(admin.ModelAdmin):
+    list_display = ('block', 'coin')
+
+
+admin.site.register(ActiveParkRate, ActiveParkRateAdmin)
