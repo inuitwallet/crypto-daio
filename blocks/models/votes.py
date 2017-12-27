@@ -66,6 +66,9 @@ class ParkRate(models.Model):
         default=0
     )
 
+    def __str__(self):
+        return '{}:{}'.format(self.blocks, self.rate)
+
 
 class ParkRateVote(models.Model):
     block = models.ForeignKey(
