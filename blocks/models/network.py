@@ -2,6 +2,8 @@
 from django.db import models
 from django.utils.timezone import now
 
+from daio.models import Coin
+
 
 class InfoManager(models.Manager):
     def get_closest_to(self, target):
@@ -102,4 +104,33 @@ class Orphan(models.Model):
     )
     date_time = models.DateTimeField(
         default=now
+    )
+
+
+class ActiveParkRate(models.Model):
+    block = models.ForeignKey(
+        'Block',
+        blank=True,
+        null=True
+    )
+    coin = models.ForeignKey(
+        Coin,
+        blank=True,
+        null=True
+    )
+    rates = models.ManyToManyField(
+        'ParkRate'
+    )
+
+
+class NetworkFund(models.Model):
+    """"
+    Network owned funds that should be removed from the Circulating currency calculation
+    """
+    name = models.CharField(
+        max_length=255
+    )
+    value = models.DecimalField(
+        max_digits=25,
+        decimal_places=8
     )

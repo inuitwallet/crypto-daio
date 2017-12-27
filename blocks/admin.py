@@ -1,4 +1,5 @@
 from django.contrib import admin
+
 from .models import *
 
 
@@ -55,3 +56,10 @@ class WatchAddressAdmin(admin.ModelAdmin):
 
 
 admin.site.register(WatchAddress, WatchAddressAdmin)
+
+
+class NetworkFundAdmin(admin.ModelAdmin):
+    list_display = ('name', 'value')
+
+
+admin.site.register(NetworkFund, NetworkFundAdmin)

@@ -13,8 +13,19 @@ from django.db.models import Max
 from django.utils.timezone import make_aware
 from django.db.utils import IntegrityError
 
-from blocks.models import Transaction, Orphan
-from blocks.models import TxInput
+from blocks.models import (
+    Transaction,
+    Orphan,
+    TxInput,
+    CustodianVote,
+    Address,
+    MotionVote,
+    FeesVote,
+    ParkRateVote,
+    ParkRate,
+    ActiveParkRate
+)
+from daio.models import Coin
 
 logger = logging.getLogger(__name__)
 
@@ -291,6 +302,77 @@ class Block(CachingMixin, models.Model):
                 tx.parse_output(rpc_output)
 
             tx.save()
+
+        # save the votes too
+        votes = rpc_block.get('votes', {})
+        # custodian votes
+        for custodian_vote in votes.get('custodians', []):
+            custodian_address = custodian_vote.get('address')
+            if not custodian_address:
+                continue
+            address, _ = Address.objects.get_or_create(address=custodian_address)
+            CustodianVote.objects.get_or_create(
+                block=self,
+                address=custodian_address,
+                amount=custodian_vote.get('amount', 0)
+            )
+        # motion votes
+        for motion_vote in votes.get('motions', []):
+            MotionVote.objects.get_or_create(
+                block=self,
+                hash=motion_vote
+            )
+        # fees votes
+        fee_votes = votes.get('fees', {})
+        for fee_vote in fee_votes:
+            try:
+                coin = Coin.objects.get(unit_code=fee_vote)
+            except Coin.DoesNotExist:
+                continue
+
+            FeesVote.objects.get_or_create(
+                block=self,
+                coin=coin,
+                fee=fee_votes[fee_vote]
+            )
+        # park rate votes
+        for park_rate_vote in votes.get('parkrates', []):
+            try:
+                coin = Coin.objects.get(unit_code=park_rate_vote.get('unit'))
+            except Coin.DoesNotExist:
+                continue
+
+            vote, _ = ParkRateVote.objects.get_or_create(
+                block=self,
+                coin=coin
+            )
+
+            for rate in park_rate_vote.get('rates', []):
+                park_rate, _ = ParkRate.objects.get_or_create(
+                    blocks=rate.get('blocks', 0),
+                    rate=rate.get('rate')
+                )
+                vote.rates.add(park_rate)
+
+        # get active park rates
+        for park_rate in rpc_block.get('parkrates', []):
+            try:
+                coin = Coin.objects.get(unit_code=park_rate.get('unit'))
+            except Coin.DoesNotExist:
+                continue
+
+            active_rate, _ = ActiveParkRate.objects.get_or_create(
+                block=self,
+                coin=coin
+            )
+
+            for rate in park_rate.get('rates', []):
+                park_rate, _ = ParkRate.objects.get_or_create(
+                    blocks=rate.get('blocks', 0),
+                    rate=rate.get('rate')
+                )
+                active_rate.rates.add(park_rate)
+
         logger.info('saved block {}'.format(self))
 
     @property

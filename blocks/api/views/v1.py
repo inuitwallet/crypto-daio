@@ -1,12 +1,13 @@
 import logging
 from decimal import Decimal
 from django.db import connection
+from django.db.models import Sum
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
-from blocks.models import Address, Info, Transaction
+from blocks.models import Address, Info, Transaction, NetworkFund
 from daio.models import Coin
 from blocks.utils.rpc import send_rpc
 from blocks.pynubitools import get_version_number
@@ -151,9 +152,9 @@ class CirculatingSupply(View):
         ).first()
 
         total_supply = latest_info.money_supply
-
         parked = latest_info.total_parked if latest_info.total_parked else 0
 
+        # funds at network addresses
         network_owned_addresses = Address.objects.filter(network_owned=True)
         total_network_owned_funds = 0
 
@@ -162,6 +163,10 @@ class CirculatingSupply(View):
 
             if version_number == coin_object.magic_byte:
                 total_network_owned_funds += Decimal(address.balance / 10000)
+
+        # other network owned funds
+        other_funds = NetworkFund.objects.all().aggregate(Sum('value'))
+        total_network_owned_funds += other_funds['value__sum']
 
         return HttpResponse(
             round(
