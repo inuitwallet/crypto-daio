@@ -67,6 +67,7 @@ admin.site.register(NetworkFund, NetworkFundAdmin)
 
 class CustodianVoteAdmin(admin.ModelAdmin):
     list_display = ('block', 'address', 'amount')
+    raw_id_fields = ('block', 'address')
 
 
 admin.site.register(CustodianVote, CustodianVoteAdmin)
@@ -74,6 +75,7 @@ admin.site.register(CustodianVote, CustodianVoteAdmin)
 
 class MotionVoteAdmin(admin.ModelAdmin):
     list_display = ('block', 'hash')
+    raw_id_fields = ('block',)
 
 
 admin.site.register(MotionVote, MotionVoteAdmin)
@@ -81,6 +83,7 @@ admin.site.register(MotionVote, MotionVoteAdmin)
 
 class FeesVoteAdmin(admin.ModelAdmin):
     list_display = ('block', 'coin', 'fee')
+    raw_id_fields = ('block', 'coin')
 
 
 admin.site.register(FeesVote, FeesVoteAdmin)
@@ -88,6 +91,7 @@ admin.site.register(FeesVote, FeesVoteAdmin)
 
 class ParkRateVoteAdmin(admin.ModelAdmin):
     list_display = ('block', 'coin')
+    raw_id_fields = ('block', 'coin')
 
 
 admin.site.register(ParkRateVote, ParkRateVoteAdmin)
@@ -95,6 +99,7 @@ admin.site.register(ParkRateVote, ParkRateVoteAdmin)
 
 class ActiveParkRateAdmin(admin.ModelAdmin):
     list_display = ('block', 'coin')
+    raw_id_fields = ('block', 'coin')
 
 
 admin.site.register(ActiveParkRate, ActiveParkRateAdmin)
