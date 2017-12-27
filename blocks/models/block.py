@@ -282,7 +282,7 @@ class Block(CachingMixin, models.Model):
         self.parse_rpc_transactions(rpc_block.get('tx', []))
 
         # save the votes too
-        self.parse_rpc_votes(rpc_block.get('votes', {}))
+        self.parse_rpc_votes(rpc_block.get('vote', {}))
 
         # save active park rates
         self.parse_rpc_parkrates(rpc_block.get('parkrates', []))
