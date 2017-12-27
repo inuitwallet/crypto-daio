@@ -323,7 +323,7 @@ class Block(CachingMixin, models.Model):
             address, _ = Address.objects.get_or_create(address=custodian_address)
             CustodianVote.objects.get_or_create(
                 block=self,
-                address=custodian_address,
+                address=address,
                 amount=custodian_vote.get('amount', 0)
             )
         # motion votes
