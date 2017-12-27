@@ -76,7 +76,11 @@ class Command(BaseCommand):
                     if not rpc_block:
                         logger.warning('No data for {}'.format(block))
 
-                    block.parse_rpc_block(rpc_block)
+                    # save the votes
+                    block.parse_rpc_votes(rpc_block.get('votes', {}))
+
+                    # save active park rates
+                    block.parse_rpc_parkrates(rpc_block.get('parkrates', []))
 
                 logger.info('Got vote data for {} blocks'.format(total_blocks))
 

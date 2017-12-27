@@ -279,8 +279,19 @@ class Block(CachingMixin, models.Model):
         self.save()
 
         # now we do the transactions
+        self.parse_rpc_transactions(rpc_block.get('tx', []))
+
+        # save the votes too
+        self.parse_rpc_votes(rpc_block.get('votes', {}))
+
+        # save active park rates
+        self.parse_rpc_parkrates(rpc_block.get('parkrates', []))
+
+        logger.info('saved block {}'.format(self))
+
+    def parse_rpc_transactions(self, txs):
         tx_index = 0
-        for rpc_tx in rpc_block.get('tx', []):
+        for rpc_tx in txs:
             try:
                 tx = Transaction.objects.get(tx_id=rpc_tx.get('txid'))
             except Transaction.DoesNotExist:
@@ -303,8 +314,7 @@ class Block(CachingMixin, models.Model):
 
             tx.save()
 
-        # save the votes too
-        votes = rpc_block.get('votes', {})
+    def parse_rpc_votes(self, votes):
         # custodian votes
         for custodian_vote in votes.get('custodians', []):
             custodian_address = custodian_vote.get('address')
@@ -354,8 +364,8 @@ class Block(CachingMixin, models.Model):
                 )
                 vote.rates.add(park_rate)
 
-        # get active park rates
-        for park_rate in rpc_block.get('parkrates', []):
+    def parse_rpc_parkrates(self, rates):
+        for park_rate in rates:
             try:
                 coin = Coin.objects.get(unit_code=park_rate.get('unit'))
             except Coin.DoesNotExist:
@@ -372,8 +382,6 @@ class Block(CachingMixin, models.Model):
                     rate=rate.get('rate')
                 )
                 active_rate.rates.add(park_rate)
-
-        logger.info('saved block {}'.format(self))
 
     @property
     def is_valid(self):
