@@ -1,0 +1,64 @@
+body {
+    background-color: #41000d;
+    color: #f9f9f9;
+}
+
+.coin-info {
+    background-color: #343031;
+    color: #f9f9f9;
+}
+
+.menu nav a {
+    color: #f9f9f9;
+}
+
+.menu nav a:visited {
+    color: #f9f9f9;
+}
+
+.menu nav a:hover {
+    text-decoration: none;
+}
+
+.menu nav a:hover span {
+    color: #c0c0c0;
+    text-decoration: none;
+}
+
+.menu {
+    background-color: #41000d;
+    color: #f9f9f9;
+}
+
+.search input {
+    color: #41000d;
+}
+
+.search button {
+    background-color: #231F20;
+    color: #F9F9F9;
+}
+
+.search button:hover {
+    color: #c0c0c0;
+}
+
+.search-input:focus {
+    border-color: #231F20;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.075) inset, 0 0 8px #ffb800;
+    outline: 0 none;
+}
+
+.block-title {
+    border-color: #231F20;
+    background-color: #231F20;
+    color: #F9F9F9;
+}
+
+.valid {
+    border-color: #ffb800;
+}
+
+.in-valid {
+    border-color: #ef3614;
+}
