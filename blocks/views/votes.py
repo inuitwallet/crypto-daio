@@ -54,7 +54,7 @@ class GrantView(View):
                         'first_seen': CustodianVote.objects.filter(
                             address=grant.address,
                             amount=grant.amount
-                        ).aggregate(Min('block'))['block__min'],
+                        ).aggregate(Min('block__height'))['block__height__min'],
                         'sharedays_destroyed': grant_sharedays,
                         'sharedays_percentage': round(
                             (grant_sharedays / sharedays_destroyed) * 100,
