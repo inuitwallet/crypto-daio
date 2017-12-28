@@ -321,17 +321,28 @@ class Block(CachingMixin, models.Model):
             if not custodian_address:
                 continue
             address, _ = Address.objects.get_or_create(address=custodian_address)
-            CustodianVote.objects.get_or_create(
-                block=self,
-                address=address,
-                amount=custodian_vote.get('amount', 0)
-            )
+            try:
+                CustodianVote.objects.get_or_create(
+                    block=self,
+                    address=address,
+                    amount=custodian_vote.get('amount', 0)
+                )
+            except CustodianVote.MultipleObjectsReturned:
+                logger.warning(
+                    'got multiple custodian votes {}:{}:{}'.format(
+                        self,
+                        address,
+                        custodian_vote.get('amount', 0)
+                    )
+                )
+                continue
         # motion votes
         for motion_vote in votes.get('motions', []):
             MotionVote.objects.get_or_create(
                 block=self,
                 hash=motion_vote
             )
+
         # fees votes
         fee_votes = votes.get('fees', {})
         for fee_vote in fee_votes:
@@ -340,11 +351,21 @@ class Block(CachingMixin, models.Model):
             except Coin.DoesNotExist:
                 continue
 
-            FeesVote.objects.get_or_create(
-                block=self,
-                coin=coin,
-                fee=fee_votes[fee_vote]
-            )
+            try:
+                FeesVote.objects.get_or_create(
+                    block=self,
+                    coin=coin,
+                    fee=fee_votes[fee_vote]
+                )
+            except FeesVote.MultipleObjectsReturned:
+                logger.warning(
+                    'got multiple fees votes {}:{}:{}'.format(
+                        self,
+                        coin,
+                        fee_votes[fee_vote]
+                    )
+                )
+                continue
         # park rate votes
         for park_rate_vote in votes.get('parkrates', []):
             try:
