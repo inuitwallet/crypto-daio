@@ -365,7 +365,7 @@ class Block(CachingMixin, models.Model):
                     )
                 except ParkRate.MultipleObjectsReturned:
                     logger.error(
-                        'Got Multiple ParkRates for {}:{}. Attaching to {}'.format(
+                        'Got Multiple ParkRates for {}:{} Attaching to {}'.format(
                             rate.get('blocks', 0),
                             rate.get('rate', 0),
                             self
