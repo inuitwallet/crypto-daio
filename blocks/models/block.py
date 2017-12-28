@@ -413,10 +413,19 @@ class Block(CachingMixin, models.Model):
             except Coin.DoesNotExist:
                 continue
 
-            active_rate, _ = ActiveParkRate.objects.get_or_create(
-                block=self,
-                coin=coin
-            )
+            try:
+                active_rate, _ = ActiveParkRate.objects.get_or_create(
+                    block=self,
+                    coin=coin
+                )
+            except ActiveParkRate.MultipleObjectsReturned:
+                logger.error(
+                    'Got Multiple ParkRates for {}:{}'.format(
+                        self,
+                        coin
+                    )
+                )
+                continue
 
             for rate in park_rate.get('rates', []):
                 park_rate, _ = ParkRate.objects.get_or_create(
