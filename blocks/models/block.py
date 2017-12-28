@@ -345,7 +345,7 @@ class Block(CachingMixin, models.Model):
                 )
             except MotionVote.MultipleObjectsReturned:
                 logger.warning(
-                    'got multiple motion votes for {}:{]'.format(self, motion_vote)
+                    'got multiple motion votes for {}:{}'.format(self, motion_vote)
                 )
                 continue
 
