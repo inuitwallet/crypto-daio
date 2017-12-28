@@ -38,13 +38,13 @@ class Command(BaseCommand):
         chain = connection.tenant
 
         if options['block']:
-            blocks = Block.objects.filter(height=options['block']).order_by('height')
+            blocks = Block.objects.filter(height=options['block']).order_by('-height')
         else:
             # no block specified so validate all blocks starting from start_height
             blocks = Block.objects.filter(
                 height__gte=options['start_height']
             ).order_by(
-                'height'
+                '-height'
             )
 
         if options['limit']:
