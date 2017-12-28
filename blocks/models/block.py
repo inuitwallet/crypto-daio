@@ -338,10 +338,16 @@ class Block(CachingMixin, models.Model):
                 continue
         # motion votes
         for motion_vote in votes.get('motions', []):
-            MotionVote.objects.get_or_create(
-                block=self,
-                hash=motion_vote
-            )
+            try:
+                MotionVote.objects.get_or_create(
+                    block=self,
+                    hash=motion_vote
+                )
+            except MotionVote.MultipleObjectsReturned:
+                logger.warning(
+                    'got multiple motion votes for {}:{]'.format(self, motion_vote)
+                )
+                continue
 
         # fees votes
         fee_votes = votes.get('fees', {})
@@ -373,10 +379,14 @@ class Block(CachingMixin, models.Model):
             except Coin.DoesNotExist:
                 continue
 
-            vote, _ = ParkRateVote.objects.get_or_create(
-                block=self,
-                coin=coin
-            )
+            try:
+                vote, _ = ParkRateVote.objects.get_or_create(
+                    block=self,
+                    coin=coin
+                )
+            except ParkRateVote.MultipleObjectsReturned:
+                logger.warning('got multiple parkrate votes for {}:{}'.format(self, coin))
+                continue
 
             for rate in park_rate_vote.get('rates', []):
                 try:
