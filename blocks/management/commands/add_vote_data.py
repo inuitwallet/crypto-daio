@@ -53,7 +53,7 @@ class Command(BaseCommand):
         logger.info(
             'getting vote data for {} blocks starting from {}'.format(
                 blocks.count(),
-                options['start_height']
+                blocks.first().height
             )
         )
 
