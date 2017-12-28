@@ -29,6 +29,9 @@ urlpatterns = [
 
     url(r'^menu/charts$', ChartsView.as_view(), name='charts_menu'),
 
+    url(r'^motions$', ChartsView.as_view(), name='motions'),
+    url(r'^grants$', GrantView.as_view(), name='grants'),
+
     # API
     url(r'^api/v1/', include('blocks.api.urls.v1'))
 ]

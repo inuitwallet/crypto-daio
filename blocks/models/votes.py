@@ -24,6 +24,9 @@ class CustodianVote(models.Model):
         default=0
     )
 
+    def __str__(self):
+        return '{}:{}:{}'.format(self.block, self.address, self.amount)
+
 
 class MotionVote(models.Model):
     block = models.ForeignKey(

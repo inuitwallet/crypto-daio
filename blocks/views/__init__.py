@@ -4,6 +4,7 @@ from blocks.views.charts import ChartsView
 from blocks.views.notify import Notify
 from blocks.views.search import Search
 from blocks.views.health import HealthView
+from blocks.views.votes import GrantView
 
 __all__ = [
     'AddressDetailView',
@@ -14,4 +15,5 @@ __all__ = [
     'Notify',
     'Search',
     'HealthView',
+    'GrantView'
 ]
