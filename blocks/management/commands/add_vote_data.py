@@ -42,7 +42,7 @@ class Command(BaseCommand):
         else:
             # no block specified so validate all blocks starting from start_height
             blocks = Block.objects.filter(
-                height__lte=options['start_height']
+                height__gte=options['start_height']
             ).order_by(
                 '-height'
             )
