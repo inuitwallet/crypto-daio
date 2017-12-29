@@ -155,14 +155,14 @@ class CirculatingSupply(View):
         parked = latest_info.total_parked if latest_info.total_parked else 0
 
         # funds at network addresses
-        network_owned_addresses = Address.objects.filter(network_owned=True)
+        network_owned_addresses = Address.objects.filter(
+            network_owned=True,
+            coin=coin_object
+        )
         total_network_owned_funds = 0
 
         for address in network_owned_addresses:
-            version_number = get_version_number(address.address)
-
-            if version_number == coin_object.magic_byte:
-                total_network_owned_funds += Decimal(address.balance / 10000)
+            total_network_owned_funds += Decimal(address.balance / 10000)
 
         # other network owned funds
         other_funds = NetworkFund.objects.filter(coin=coin_object).aggregate(Sum('value'))
@@ -179,9 +179,11 @@ class CirculatingSupply(View):
 class NetworkFunds(View):
     @staticmethod
     def get(request, coin):
-        logger.info(coin.upper())
         coin_object = get_object_or_404(Coin, code=coin.upper())
-        network_owned_addresses = Address.objects.filter(network_owned=True)
+        network_owned_addresses = Address.objects.filter(
+            network_owned=True,
+            coin=coin_object
+        )
         other_funds = NetworkFund.objects.filter(coin=coin_object)
 
         return JsonResponse(

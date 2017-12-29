@@ -44,8 +44,10 @@ admin.site.register(TxOutput, TxOutputAdmin)
 
 
 class AddressAdmin(admin.ModelAdmin):
-    list_display = ('address', 'balance', 'network_owned')
-    search_fields = ('address',)
+    list_display = ('address', 'balance', 'network_owned', 'coin')
+    search_fields = ('address', 'coin')
+    ordering = ['-network_owned']
+    raw_id_fields = ('coin',)
 
 
 admin.site.register(Address, AddressAdmin)

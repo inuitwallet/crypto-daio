@@ -7,6 +7,7 @@ from django.db.models import Sum
 
 from blocks.models import Transaction
 from blocks.models import TxInput
+from daio.models import Coin
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +23,11 @@ class Address(CachingMixin, models.Model):
     # 'Circulating Currency' calculation
     network_owned = models.BooleanField(
         default=False
+    )
+    coin = models.ForeignKey(
+        Coin,
+        blank=True,
+        null=True
     )
 
     objects = CachingManager()

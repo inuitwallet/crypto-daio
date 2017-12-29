@@ -1,3 +1,4 @@
+from django.contrib.postgres.fields import IntegerRangeField
 from django.db import models
 from tenant_schemas.models import TenantMixin
 
