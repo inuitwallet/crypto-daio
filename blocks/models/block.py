@@ -390,8 +390,9 @@ class Block(CachingMixin, models.Model):
                 continue
 
             for rate in park_rate_vote.get('rates', []):
-                logger.info(round(rate.get('rate', 0), 10))
                 try:
+                    logger.info(rate.get('blocks', 0))
+                    logger.info(round(rate.get('rate', 0), 10))
                     park_rate, _ = ParkRate.objects.get_or_create(
                         blocks=rate.get('blocks', 0),
                         rate=round(rate.get('rate', 0), 10)
