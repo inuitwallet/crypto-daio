@@ -395,7 +395,7 @@ class Block(CachingMixin, models.Model):
                     logger.info(Decimal(format(rate.get('rate', 0), '.10f')))
                     park_rate, _ = ParkRate.objects.get_or_create(
                         blocks=rate.get('blocks', 0),
-                        rate=Decimal(format(rate.get('rate', 0), '.10f')
+                        rate=Decimal(format(rate.get('rate', 0), '.10f'))
                     )
                 except ParkRate.MultipleObjectsReturned:
                     logger.error(
