@@ -196,7 +196,6 @@ class NetworkFunds(View):
                             coin_object.decimal_places
                         )
                     } for address in network_owned_addresses
-                    if get_version_number(address.address) == coin_object.magic_byte
                 ],
                 'other_network_funds': [
                     {

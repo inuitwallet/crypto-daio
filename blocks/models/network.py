@@ -122,6 +122,9 @@ class ActiveParkRate(models.Model):
         'ParkRate'
     )
 
+    class Meta:
+        unique_together = ("block", "coin")
+
 
 class NetworkFund(models.Model):
     """"

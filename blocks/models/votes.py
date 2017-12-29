@@ -27,6 +27,9 @@ class CustodianVote(models.Model):
     def __str__(self):
         return '{}:{}:{}'.format(self.block, self.address, self.amount)
 
+    class Meta:
+        unique_together = ("block", "address", "amount")
+
 
 class MotionVote(models.Model):
     block = models.ForeignKey(
@@ -39,6 +42,9 @@ class MotionVote(models.Model):
         blank=True,
         null=True
     )
+
+    class Meta:
+        unique_together = ("block", "hash")
 
 
 class FeesVote(models.Model):
@@ -58,6 +64,9 @@ class FeesVote(models.Model):
         default=0
     )
 
+    class Meta:
+        unique_together = ("block", "coin", "fee")
+
 
 class ParkRate(models.Model):
     blocks = models.IntegerField(
@@ -71,6 +80,9 @@ class ParkRate(models.Model):
 
     def __str__(self):
         return '{}:{}'.format(self.blocks, self.rate)
+
+    class Meta:
+        unique_together = ("blocks", "rate")
 
 
 class ParkRateVote(models.Model):
@@ -88,5 +100,5 @@ class ParkRateVote(models.Model):
         'ParkRate'
     )
 
-
-
+    class Meta:
+        unique_together = ("block", "coin")
