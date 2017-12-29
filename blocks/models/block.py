@@ -357,7 +357,7 @@ class Block(CachingMixin, models.Model):
                 coin = Coin.objects.get(unit_code=fee_vote)
             except Coin.DoesNotExist:
                 continue
-
+            logger.info(Decimal(fee_votes[fee_vote]))
             try:
                 FeesVote.objects.get_or_create(
                     block=self,
