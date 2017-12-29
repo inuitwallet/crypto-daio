@@ -357,7 +357,7 @@ class Block(CachingMixin, models.Model):
                 coin = Coin.objects.get(unit_code=fee_vote)
             except Coin.DoesNotExist:
                 continue
-            logger.info(round(Decimal(fee_votes[fee_vote]), 10))
+
             try:
                 FeesVote.objects.get_or_create(
                     block=self,
@@ -393,7 +393,7 @@ class Block(CachingMixin, models.Model):
                 try:
                     park_rate, _ = ParkRate.objects.get_or_create(
                         blocks=rate.get('blocks', 0),
-                        rate=rate.get('rate', 0)
+                        rate=round(Decimal(rate.get('rate', 0)), 10)
                     )
                 except ParkRate.MultipleObjectsReturned:
                     logger.error(
