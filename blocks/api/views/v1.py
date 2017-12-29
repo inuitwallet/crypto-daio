@@ -117,7 +117,7 @@ class TotalSupply(View):
     """
     @staticmethod
     def get(request, coin):
-        coin_object = get_object_or_404(Coin, code=coin)
+        coin_object = get_object_or_404(Coin, code=coin.upper())
         latest_info = Info.objects.filter(
             unit=coin_object.unit_code
         ).order_by(
@@ -132,7 +132,7 @@ class ParkedSupply(View):
     """
     @staticmethod
     def get(request, coin):
-        coin_object = get_object_or_404(Coin, code=coin)
+        coin_object = get_object_or_404(Coin, code=coin.upper())
         latest_info = Info.objects.filter(
             unit=coin_object.unit_code
         ).order_by(
@@ -144,7 +144,7 @@ class ParkedSupply(View):
 class CirculatingSupply(View):
     @staticmethod
     def get(request, coin):
-        coin_object = get_object_or_404(Coin, code=coin)
+        coin_object = get_object_or_404(Coin, code=coin.upper())
         latest_info = Info.objects.filter(
             unit=coin_object.unit_code
         ).order_by(
@@ -165,7 +165,7 @@ class CirculatingSupply(View):
                 total_network_owned_funds += Decimal(address.balance / 10000)
 
         # other network owned funds
-        other_funds = NetworkFund.objects.all().aggregate(Sum('value'))
+        other_funds = NetworkFund.objects.filter(coin=coin_object).aggregate(Sum('value'))
         total_network_owned_funds += other_funds['value__sum']
 
         return HttpResponse(
@@ -176,11 +176,13 @@ class CirculatingSupply(View):
         )
 
 
-class NetworkOwnedAddresses(View):
+class NetworkFunds(View):
     @staticmethod
     def get(request, coin):
-        coin_object = get_object_or_404(Coin, code=coin)
+        logger.info(coin.upper())
+        coin_object = get_object_or_404(Coin, code=coin.upper())
         network_owned_addresses = Address.objects.filter(network_owned=True)
+        other_funds = NetworkFund.objects.filter(coin=coin_object)
 
         return JsonResponse(
             {
@@ -193,6 +195,12 @@ class NetworkOwnedAddresses(View):
                         )
                     } for address in network_owned_addresses
                     if get_version_number(address.address) == coin_object.magic_byte
+                ],
+                'other_network_funds': [
+                    {
+                        'name': fund.name,
+                        'value': fund.value
+                    } for fund in other_funds
                 ]
             }
         )

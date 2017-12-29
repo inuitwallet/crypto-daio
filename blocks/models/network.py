@@ -134,3 +134,8 @@ class NetworkFund(models.Model):
         max_digits=25,
         decimal_places=8
     )
+    coin = models.ForeignKey(
+        Coin,
+        blank=True,
+        null=True
+    )

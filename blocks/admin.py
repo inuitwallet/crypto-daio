@@ -59,7 +59,8 @@ admin.site.register(WatchAddress, WatchAddressAdmin)
 
 
 class NetworkFundAdmin(admin.ModelAdmin):
-    list_display = ('name', 'value')
+    list_display = ('coin', 'name', 'value')
+    raw_id_fields = ('coin',)
 
 
 admin.site.register(NetworkFund, NetworkFundAdmin)
