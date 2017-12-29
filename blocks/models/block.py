@@ -362,7 +362,7 @@ class Block(CachingMixin, models.Model):
                 FeesVote.objects.get_or_create(
                     block=self,
                     coin=coin,
-                    fee=Decimal(format(fee_votes[fee_vote], '.10f'))
+                    fee=fee_votes[fee_vote]
                 )
             except FeesVote.MultipleObjectsReturned:
                 logger.warning(
@@ -395,7 +395,7 @@ class Block(CachingMixin, models.Model):
                     logger.info(rate.get('rate', 0))
                     park_rate, _ = ParkRate.objects.get_or_create(
                         blocks=rate.get('blocks', 0),
-                        rate=format(rate.get('rate', 0), '.10f')
+                        rate=rate.get('rate', 0)
                     )
                 except ParkRate.MultipleObjectsReturned:
                     logger.error(

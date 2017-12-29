@@ -58,9 +58,7 @@ class FeesVote(models.Model):
         blank=True,
         null=True
     )
-    fee = models.DecimalField(
-        max_digits=25,
-        decimal_places=10,
+    fee = models.FloatField(
         default=0
     )
 
@@ -72,9 +70,7 @@ class ParkRate(models.Model):
     blocks = models.IntegerField(
         default=0
     )
-    rate = models.DecimalField(
-        max_digits=25,
-        decimal_places=10,
+    rate = models.FloatField(
         default=0
     )
 
