@@ -8,6 +8,7 @@ import psycopg2
 from asgiref.base_layer import BaseChannelLayer
 from caching.base import CachingMixin, CachingManager
 from channels import Channel
+from decimal import Decimal
 from django.db import models, connection
 from django.db.models import Max
 from django.utils.timezone import make_aware
@@ -322,13 +323,7 @@ class Block(CachingMixin, models.Model):
                 continue
             address, _ = Address.objects.get_or_create(address=custodian_address)
             try:
-                CustodianVote.objects.get(
-                    block=self,
-                    address=address,
-                    amount=custodian_vote.get('amount', 0)
-                )
-            except CustodianVote.DoesNotExist:
-                CustodianVote.objects.create(
+                CustodianVote.objects.get_or_create(
                     block=self,
                     address=address,
                     amount=custodian_vote.get('amount', 0)
@@ -364,16 +359,10 @@ class Block(CachingMixin, models.Model):
                 continue
 
             try:
-                FeesVote.objects.get(
+                FeesVote.objects.get_or_create(
                     block=self,
                     coin=coin,
-                    fee=fee_votes[fee_vote]
-                )
-            except FeesVote.DoesNotExist:
-                FeesVote.objects.create(
-                    block=self,
-                    coin=coin,
-                    fee=fee_votes[fee_vote]
+                    fee=Decimal(fee_votes[fee_vote])
                 )
             except FeesVote.MultipleObjectsReturned:
                 logger.warning(
