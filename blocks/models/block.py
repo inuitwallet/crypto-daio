@@ -322,7 +322,13 @@ class Block(CachingMixin, models.Model):
                 continue
             address, _ = Address.objects.get_or_create(address=custodian_address)
             try:
-                CustodianVote.objects.get_or_create(
+                CustodianVote.objects.get(
+                    block=self,
+                    address=address,
+                    amount=custodian_vote.get('amount', 0)
+                )
+            except CustodianVote.DoesNotExist:
+                CustodianVote.objects.create(
                     block=self,
                     address=address,
                     amount=custodian_vote.get('amount', 0)
@@ -358,7 +364,13 @@ class Block(CachingMixin, models.Model):
                 continue
 
             try:
-                FeesVote.objects.get_or_create(
+                FeesVote.objects.get(
+                    block=self,
+                    coin=coin,
+                    fee=fee_votes[fee_vote]
+                )
+            except FeesVote.DoesNotExist:
+                FeesVote.objects.create(
                     block=self,
                     coin=coin,
                     fee=fee_votes[fee_vote]
