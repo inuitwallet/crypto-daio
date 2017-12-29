@@ -362,7 +362,7 @@ class Block(CachingMixin, models.Model):
                 FeesVote.objects.get_or_create(
                     block=self,
                     coin=coin,
-                    fee=Decimal(format(fee_vote[fee_vote], '.10f'))
+                    fee=Decimal(format(fee_votes[fee_vote], '.10f'))
                 )
             except FeesVote.MultipleObjectsReturned:
                 logger.warning(
