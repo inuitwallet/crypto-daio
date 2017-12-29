@@ -392,7 +392,7 @@ class Block(CachingMixin, models.Model):
             for rate in park_rate_vote.get('rates', []):
                 try:
                     logger.info(rate.get('blocks', 0))
-                    logger.info(Decimal(format(rate.get('rate', 0), '.10f')))
+                    logger.info(format(rate.get('rate', 0), '.10f'))
                     park_rate, _ = ParkRate.objects.get_or_create(
                         blocks=rate.get('blocks', 0),
                         rate=Decimal(format(rate.get('rate', 0), '.10f'))
