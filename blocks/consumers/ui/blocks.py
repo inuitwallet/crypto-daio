@@ -11,6 +11,16 @@ def get_block_transactions(message_dict, message):
         block = Block.objects.get(hash=block_hash)
     except Block.DoesNotExist:
         return
+    message.reply_channel.send(
+        {
+            'text': json.dumps(
+                {
+                    'message_type': 'clear_block_transactions'
+                }
+            )
+        },
+        immediately=True
+    )
     for tx in block.transactions.all():
         message.reply_channel.send(
             {

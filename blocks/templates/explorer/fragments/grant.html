@@ -1,5 +1,8 @@
-<td class="address text-right">{{ grant.address }}</td>
-<td class="amount text-right">{{ grant.amount }}</td>
-<td class="first-seen text-right">{{ grant.first_seen }}</td>
+{% load humanize %}
+
+<td class="address text-right"><a href="{% url 'address' address=grant.address %}">{{ grant.address }}</a></td>
+<td class="amount text-right">{{ grant.amount|floatformat:4|intcomma }}</td>
+<td class="first-seen text-right"><a href="{% url 'block' block_height=grant.first_seen %}">{{ grant.first_seen }}</a></td>
 <td class="votes text-right">{{ grant.number_of_votes }}<br />({{ grant.vote_percentage }}%)</td>
 <td class="coinage text-right">{{ grant.sharedays_destroyed }}<br />({{  grant.sharedays_percentage }}%)</td>
+<td class="granted text-right">{% if grant.granted %}<a href="{% url 'block' block_height=grant.granted.height %}">{{ grant.granted.height }}</a>{% else %} - {% endif %}</td>

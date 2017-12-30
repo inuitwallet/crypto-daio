@@ -5,8 +5,7 @@ from django.core.paginator import Paginator
 from django.db import models
 from django.db.models import Sum
 
-from blocks.models import Transaction
-from blocks.models import TxInput
+from blocks.models import Transaction, TxInput, TxOutput
 from daio.models import Coin
 
 logger = logging.getLogger(__name__)
@@ -52,10 +51,20 @@ class Address(CachingMixin, models.Model):
         return balance['value__sum'] if balance['value__sum'] else 0
 
     def transactions(self, page=1):
+        inputs = TxInput.objects.values_list('transaction', flat=True).filter(
+            previous_output__address=self,
+            transaction__block__isnull=False,
+            transaction__block__height__isnull=False
+        )
+        outputs = TxOutput.objects.values_list('transaction', flat=True).filter(
+            address=self,
+            transaction__block__isnull=False,
+            transaction__block__height__isnull=False
+        )
+        tx_ids = [tx for tx in inputs] + [tx for tx in outputs]
+
         transactions = Transaction.objects.filter(
-            output__address=self,
-            block__isnull=False,
-            block__height__isnull=False
+            id__in=tx_ids
         ).order_by(
             '-time'
         )

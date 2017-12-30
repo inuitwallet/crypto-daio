@@ -132,9 +132,7 @@ class Transaction(CachingMixin, models.Model):
         if tx_id:
             # this long tx_id indicates a grant reward.
             # we ignore these as they are effectively coinbase inputs
-            if tx_id != \
-                    '0000000000000000000000000000000000000000000000000000000000000000':
-                # noqa
+            if tx_id != '0000000000000000000000000000000000000000000000000000000000000000':  # noqa
                 # input is spending a previous output. Link it here
                 previous_transaction, created = Transaction.objects.get_or_create(
                     tx_id=tx_id

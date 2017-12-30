@@ -1,7 +1,5 @@
 {% extends 'base.html' %}
 
-{% load humanize static %}
-
 {% block title %}
 Custodial Grants
 {% endblock %}
@@ -10,8 +8,8 @@ Custodial Grants
     <div class="row">
         <div class="col-md-6">
             <h4>Custodial Grants active over last 10000 blocks</h4>
-            <div class="latest-blocks-container">
-                <table id="latest-blocks-table" class="table table-striped table-bordered table-hover table-condensed">
+            <div class="grants-container">
+                <table id="grants-table" class="table table-striped table-bordered table-hover table-condensed">
                     <thead>
                         <tr>
                             <td class="text-right">Address</td>
@@ -19,6 +17,7 @@ Custodial Grants
                             <td class="text-right">First Seen</td>
                             <td class="text-right">Votes</td>
                             <td class="text-right">SDD</td>
+                            <td class="text-right">Granted</td>
                         </tr>
                     </thead>
                     <tbody>

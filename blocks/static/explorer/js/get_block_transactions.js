@@ -32,6 +32,9 @@ $(function() {
     webSocketBridge.socket.addEventListener('open', function() {
         webSocketBridge.stream(block_hash).send({'host': window.location.hostname});
         webSocketBridge.listen(function(data) {
+            if (data["message_type"] === "clear_block_transactions"){
+                transactions_div.empty();
+            }
             if (data["message_type"] === "block_transaction"){
                 transactions_div.append(data["html"]);
             }

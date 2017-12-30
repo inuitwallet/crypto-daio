@@ -18,6 +18,9 @@ $(function() {
             if (data["message_type"] === "address_total_tx") {
                 tx_total.text(data["value"]);
             }
+            if (data["message_type"] === "clear_address_transactions") {
+                transactions_div.empty();
+            }
             if (data["message_type"] === "address_transaction") {
                 transactions_div.append(data["html"]);
                 tx_index.text(data["index"]);

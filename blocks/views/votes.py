@@ -3,7 +3,7 @@ from django.db.models import Max, Min, Sum
 from django.shortcuts import render
 from django.views import View
 
-from blocks.models import CustodianVote, Block, TxOutput
+from blocks.models import CustodianVote, Block, TxInput, TxOutput
 
 
 class GrantView(View):
@@ -26,15 +26,18 @@ class GrantView(View):
         open_grants = []
 
         for grant in grants:
-            try:
-                # if a grant output exists, we can say the grant passed
-                TxOutput.objects.get(
-                    address=grant.address,
-                    value=grant.amount * 1000,
-                    input__isnull=True
-                )
-                # output of amount to address exists
-            except TxOutput.DoesNotExist:
+            granted = None
+            for grant_output in TxOutput.objects.filter(
+                address=grant.address,
+                value=grant.amount * 10000,
+            ):
+                if not grant_output.transaction.block:
+                    continue
+
+                for tx_input in grant_output.transaction.inputs.all():
+                    if not tx_input.previous_output:
+                        granted = tx_input.transaction.block
+
                 # lets see how many blocks in the last 10000 this grant exists in
                 votes = CustodianVote.objects.filter(
                     block__height__gte=vote_window_min,
@@ -59,7 +62,8 @@ class GrantView(View):
                         'sharedays_percentage': round(
                             (grant_sharedays / sharedays_destroyed) * 100,
                             2
-                        )
+                        ),
+                        'granted': granted
                     }
                 )
         return render(
