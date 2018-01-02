@@ -103,7 +103,7 @@ class TransactionInputs(View):
                     'vouts': [
                         {
                             'amount': output.display_value
-                        } for output in tx.outputs.filter(input__is_null=True)
+                        } for output in tx.outputs.filter(input__isnull=True)
                     ]
                 }
             }
