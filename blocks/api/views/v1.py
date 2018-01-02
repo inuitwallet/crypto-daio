@@ -102,8 +102,8 @@ class TransactionInputs(View):
                 'data': {
                     'vouts': [
                         {
-                            'amount': input.previous_output.display_value
-                        } for input in tx.inputs.all()
+                            'amount': output.display_value
+                        } for output in tx.outputs.filter(input__is_null=True)
                     ]
                 }
             }
