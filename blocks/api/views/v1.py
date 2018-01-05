@@ -166,7 +166,9 @@ class CirculatingSupply(View):
 
         # other network owned funds
         other_funds = NetworkFund.objects.filter(coin=coin_object).aggregate(Sum('value'))
-        total_network_owned_funds += other_funds['value__sum']
+        total_network_owned_funds += (
+            other_funds['value__sum'] if other_funds['value__sum'] else 0
+        )
 
         return HttpResponse(
             round(
