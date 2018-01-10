@@ -7,7 +7,14 @@ from blocks.models.votes import (
     FeesVote,
     ParkRate
 )
-from blocks.models.network import Info, Peer, Orphan, ActiveParkRate, NetworkFund
+from blocks.models.network import (
+    Info,
+    Peer,
+    Orphan,
+    ActiveParkRate,
+    NetworkFund,
+    ExchangeBalance
+)
 from blocks.models.block import Block
 
 __all__ = [
@@ -26,5 +33,6 @@ __all__ = [
     'Info',
     'Peer',
     'Orphan',
-    'NetworkFund'
+    'NetworkFund',
+    'ExchangeBalance'
 ]

@@ -142,3 +142,29 @@ class NetworkFund(models.Model):
         blank=True,
         null=True
     )
+
+
+class ExchangeBalance(models.Model):
+    """
+    Interface with Grafana to get the exchange balance for the given currency
+    """
+    coin = models.ForeignKey(
+        Coin,
+        blank=True,
+        null=True
+    )
+    exchange = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
+    api_url = models.URLField(
+        max_length=255,
+        blank=True,
+        null=True
+    )
+    api_token = models.CharField(
+        max_length=255,
+        blank=True,
+        null=True
+    )

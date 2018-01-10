@@ -106,3 +106,10 @@ class ActiveParkRateAdmin(admin.ModelAdmin):
 
 
 admin.site.register(ActiveParkRate, ActiveParkRateAdmin)
+
+
+class ExchangeBalanceAdmin(admin.ModelAdmin):
+    list_display = ('coin', 'exchange')
+    raw_id_fields = ('coin',)
+
+admin.site.register(ExchangeBalance, ExchangeBalanceAdmin)

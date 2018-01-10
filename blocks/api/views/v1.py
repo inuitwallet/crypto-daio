@@ -1,5 +1,7 @@
 import logging
 from decimal import Decimal
+
+import requests
 from django.db import connection
 from django.db.models import Sum
 from django.http import JsonResponse, HttpResponse
@@ -8,9 +10,10 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
 from blocks.models import Address, Info, Transaction, NetworkFund
+from charts.models import Balance, Pair
 from daio.models import Coin
 from blocks.utils.rpc import send_rpc
-from blocks.pynubitools import get_version_number
+from utils.exchange_balances import get_exchange_balances
 
 logger = logging.getLogger(__name__)
 
@@ -170,6 +173,10 @@ class CirculatingSupply(View):
             other_funds['value__sum'] if other_funds['value__sum'] else 0
         )
 
+        # exchange balances
+        for exchange_balance in get_exchange_balances(coin_object):
+            total_network_owned_funds += Decimal(exchange_balance.get('balance'))
+
         return HttpResponse(
             round(
                 total_supply - (parked + total_network_owned_funds),
@@ -182,28 +189,44 @@ class NetworkFunds(View):
     @staticmethod
     def get(request, coin):
         coin_object = get_object_or_404(Coin, code=coin.upper())
-        network_owned_addresses = Address.objects.filter(
-            network_owned=True,
-            coin=coin_object
-        )
-        other_funds = NetworkFund.objects.filter(coin=coin_object)
 
         return JsonResponse(
             {
                 'network_owned_addresses': [
                     {
                         'address': address.address,
-                        'balance': round(
-                            Decimal(address.balance / 10000),
-                            coin_object.decimal_places
+                        'balance': float(
+                            round(
+                                Decimal(address.balance / 10000),
+                                coin_object.decimal_places
+                            )
                         )
-                    } for address in network_owned_addresses
+                    } for address in Address.objects.filter(
+                        network_owned=True,
+                        coin=coin_object
+                    )
                 ],
                 'other_network_funds': [
                     {
                         'name': fund.name,
-                        'value': fund.value
-                    } for fund in other_funds
+                        'value': float(
+                            round(
+                                fund.value,
+                                coin_object.decimal_places
+                            )
+                        )
+                    } for fund in NetworkFund.objects.filter(coin=coin_object)
+                ],
+                'network_funds_on_exchange': [
+                    {
+                        'exchange': balance.get('exchange'),
+                        'balance': float(
+                            round(
+                                balance.get('balance'),
+                                coin_object.decimal_places
+                            )
+                        )
+                    } for balance in get_exchange_balances(coin_object)
                 ]
             }
         )
