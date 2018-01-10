@@ -1,7 +1,6 @@
 import logging
 from decimal import Decimal
 
-import requests
 from django.db import connection
 from django.db.models import Sum
 from django.http import JsonResponse, HttpResponse
@@ -10,10 +9,8 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
 from blocks.models import Address, Info, Transaction, NetworkFund
-from charts.models import Balance, Pair
 from daio.models import Coin
-from blocks.utils.rpc import send_rpc
-from utils.exchange_balances import get_exchange_balances
+from blocks.utils.rpc import send_rpc, get_exchange_balances
 
 logger = logging.getLogger(__name__)
 
