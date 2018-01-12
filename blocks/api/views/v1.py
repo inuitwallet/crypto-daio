@@ -240,24 +240,21 @@ class GetValidHashes(View):
     def post(request):
         # data arrives in request.body
         sent_hashes = codecs.encode(request.body, 'hex')
-        start = 0
-        index = 64
-        start_height = None
+        hash_list = [sent_hashes[i:i + 64] for i in range(0, len(sent_hashes), 64)]
+        start_height =
         return_hash = b''
 
         # loop through the data to check the sent hashes
-        while not start_height:
-            try_hash = codecs.encode(codecs.decode(sent_hashes[start:index], 'hex')[::-1], 'hex').decode()  # noqa
+        for sent_hash in hash_list:
+            try_hash = codecs.encode(codecs.decode(sent_hash, 'hex')[::-1], 'hex').decode()  # noqa
             logger.info('looking for block hash {}'.format(try_hash))
 
             try:
                 block = Block.objects.get(hash=try_hash)
                 start_height = block.height
-            except Block.DoesNotExist:
-                start = index
-                index += 64
-                if index == len(sent_hashes):
-                    break
+            except Block.DoesNotExist as e:
+                logger.error(e)
+                continue
 
         if not start_height:
             logger.error('Didn\'t identify any hashes when searching for valid hashes')
