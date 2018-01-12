@@ -47,11 +47,12 @@ urlpatterns = [
         r'coin/(?P<coin>.*)/network_funds$',
         v1.NetworkFunds.as_view(),
         name='v1.network_funds'
-    )
+    ),
 
     # Wallet Trusted Server
     url(
         r'getvalidhashes$',
-        v1.
+        v1.GetValidHashes.as_view(),
+        name='v1.getvalidhashes'
     )
 ]
