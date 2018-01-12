@@ -240,6 +240,7 @@ class GetValidHashes(View):
     def post(request):
         # data arrives in request.body
         sent_hashes = codecs.encode(request.body, 'hex')
+        start = 0
         index = 64
         start_height = None
         return_hash = b''
@@ -247,14 +248,17 @@ class GetValidHashes(View):
         # loop through the data to check the sent hashes
         while not start_height:
             try:
-                start_height = Block.objects.get(hash=sent_hashes[:index][::-1]).height
+                start_height = Block.objects.get(
+                    hash=codecs.decode(sent_hashes[start:index][::-1])
+                ).height
             except Block.DoesNotExist:
+                start = index
                 index += 64
                 if index == len(sent_hashes):
                     break
 
         if not start_height:
-            logger.error('Didn\'t identify and hashes when searching for valid hashes')
+            logger.error('Didn\'t identify any hashes when searching for valid hashes')
             return HttpResponse(return_hash)
 
         # get hashes starting form the first one recognised
