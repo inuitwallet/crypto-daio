@@ -1,3 +1,4 @@
+import codecs
 import logging
 from decimal import Decimal
 
@@ -8,7 +9,7 @@ from django.shortcuts import get_object_or_404
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
-from blocks.models import Address, Info, Transaction, NetworkFund
+from blocks.models import Block, Address, Info, Transaction, NetworkFund
 from daio.models import Coin
 from blocks.utils.rpc import send_rpc
 from blocks.utils.exchange_balances import get_exchange_balances
@@ -237,5 +238,20 @@ class GetValidHashes(View):
 
     @staticmethod
     def post(request):
-        logger.info(request.POST)
-        return JsonResponse({})
+        # if nothing is sent in POST we can assume it's starting fresh
+        if not request.POST:
+            start_height = 0
+        else:
+            logger.info('got some POST: {}'.format(request.POST))
+            return HttpResponse(b'')
+
+        # get 50,000 blocks from the start_hash
+        return_hash = b''
+        for block in Block.objects.filter(
+            height__gte=start_height
+        ).order_by(
+            'height'
+        )[:50000]:
+            return_hash += codecs.decode(block.hash.encode(), 'hex')[::-1][:16]
+
+        return HttpResponse(return_hash)
