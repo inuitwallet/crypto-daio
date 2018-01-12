@@ -238,20 +238,31 @@ class GetValidHashes(View):
 
     @staticmethod
     def post(request):
-        # if nothing is sent in POST we can assume it's starting fresh
-        if not request.POST:
-            start_height = 0
-        else:
-            logger.info('got some POST: {}'.format(request.POST))
-            return HttpResponse(b'')
-
-        # get 50,000 blocks from the start_hash
+        # data arrives in request.body
+        sent_hashes = codecs.encode(request.body, 'hex')
+        index = 64
+        start_height = None
         return_hash = b''
+
+        # loop through the data to check the sent hashes
+        while not start_height:
+            try:
+                start_height = Block.objects.get(hash=sent_hashes[:index][::-1]).height
+            except Block.DoesNotExist:
+                index += 64
+                if index == len(sent_hashes):
+                    break
+
+        if not start_height:
+            logger.error('Didn\'t identify and hashes when searching for valid hashes')
+            return HttpResponse(return_hash)
+
+        # get hashes starting form the first one recognised
         for block in Block.objects.filter(
             height__gte=start_height
         ).order_by(
             'height'
-        )[:50000]:
+        )[:100000]:
             return_hash += codecs.decode(block.hash.encode(), 'hex')[::-1][:16]
 
         return HttpResponse(return_hash)
