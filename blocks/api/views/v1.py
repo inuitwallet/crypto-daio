@@ -231,6 +231,10 @@ class NetworkFunds(View):
 
 
 class GetValidHashes(View):
+    @csrf_exempt
+    def dispatch(self, request, *args, **kwargs):
+        return super(GetValidHashes, self).dispatch(request, *args, **kwargs)
+
     @staticmethod
     def post(request):
         logger.info(request.POST)
