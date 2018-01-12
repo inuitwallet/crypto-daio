@@ -30,6 +30,8 @@ def get_exchange_balances(coin_object):
         time = 0
         exchange_balance = {'exchange': exchange_balance.exchange, 'balance': 0}
 
+        print(query_data)
+
         for data_point in query_data[0].get('datapoints', []):
             if int(data_point[1]) > time:
                 time = data_point[1]

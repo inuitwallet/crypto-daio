@@ -48,4 +48,10 @@ urlpatterns = [
         v1.NetworkFunds.as_view(),
         name='v1.network_funds'
     )
+
+    # Wallet Trusted Server
+    url(
+        r'getvalidhashes$',
+        v1.
+    )
 ]

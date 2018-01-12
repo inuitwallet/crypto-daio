@@ -228,3 +228,10 @@ class NetworkFunds(View):
                 ]
             }
         )
+
+
+class GetValidHashes(View):
+    @staticmethod
+    def post(request):
+        print(request.POST)
+        return JsonResponse({})
