@@ -250,8 +250,7 @@ class GetValidHashes(View):
             logger.info('looking for block hash {}'.format(try_hash))
 
             try:
-                block = Block.objects.get(hash=try_hash)
-                start_height = block.height
+                start_height = Block.objects.get(hash=try_hash).height
                 break
             except Block.DoesNotExist as e:
                 logger.error(e)
