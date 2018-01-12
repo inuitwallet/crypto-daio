@@ -272,7 +272,7 @@ class GetValidHashes(View):
             height__gte=start_height
         ).order_by(
             'height'
-        )[:100000]:
+        )[:50000]:
             return_hash += codecs.decode(block.hash.encode(), 'hex')[::-1][:16]
 
         return HttpResponse(return_hash)
