@@ -233,5 +233,5 @@ class NetworkFunds(View):
 class GetValidHashes(View):
     @staticmethod
     def post(request):
-        print(request.POST)
+        logger.info(request.POST)
         return JsonResponse({})
