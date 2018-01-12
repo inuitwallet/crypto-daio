@@ -256,7 +256,7 @@ class GetValidHashes(View):
                 logger.error(e)
                 continue
 
-        if not start_height:
+        if start_height is None:
             logger.error('Didn\'t identify any hashes when searching for valid hashes')
             return HttpResponse(return_hash)
 
