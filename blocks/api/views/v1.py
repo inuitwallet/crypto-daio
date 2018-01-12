@@ -247,16 +247,12 @@ class GetValidHashes(View):
 
         # loop through the data to check the sent hashes
         while not start_height:
+            try_hash = codecs.encode(codecs.decode(sent_hashes[start:index], 'hex')[::-1], 'hex').decode()  # noqa
+            logger.info('looking for block hash {}'.format(try_hash))
+
             try:
-                start_height = Block.objects.get(
-                    hash=codecs.encode(
-                        codecs.decode(
-                            sent_hashes[start:index],
-                            'hex'
-                        )[::-1],
-                        'hex'
-                    )
-                ).height
+                block = Block.objects.get(hash=try_hash)
+                start_height = block.height
             except Block.DoesNotExist:
                 start = index
                 index += 64
