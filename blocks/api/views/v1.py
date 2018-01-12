@@ -239,6 +239,7 @@ class GetValidHashes(View):
     @staticmethod
     def post(request):
         # data arrives in request.body
+        logger.debug('getvalidhashes')
         sent_hashes = codecs.encode(request.body, 'hex')
         hash_list = [sent_hashes[i:i + 64] for i in range(0, len(sent_hashes), 64)]
         start_height = None
@@ -247,7 +248,6 @@ class GetValidHashes(View):
         # loop through the data to check the sent hashes
         for sent_hash in hash_list:
             try_hash = codecs.encode(codecs.decode(sent_hash, 'hex')[::-1], 'hex').decode()  # noqa
-            logger.info('looking for block hash {}'.format(try_hash))
 
             try:
                 start_height = Block.objects.get(hash=try_hash).height
@@ -257,10 +257,11 @@ class GetValidHashes(View):
                 continue
 
         if start_height is None:
-            logger.error('Didn\'t identify any hashes when searching for valid hashes')
+            logger.warning('Didn\'t identify any hashes when searching for valid hashes')
             return HttpResponse(return_hash)
 
         # get hashes starting form the first one recognised
+        logger.info('getting validhashes starting at {}'.format(start_height))
         for block in Block.objects.filter(
             height__gte=start_height
         ).order_by(
