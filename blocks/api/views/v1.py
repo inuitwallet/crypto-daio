@@ -249,7 +249,13 @@ class GetValidHashes(View):
         while not start_height:
             try:
                 start_height = Block.objects.get(
-                    hash=codecs.decode(sent_hashes[start:index][::-1])
+                    hash=codecs.encode(
+                        codecs.decode(
+                            sent_hashes[start:index],
+                            'hex'
+                        )[::-1],
+                        'hex'
+                    )
                 ).height
             except Block.DoesNotExist:
                 start = index
