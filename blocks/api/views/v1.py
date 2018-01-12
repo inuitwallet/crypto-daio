@@ -241,7 +241,7 @@ class GetValidHashes(View):
         # data arrives in request.body
         sent_hashes = codecs.encode(request.body, 'hex')
         hash_list = [sent_hashes[i:i + 64] for i in range(0, len(sent_hashes), 64)]
-        start_height =
+        start_height = None
         return_hash = b''
 
         # loop through the data to check the sent hashes
