@@ -3,6 +3,7 @@ import logging
 from datetime import timedelta
 from decimal import Decimal
 
+from django.conf import settings
 from django.db import connection
 from django.db.models import Sum
 from django.http import JsonResponse, HttpResponse
@@ -258,7 +259,8 @@ class GetValidHashes(View):
                 continue
 
         if start_height is None:
-            logger.warning('Didn\'t identify any hashes when searching for valid hashes')
+            logger.warning('No hashes found when searching for valid hashes')
+            logger.warning(hash_list)
             return HttpResponse(return_hash)
 
         # get hashes starting form the first one recognised
@@ -276,7 +278,7 @@ class GetValidHashes(View):
 class ActivePeers(View):
     @staticmethod
     def get(request):
-        active_peers = {'active_peers': []}
+        active_peers = {'active_peers': [settings.RPC_HOST]}
 
         latest_info = Info.objects.all().order_by('-time_added').first()
 
@@ -284,10 +286,14 @@ class ActivePeers(View):
             inbound=True,
             last_receive__gte=latest_info.time_added - timedelta(days=7),
             height__gte=latest_info.max_height - 100000
+        ).order_by(
+            '-height'
         ):
             if not peer.inbound:
                 continue
 
             active_peers['active_peers'].append(peer.address)
+            if len(active_peers) == 100:
+                break
 
         return JsonResponse(active_peers)
