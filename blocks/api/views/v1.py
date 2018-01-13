@@ -7,15 +7,13 @@ from django.db import connection
 from django.db.models import Sum
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
-from django.utils.datetime_safe import datetime
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
-from blocks.models import Block, Address, Info, Transaction, NetworkFund
+from blocks.models import Block, Address, Info, Transaction, NetworkFund, Peer
 from daio.models import Coin
 from blocks.utils.rpc import send_rpc
 from blocks.utils.exchange_balances import get_exchange_balances
-from models import Peer
 
 logger = logging.getLogger(__name__)
 
