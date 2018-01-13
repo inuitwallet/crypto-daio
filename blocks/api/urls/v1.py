@@ -54,5 +54,12 @@ urlpatterns = [
         r'getvalidhashes$',
         v1.GetValidHashes.as_view(),
         name='v1.getvalidhashes'
+    ),
+
+    # Active Peers
+    url(
+        r'active_peers$',
+        v1.ActivePeers.as_view(),
+        name='v1.active_peers'
     )
 ]

@@ -1,11 +1,13 @@
 import codecs
 import logging
+from datetime import timedelta
 from decimal import Decimal
 
 from django.db import connection
 from django.db.models import Sum
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils.datetime_safe import datetime
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
@@ -13,6 +15,7 @@ from blocks.models import Block, Address, Info, Transaction, NetworkFund
 from daio.models import Coin
 from blocks.utils.rpc import send_rpc
 from blocks.utils.exchange_balances import get_exchange_balances
+from models import Peer
 
 logger = logging.getLogger(__name__)
 
@@ -270,3 +273,23 @@ class GetValidHashes(View):
             return_hash += codecs.decode(block.hash.encode(), 'hex')[::-1][:16]
 
         return HttpResponse(return_hash)
+
+
+class ActivePeers(View):
+    @staticmethod
+    def get(request):
+        active_peers = {'active_peers': []}
+
+        latest_info = Info.objects.all().order_by('-time_added').first()
+
+        for peer in Peer.objects.filter(
+            inbound=True,
+            last_receive__gte=latest_info.time_added - timedelta(days=7),
+            height__gte=latest_info.max_height - 100000
+        ):
+            if not peer.inbound:
+                continue
+
+            active_peers['active_peers'].append(peer.address)
+
+        return JsonResponse(active_peers)
