@@ -26,7 +26,10 @@ class HealthView(View):
         next_block_time_delta = next_block_time - now()
 
         # use the top height to update the peers with their distance from the top block
-        peers = Peer.objects.all().order_by('-height')
+        peers = Peer.objects.filter(
+            last_receive__gte=now() - datetime.timedelta(days=14),
+            height__gte=top_block.height - 100000
+        ).order_by('-height')
         for peer in peers:
             peer.height_diff = peer.height - top_block.height
             peer.identifier = hashlib.md5(
