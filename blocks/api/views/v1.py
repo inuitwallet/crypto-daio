@@ -252,11 +252,15 @@ class GetValidHashes(View):
             try_hash = codecs.encode(codecs.decode(sent_hash, 'hex')[::-1], 'hex').decode()  # noqa
 
             try:
-                block = Block.objects.get(hash=try_hash).height
+                block = Block.objects.get(hash=try_hash)
+
                 if block.height is None:
                     logger.error('Found Block has no height')
                     continue
+
+                start_height = block.height
                 break
+
             except Block.DoesNotExist as e:
                 logger.error(e)
                 continue
