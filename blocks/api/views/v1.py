@@ -3,7 +3,6 @@ import logging
 from datetime import timedelta
 from decimal import Decimal
 
-from django.conf import settings
 from django.db import connection
 from django.db.models import Sum
 from django.http import JsonResponse, HttpResponse
@@ -285,7 +284,7 @@ class GetValidHashes(View):
 class ActivePeers(View):
     @staticmethod
     def get(request):
-        active_peers = {'active_peers': [settings.RPC_HOST]}
+        active_peers = {'active_peers': [connection.tenant.rpc_host]}
 
         latest_info = Info.objects.all().order_by('-time_added').first()
 
