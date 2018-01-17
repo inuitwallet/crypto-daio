@@ -253,7 +253,7 @@ class Transaction(CachingMixin, models.Model):
 
         self.lock_time = rpc_tx.get('locktime', 0)
         self.coin = Coin.objects.get(
-            chain=connection.tenant,
+            chain=Chain.objects.get(schema_name=connection.schema_name),
             unit_code=rpc_tx.get('unit', None)
         )
 

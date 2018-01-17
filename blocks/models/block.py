@@ -26,7 +26,7 @@ from blocks.models import (
     ParkRate,
     ActiveParkRate
 )
-from daio.models import Coin
+from daio.models import Coin, Chain
 
 logger = logging.getLogger(__name__)
 
@@ -355,7 +355,7 @@ class Block(CachingMixin, models.Model):
         for fee_vote in fee_votes:
             try:
                 coin = Coin.objects.get(
-                    chain=connection.tenant,
+                    chain=Chain.objects.get(schema_name=connection.schema_name),
                     unit_code=fee_vote
                 )
             except Coin.DoesNotExist:
@@ -380,7 +380,7 @@ class Block(CachingMixin, models.Model):
         for park_rate_vote in votes.get('parkrates', []):
             try:
                 coin = Coin.objects.get(
-                    chain=connection.tenant,
+                    chain=Chain.objects.get(schema_name=connection.schema_name),
                     unit_code=park_rate_vote.get('unit')
                 )
             except Coin.DoesNotExist:
@@ -417,7 +417,7 @@ class Block(CachingMixin, models.Model):
         for park_rate in rates:
             try:
                 coin = Coin.objects.get(
-                    chain=connection.tenant,
+                    chain=Chain.objects.get(schema_name=connection.schema_name),
                     unit_code=park_rate.get('unit')
                 )
             except Coin.DoesNotExist:
