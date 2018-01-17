@@ -11,7 +11,7 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 
 from blocks.models import Block, Address, Info, Transaction, NetworkFund, Peer
-from daio.models import Coin
+from daio.models import Coin, Chain
 from blocks.utils.rpc import send_rpc
 from blocks.utils.exchange_balances import get_exchange_balances
 
@@ -120,7 +120,11 @@ class TotalSupply(View):
     """
     @staticmethod
     def get(request, coin):
-        coin_object = get_object_or_404(Coin, code=coin.upper())
+        coin_object = get_object_or_404(
+            Coin,
+            code=coin.upper(),
+            chain=Chain.objects.get(schema_name=connection.schema_name)
+        )
         latest_info = Info.objects.filter(
             unit=coin_object.unit_code
         ).order_by(
@@ -135,7 +139,11 @@ class ParkedSupply(View):
     """
     @staticmethod
     def get(request, coin):
-        coin_object = get_object_or_404(Coin, code=coin.upper())
+        coin_object = get_object_or_404(
+            Coin,
+            code=coin.upper(),
+            chain=Chain.objects.get(schema_name=connection.schema_name)
+        )
         latest_info = Info.objects.filter(
             unit=coin_object.unit_code
         ).order_by(
@@ -147,7 +155,11 @@ class ParkedSupply(View):
 class CirculatingSupply(View):
     @staticmethod
     def get(request, coin):
-        coin_object = get_object_or_404(Coin, code=coin.upper())
+        coin_object = get_object_or_404(
+            Coin,
+            code=coin.upper(),
+            chain=Chain.objects.get(schema_name=connection.schema_name)
+        )
         latest_info = Info.objects.filter(
             unit=coin_object.unit_code
         ).order_by(
@@ -188,7 +200,11 @@ class CirculatingSupply(View):
 class NetworkFunds(View):
     @staticmethod
     def get(request, coin):
-        coin_object = get_object_or_404(Coin, code=coin.upper())
+        coin_object = get_object_or_404(
+            Coin,
+            code=coin.upper(),
+            chain=Chain.objects.get(schema_name=connection.schema_name)
+        )
 
         return JsonResponse(
             {
