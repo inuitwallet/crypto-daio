@@ -354,7 +354,10 @@ class Block(CachingMixin, models.Model):
         fee_votes = votes.get('fees', {})
         for fee_vote in fee_votes:
             try:
-                coin = Coin.objects.get(unit_code=fee_vote)
+                coin = Coin.objects.get(
+                    chain=connection.tenant,
+                    unit_code=fee_vote
+                )
             except Coin.DoesNotExist:
                 continue
 
@@ -376,7 +379,10 @@ class Block(CachingMixin, models.Model):
         # park rate votes
         for park_rate_vote in votes.get('parkrates', []):
             try:
-                coin = Coin.objects.get(unit_code=park_rate_vote.get('unit'))
+                coin = Coin.objects.get(
+                    chain=connection.tenant,
+                    unit_code=park_rate_vote.get('unit')
+                )
             except Coin.DoesNotExist:
                 continue
 
@@ -410,7 +416,10 @@ class Block(CachingMixin, models.Model):
     def parse_rpc_parkrates(self, rates):
         for park_rate in rates:
             try:
-                coin = Coin.objects.get(unit_code=park_rate.get('unit'))
+                coin = Coin.objects.get(
+                    chain=connection.tenant,
+                    unit_code=park_rate.get('unit')
+                )
             except Coin.DoesNotExist:
                 continue
 
