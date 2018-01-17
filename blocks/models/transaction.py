@@ -12,7 +12,7 @@ from django.db.models import Sum
 from django.utils.timezone import make_aware
 
 from blocks.utils.numbers import get_var_int_bytes, convert_to_satoshis
-from daio.models import Coin
+from daio.models import Coin, Chain
 
 logger = logging.getLogger(__name__)
 
