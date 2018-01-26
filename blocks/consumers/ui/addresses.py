@@ -31,6 +31,7 @@ def get_address_details(address_object, message):
         }
     )
     for tx in address_object.transactions():
+        tx.save()
         message.reply_channel.send(
             {
                 'text': json.dumps(
