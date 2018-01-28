@@ -62,3 +62,21 @@ body {
 .in-valid {
     border-color: #ef3614;
 }
+
+.alert-success {
+    background-color: #00AD5F;
+    background-image: none;
+    color: #fdfdfd;
+    font-weight: 700;
+}
+
+.alert-danger {
+    background-color: #EF3614;
+    background-image: none;
+    color: #fdfdfd;
+    font-weight: 700;
+}
+
+.alert-dismissable .close {
+    opacity: 1;
+}
