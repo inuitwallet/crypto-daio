@@ -40,7 +40,7 @@ class Search(View):
         # find transaction by id
         try:
             tx = Transaction.objects.get(tx_id=search_term)
-            return HttpResponse(404)
+            return redirect(reverse('block', kwargs={'block_height': tx.block.height}))
         except Transaction.DoesNotExist:
             pass
 
