@@ -29,7 +29,7 @@ class Search(View):
             messages.add_message(
                 request,
                 messages.SUCCESS,
-                'Found Block {} for {}'.format(block.hash, search_term)
+                'Found Block {}'.format(block.hash[:10])
             )
             return redirect(reverse('block', kwargs={'block_height': block.height}))
         except (Block.DoesNotExist, ValueError):
@@ -41,7 +41,7 @@ class Search(View):
             messages.add_message(
                 request,
                 messages.SUCCESS,
-                'Found Block {} for {}'.format(block.height, search_term)
+                'Found Block {}'.format(block.height)
             )
             return redirect(reverse('block', kwargs={'block_height': block.height}))
         except Block.DoesNotExist:
