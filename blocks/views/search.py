@@ -26,6 +26,11 @@ class Search(View):
         # find block by height
         try:
             block = Block.objects.get(height=search_term)
+            messages.add_message(
+                request,
+                messages.SUCCESS,
+                'Found Block {} for {}'.format(block.hash, search_term)
+            )
             return redirect(reverse('block', kwargs={'block_height': block.height}))
         except (Block.DoesNotExist, ValueError):
             pass
@@ -33,6 +38,11 @@ class Search(View):
         # find block by hash
         try:
             block = Block.objects.get(hash=search_term)
+            messages.add_message(
+                request,
+                messages.SUCCESS,
+                'Found Block {} for {}'.format(block.height, search_term)
+            )
             return redirect(reverse('block', kwargs={'block_height': block.height}))
         except Block.DoesNotExist:
             pass
@@ -40,6 +50,14 @@ class Search(View):
         # find transaction by id
         try:
             tx = Transaction.objects.get(tx_id=search_term)
+            messages.add_message(
+                request,
+                messages.SUCCESS,
+                'Transaction {} can be found in Block {}'.format(
+                    search_term[:10],
+                    tx.block.height
+                )
+            )
             return redirect(reverse('block', kwargs={'block_height': tx.block.height}))
         except Transaction.DoesNotExist:
             pass
@@ -47,6 +65,11 @@ class Search(View):
         # find address
         try:
             address = Address.objects.get(address=search_term)
+            messages.add_message(
+                request,
+                messages.SUCCESS,
+                'Found Address {}'.format(search_term)
+            )
             return redirect(reverse('address', kwargs={'address': address}))
         except Address.DoesNotExist:
             pass
