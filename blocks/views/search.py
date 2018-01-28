@@ -53,7 +53,7 @@ class Search(View):
             messages.add_message(
                 request,
                 messages.SUCCESS,
-                'Transaction {} can be found in Block {}'.format(
+                'Transaction {}... found in Block {}'.format(
                     search_term[:10],
                     tx.block.height
                 )
