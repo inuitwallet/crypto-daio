@@ -8,9 +8,8 @@ import psycopg2
 from asgiref.base_layer import BaseChannelLayer
 from caching.base import CachingMixin, CachingManager
 from channels import Channel
-from decimal import Decimal
 from django.db import models, connection
-from django.db.models import Max
+from django.db.models import Max, Sum
 from django.utils.timezone import make_aware
 from django.db.utils import IntegrityError
 
@@ -340,7 +339,7 @@ class Block(CachingMixin, models.Model):
         # motion votes
         for motion_vote in votes.get('motions', []):
             try:
-                MotionVote.objects.get_or_create(
+                motion_object = MotionVote.objects.get_or_create(
                     block=self,
                     hash=motion_vote
                 )
@@ -349,6 +348,29 @@ class Block(CachingMixin, models.Model):
                     'got multiple motion votes for {}:{}'.format(self, motion_vote)
                 )
                 continue
+
+            # calculate block percentage
+            votes = MotionVote.objects.filter(
+                block__height__gte=max(self.height-10000, 0),
+                hash=motion_vote
+            )
+
+            motion_object.blocks_percentage = (votes.count() / 10000) * 100
+
+            # calculate the ShareDays Destroyed percentage
+            total_sdd = Block.objects.filter(
+                height__gte=max(self.height-10000, 0),
+                height__lte=self.height
+            ).aggregate(
+                Sum('coinage_destroyed')
+            )['coinage_destroyed__sum']
+
+            voted_sdd = votes.aggregate(
+                Sum('block__coinage_destroyed')
+            )['block__coinage_destroyed__sum']
+
+            motion_object.sdd_percentage = (voted_sdd / total_sdd) * 100
+            motion_object.save()
 
         # fees votes
         fee_votes = votes.get('fees', {})

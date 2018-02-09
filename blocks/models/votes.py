@@ -42,6 +42,12 @@ class MotionVote(models.Model):
         blank=True,
         null=True
     )
+    block_percentage = models.FloatField(
+        default=0
+    )
+    sdd_percentage = models.FloatField(
+        default=0
+    )
 
     class Meta:
         unique_together = ("block", "hash")
