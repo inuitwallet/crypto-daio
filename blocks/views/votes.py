@@ -93,18 +93,12 @@ class MotionView(View):
         )
 
         for motion in motions:
+            pass
 
         return render(
             request,
             'explorer/grants.html',
             {
                 'chain': connection.tenant,
-                'grants': sorted(
-                    open_grants,
-                    key=lambda x: x['vote_percentage'],
-                    reverse=True
-                ),
-                'block_min_height': vote_window_min,
-                'block_max_height': max_height['height__max']
             }
         )
