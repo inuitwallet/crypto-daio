@@ -77,7 +77,7 @@ admin.site.register(CustodianVote, CustodianVoteAdmin)
 
 
 class MotionVoteAdmin(admin.ModelAdmin):
-    list_display = ('block', 'hash')
+    list_display = ('block', 'hash', 'block_percentage', 'sdd_percentage')
     raw_id_fields = ('block',)
 
 
