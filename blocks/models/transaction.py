@@ -500,6 +500,14 @@ class TxOutput(CachingMixin, models.Model):
     def display_value(self):
         return self.value / 10000
 
+    @property
+    def is_spent(self):
+        try:
+            has_input = self.input
+            return True
+        except TxInput.DoesNotExist:
+            return False
+
 
 class TxInput(CachingMixin, models.Model):
     """
