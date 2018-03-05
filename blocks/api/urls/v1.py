@@ -22,9 +22,9 @@ urlpatterns = [
         name='v1.tx_broadcast'
     ),
     url(
-        r'tx/(?P<transaction>.*)/inputs$',
-        v1.TransactionInputs.as_view(),
-        name='v1.tx_inputs'
+        r'tx/(?P<transaction>.*)/outputs$',
+        v1.TransactionOutputs.as_view(),
+        name='v1.tx_outputs'
     ),
 
     # Coin API

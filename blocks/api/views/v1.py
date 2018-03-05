@@ -69,6 +69,7 @@ class TransactionBroadcast(View):
 
     @staticmethod
     def post(request):
+
         rpc = send_rpc(
             {
                 'method': 'sendrawtransaction',
@@ -91,7 +92,7 @@ class TransactionBroadcast(View):
         )
 
 
-class TransactionInputs(View):
+class TransactionOutputs(View):
     """
     Return all previous output values for each transaction input.
     Used by CoinToolKit
@@ -105,8 +106,9 @@ class TransactionInputs(View):
                 'data': {
                     'vouts': [
                         {
-                            'amount': output.display_value
-                        } for output in tx.outputs.filter(input__isnull=True)
+                            'amount': output.display_value,
+                            'is_spent': output.is_spent
+                        } for output in tx.outputs.all()
                     ]
                 }
             }
