@@ -49,7 +49,7 @@ class Command(BaseCommand):
         if options['block']:
             blocks = Block.objects.filter(height=options['block']).order_by('-height')
         else:
-            if options['start_height'] > 0:
+            if int(options['start_height']) > 0:
                 blocks = Block.objects.filter(
                     height__lte=options['start_height']
                 ).order_by(
