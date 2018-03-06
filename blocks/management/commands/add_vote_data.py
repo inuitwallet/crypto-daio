@@ -76,7 +76,7 @@ class Command(BaseCommand):
 
                     thread = Thread(
                         target=self.get_data,
-                        kwargs={'chain': chain, 'block': block}
+                        kwargs={'schema': chain.schema_name, 'block': block}
                     )
                     thread.daemon = True
                     thread.start()
@@ -92,13 +92,13 @@ class Command(BaseCommand):
         logger.info('Finished')
 
     @staticmethod
-    def get_data(chain, block):
+    def get_data(schema, block):
         rpc_block = send_rpc(
             {
                 'method': 'getblock',
                 'params': [block.hash, True, True]
             },
-            schema_name=chain.schema_name
+            schema_name=schema
         )
 
         if not rpc_block:
