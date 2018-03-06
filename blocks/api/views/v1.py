@@ -339,17 +339,25 @@ class ParkRateData(View):
     def get(self, request, block_height):
         block = get_object_or_404(Block, height=block_height)
         active_rates = block.activeparkrate_set.all().prefetch_related('rates')
-        response = {}
+        response = {
+            'hash': block.hash,
+            'height': block.height,
+            'time': block.time,
+            'rates': {}
+        }
 
         for active_rate in active_rates:
-            if active_rate.coin.unit_code not in response:
-                response[active_rate.coin.unit_code] = []
+            if active_rate.coin.unit_code not in response['rates']:
+                response['rates'][active_rate.coin.unit_code] = []
             for rate in active_rate.rates.all():
-                response[active_rate.coin.unit_code].append(
+                response['rates'][active_rate.coin.unit_code].append(
                     {'blocks': rate.blocks, 'rate': rate.rate}
                 )
 
-        for unit in response:
-            response[unit] = sorted(response[unit], key=lambda r: r['blocks'])
+        for unit in response['rates']:
+            response['rates'][unit] = sorted(
+                response['rates'][unit],
+                key=lambda r: r['blocks']
+            )
 
-        return JsonResponse(response)
+        return JsonResponse(response, json_dumps_params={'sort_keys': True})
