@@ -73,8 +73,6 @@ class Command(BaseCommand):
                         schema_name=chain.schema_name
                     )
 
-                    logger.info(rpc_block)
-
                     if not rpc_block:
                         logger.warning('No data for {}'.format(block))
                         continue
