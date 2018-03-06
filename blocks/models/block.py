@@ -350,12 +350,12 @@ class Block(CachingMixin, models.Model):
                 continue
 
             # calculate block percentage
-            votes = MotionVote.objects.filter(
+            motion_votes = MotionVote.objects.filter(
                 block__height__gte=max(self.height-10000, 0),
                 hash=motion_vote
             )
 
-            motion_object.blocks_percentage = (votes.count() / 10000) * 100
+            motion_object.blocks_percentage = (motion_votes.count() / 10000) * 100
 
             # calculate the ShareDays Destroyed percentage
             total_sdd = Block.objects.filter(
@@ -365,7 +365,7 @@ class Block(CachingMixin, models.Model):
                 Sum('coinage_destroyed')
             )['coinage_destroyed__sum']
 
-            voted_sdd = votes.aggregate(
+            voted_sdd = motion_votes.aggregate(
                 Sum('block__coinage_destroyed')
             )['block__coinage_destroyed__sum']
 
