@@ -49,13 +49,16 @@ class Command(BaseCommand):
         if options['block']:
             blocks = Block.objects.filter(height=options['block']).order_by('-height')
         else:
-            # no block specified so validate all blocks starting from start_height
-            blocks = Block.objects.filter(
-                height__gte=options['start_height']
-            ).order_by(
-                '-height'
-            )
-
+            if options['start_height'] > 0:
+                blocks = Block.objects.filter(
+                    height__lte=options['start_height']
+                ).order_by(
+                    '-height'
+                )
+            else:
+                blocks = Block.objects.all().order_by(
+                    '-height'
+                )
         if options['limit']:
             blocks = blocks[:int(options['limit'])]
 
