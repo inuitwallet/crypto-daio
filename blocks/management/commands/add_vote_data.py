@@ -4,6 +4,7 @@ from threading import Thread, active_count
 from django.core.management import BaseCommand
 from django.core.paginator import Paginator
 from django.db import connection
+from tenant_schemas.utils import schema_context
 
 from blocks.models import Block
 from blocks.utils.rpc import send_rpc
@@ -105,10 +106,12 @@ class Command(BaseCommand):
             logger.warning('No data for {}'.format(block))
             return
 
-        # save the votes
-        block.parse_rpc_votes(rpc_block.get('vote', {}))
+        with schema_context(schema):
 
-        # save active park rates
-        block.parse_rpc_parkrates(rpc_block.get('parkrates', []))
+            # save the votes
+            block.parse_rpc_votes(rpc_block.get('vote', {}))
 
-        logger.info('Saved data for {}'.format(block))
+            # save active park rates
+            block.parse_rpc_parkrates(rpc_block.get('parkrates', []))
+
+            logger.info('Saved data for {}'.format(block))
