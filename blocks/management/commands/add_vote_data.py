@@ -1,4 +1,5 @@
 import logging
+from threading import Thread, active_count
 
 from django.core.management import BaseCommand
 from django.core.paginator import Paginator
@@ -33,6 +34,13 @@ class Command(BaseCommand):
             dest='limit',
             default=None
         )
+        parser.add_argument(
+            '-t',
+            '--threads',
+            help='limit the number of threads',
+            dest='threads',
+            default=20
+        )
 
     def handle(self, *args, **options):
         chain = connection.tenant
@@ -65,29 +73,42 @@ class Command(BaseCommand):
             for page_num in paginator.page_range:
                 for block in paginator.page(page_num):
                     total_blocks += 1
-                    rpc_block = send_rpc(
-                        {
-                            'method': 'getblock',
-                            'params': [block.hash, True, True]
-                        },
-                        schema_name=chain.schema_name
-                    )
 
-                    if not rpc_block:
-                        logger.warning('No data for {}'.format(block))
+                    thread = Thread(
+                        target=self.get_data,
+                        kwargs={'chain': chain, 'block': block}
+                    )
+                    thread.daemon = True
+                    thread.start()
+
+                    while active_count() > options['threads']:
                         continue
 
-                    logger.info('Got data for {}'.format(block))
-
-                    # save the votes
-                    block.parse_rpc_votes(rpc_block.get('vote', {}))
-
-                    # save active park rates
-                    block.parse_rpc_parkrates(rpc_block.get('parkrates', []))
-
-                logger.info('Got vote data for {} blocks'.format(total_blocks))
+                logger.info('>>> Got vote data for {} blocks'.format(total_blocks))
 
         except KeyboardInterrupt:
             pass
 
         logger.info('Finished')
+
+    @staticmethod
+    def get_data(chain, block):
+        rpc_block = send_rpc(
+            {
+                'method': 'getblock',
+                'params': [block.hash, True, True]
+            },
+            schema_name=chain.schema_name
+        )
+
+        if not rpc_block:
+            logger.warning('No data for {}'.format(block))
+            return
+
+        # save the votes
+        block.parse_rpc_votes(rpc_block.get('vote', {}))
+
+        # save active park rates
+        block.parse_rpc_parkrates(rpc_block.get('parkrates', []))
+
+        logger.info('Saved data for {}'.format(block))
