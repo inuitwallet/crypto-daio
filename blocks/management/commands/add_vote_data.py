@@ -76,6 +76,8 @@ class Command(BaseCommand):
                     if not rpc_block:
                         logger.warning('No data for {}'.format(block))
 
+                    logger.info('Got data for {}'.format(block))
+
                     # save the votes
                     block.parse_rpc_votes(rpc_block.get('vote', {}))
 
