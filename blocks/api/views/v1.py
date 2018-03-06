@@ -17,6 +17,9 @@ from blocks.utils.exchange_balances import get_exchange_balances
 
 logger = logging.getLogger(__name__)
 
+#
+# CoinToolKit
+#
 
 class AddressBalance(View):
     """
@@ -61,7 +64,7 @@ class AddressUnspent(View):
 class TransactionBroadcast(View):
     """
     Broadcast the raw hex transaction passed in POST
-    Used by CointoolKit
+    Used by CoinToolKit
     """
     @csrf_exempt
     def dispatch(self, request, *args, **kwargs):
@@ -113,6 +116,11 @@ class TransactionOutputs(View):
                 }
             }
         )
+
+
+#
+# MarketCap
+#
 
 
 class TotalSupply(View):
@@ -321,3 +329,27 @@ class ActivePeers(View):
                 break
 
         return JsonResponse(active_peers)
+
+
+#
+# Grafana Data
+#
+
+class ParkRateData(View):
+    def get(self, request, block_height):
+        block = get_object_or_404(Block, height=block_height)
+        active_rates = block.activeparkrate_set.all().prefetch_related('rates')
+        response = {}
+
+        for active_rate in active_rates:
+            if active_rate.coin.unit_code not in response:
+                response[active_rate.coin.unit_code] = []
+            for rate in active_rate.rates.all():
+                response[active_rate.coin.unit_code].append(
+                    {'blocks': rate.blocks, 'rate': rate.rate}
+                )
+
+        for unit in response:
+            response[unit] = sorted(response[unit], key=lambda r: r['blocks'])
+
+        return JsonResponse(response)

@@ -61,5 +61,12 @@ urlpatterns = [
         r'active_peers$',
         v1.ActivePeers.as_view(),
         name='v1.active_peers'
-    )
+    ),
+
+    # Park Rates
+    url(
+        r'active_park_rates/(?P<block_height>.*)$',
+        v1.ParkRateData.as_view(),
+        name='v1.active_park_rates'
+    ),
 ]
