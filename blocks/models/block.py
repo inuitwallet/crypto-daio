@@ -339,7 +339,7 @@ class Block(CachingMixin, models.Model):
         # motion votes
         for motion_vote in votes.get('motions', []):
             try:
-                motion_object = MotionVote.objects.get_or_create(
+                motion_object, _ = MotionVote.objects.get_or_create(
                     block=self,
                     hash=motion_vote
                 )
