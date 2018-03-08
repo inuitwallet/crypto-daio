@@ -74,6 +74,7 @@ class TransactionBroadcast(View):
     @staticmethod
     def post(request):
         raw_tx = request.POST.get('hex')
+        logger.info('>>>>BROADCAST raw_tx = {}'.format(raw_tx))
 
         if not raw_tx:
             return JsonResponse(
@@ -86,10 +87,11 @@ class TransactionBroadcast(View):
         rpc = send_rpc(
             {
                 'method': 'sendrawtransaction',
-                'params': [request.POST.get('hex'), 1],
+                'params': [raw_tx, 1],
             },
             schema_name=connection.tenant.schema_name
         )
+        logger.info('>>>>BROADCAST rpc = {}'.format(rpc))
 
         if not rpc:
             return JsonResponse(
