@@ -21,6 +21,7 @@ logger = logging.getLogger(__name__)
 # CoinToolKit
 #
 
+
 class AddressBalance(View):
     """
     Give the balance of a passed address.
@@ -72,6 +73,15 @@ class TransactionBroadcast(View):
 
     @staticmethod
     def post(request):
+        raw_tx = request.POST.get('hex')
+
+        if not raw_tx:
+            return JsonResponse(
+                {
+                    'status': 'failure',
+                    'data': 'No raw Tx was sent'
+                }
+            )
 
         rpc = send_rpc(
             {
@@ -80,10 +90,12 @@ class TransactionBroadcast(View):
             },
             schema_name=connection.tenant.schema_name
         )
+
         if not rpc:
             return JsonResponse(
                 {
                     'status': 'failure',
+                    'data': 'No data returned from Daemon'
                 }
             )
 
@@ -340,11 +352,23 @@ class ParkRateData(View):
         block = get_object_or_404(Block, height=block_height)
         active_rates = block.activeparkrate_set.all().prefetch_related('rates')
         response = {
+
             'hash': block.hash,
             'height': block.height,
             'time': block.time,
             'rates': {}
         }
+
+        info = Info.objects.filter(
+            max_height=block.height
+        ).order_by(
+            '-total_parked'
+        ).first()
+
+        print(info)
+
+        if info:
+            response['amount_parked'] = info.total_parked
 
         for active_rate in active_rates:
             if active_rate.coin.unit_code not in response['rates']:
