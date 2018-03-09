@@ -74,7 +74,6 @@ class TransactionBroadcast(View):
     @staticmethod
     def post(request):
         raw_tx = request.POST.get('hex')
-        logger.info('>>>>BROADCAST raw_tx = {}'.format(raw_tx))
 
         if not raw_tx:
             return JsonResponse(
@@ -91,13 +90,12 @@ class TransactionBroadcast(View):
             },
             schema_name=connection.tenant.schema_name
         )
-        logger.info('>>>>BROADCAST rpc = {}'.format(rpc))
 
         if not rpc:
             return JsonResponse(
                 {
                     'status': 'failure',
-                    'data': 'No data returned from Daemon'
+                    'data': 'Daemon reported an error'
                 }
             )
 
@@ -354,23 +352,30 @@ class ParkRateData(View):
         block = get_object_or_404(Block, height=block_height)
         active_rates = block.activeparkrate_set.all().prefetch_related('rates')
         response = {
-
+            'parked_amounts_info': {},
+            'parked_amounts_calculated': block.amount_parked,
             'hash': block.hash,
             'height': block.height,
             'time': block.time,
             'rates': {}
         }
 
-        info = Info.objects.filter(
-            max_height=block.height
-        ).order_by(
-            '-total_parked'
-        ).first()
+        chain = connection.tenant
 
-        print(info)
+        for coin in chain.coins.all():
+            info = Info.objects.filter(
+                max_height=block.height,
+                unit=coin.unit_code
+            ).order_by(
+                '-total_parked'
+            ).first()
 
-        if info:
-            response['amount_parked'] = info.total_parked
+            if info:
+                response['parked_amounts'][coin.unit_code] = (
+                    float(info.total_parked) if info.total_parked is not None else 0
+                )
+            else:
+                response['parked_amounts'][coin.unit_code] = 0
 
         for active_rate in active_rates:
             if active_rate.coin.unit_code not in response['rates']:
