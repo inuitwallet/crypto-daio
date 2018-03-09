@@ -9,7 +9,7 @@ from asgiref.base_layer import BaseChannelLayer
 from caching.base import CachingMixin, CachingManager
 from channels import Channel
 from django.db import models, connection
-from django.db.models import Max, Sum
+from django.db.models import Max, Sum, F
 from django.utils.timezone import make_aware
 from django.db.utils import IntegrityError
 
@@ -17,6 +17,7 @@ from blocks.models import (
     Transaction,
     Orphan,
     TxInput,
+    TxOutput,
     CustodianVote,
     Address,
     MotionVote,
@@ -625,3 +626,65 @@ class Block(CachingMixin, models.Model):
                     outputs['unspent'][tx_output.address] += tx_output.display_value
         return outputs
 
+    @property
+    def amount_parked(self):
+        chain = connection.tenant
+        parked_totals = {}
+
+        for coin in chain.coins.all():
+            unparked_outputs = TxOutput.objects.filter(
+                script_pub_key_type='park',
+                transaction__block__height__lte=self.height,
+                input__transaction__block__height__gt=self.height,
+                transaction__coin__unit_code=coin.unit_code
+            ).exclude(
+                transaction__block__isnull=True
+            ).aggregate(
+                Sum('value')
+            )
+
+            unparked_value = (
+                unparked_outputs['value__sum']
+                if unparked_outputs['value__sum'] is not None
+                else 0
+            )
+
+            still_parked_outputs = TxOutput.objects.filter(
+                script_pub_key_type='park',
+                transaction__block__height__lte=self.height,
+                input__isnull=True,
+                transaction__coin__unit_code=coin.unit_code,
+                transaction__block__height__gte=self.height - F('park_duration')
+            ).exclude(
+                transaction__block__isnull=True
+            ).aggregate(
+                Sum('value')
+            )
+
+            still_parked_value = (
+                still_parked_outputs['value__sum']
+                if still_parked_outputs['value__sum'] is not None
+                else 0
+            )
+
+            parked_totals[coin.unit_code] = (
+                (unparked_value + still_parked_value) / coin.decimal_places
+            )
+
+
+        # for output in unparked_outputs:
+        #     if output.transaction.coin.unit_code not in parked_totals:
+        #         parked_totals[output.transaction.coin.unit_code] = 0
+        #     parked_totals[output.transaction.coin.unit_code] += output.display_value
+        #
+        # for output in still_parked_outputs:
+        #     if output.transaction.coin.unit_code not in parked_totals:
+        #         parked_totals[output.transaction.coin.unit_code] = 0
+        #     print('parked height = {}'.format(output.transaction.block.height))
+        #     print('parked duration = {}'.format(output.park_duration))
+        #     print('estimated unpark = {}'.format(output.transaction.block.height + output.park_duration))  # noqa
+        #
+        #     if output.transaction.block.height + output.park_duration > self.height:
+        #         parked_totals[output.transaction.coin.unit_code] += output.display_value
+
+        return parked_totals
