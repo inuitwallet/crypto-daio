@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block title %}
+Custodial Grants
+{% endblock %}
+
+{% block content %}
+    <div class="row">
+        <div class="col-md-6">
+            <h4>Custodial Grants active over last 10000 blocks</h4>
+            <span id="loading" class="loading-indicator"><img src="{% static 'explorer/images/ajax-loader.gif' %}" /></span>
+            <div class="grants-container">
+                <table id="grants-table" class="table table-striped table-bordered table-hover table-condensed">
+                    <thead>
+                        <tr>
+                            <td class="text-right">Address</td>
+                            <td class="text-right">Amount</td>
+                            <td class="text-right">First Seen</td>
+                            <td class="text-right">Votes</td>
+                            <td class="text-right">SDD</td>
+                            <td class="text-right">Granted</td>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Grants go here when websocket connects -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block afterbody %}
+    <script>
+        $(function() {
+            const webSocketBridge = new channels.WebSocketBridge();
+            webSocketBridge.connect('/get_current_grants/');
+
+            var grants_table = $("#grants-table > tbody");
+            var loading_indicator = $(".loading-indicator");
+
+            webSocketBridge.socket.addEventListener('open', function() {
+                webSocketBridge.stream('current_grants').send({'host': window.location.hostname});
+                webSocketBridge.listen(function(data, channel) {
+                    if (data["message_type"] === "loading") {
+                        loading_indicator.show();
+                    }
+                    if (data["message_type"] === "new_current_grant") {
+                        $(data["html"]).prependTo(grants_table);
+                    }
+                    if (data["message_type"] === "done") {
+                        loading_indicator.hide();
+                    }
+                });
+            });
+        });
+    </script>
+{% endblock %}
