@@ -6,11 +6,12 @@ from tenant_schemas.utils import get_tenant_model, tenant_context
 from charts.consumers.tx_browser import add_onward_nodes
 from blocks.models import Address
 from charts.models import UserSocket
-from consumers.ui import get_current_grants, get_current_motions
 from .ui import (
     get_address_balance,
     get_address_details,
     get_block_details,
+    get_current_grants,
+    get_current_motions
 )
 from daio.models import Chain
 
