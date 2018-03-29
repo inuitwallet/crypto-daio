@@ -6,10 +6,11 @@ from tenant_schemas.utils import get_tenant_model, tenant_context
 from charts.consumers.tx_browser import add_onward_nodes
 from blocks.models import Address
 from charts.models import UserSocket
+from consumers.ui import get_current_grants, get_current_motions
 from .ui import (
     get_address_balance,
     get_address_details,
-    get_block_transactions,
+    get_block_details,
 )
 from daio.models import Chain
 
@@ -41,8 +42,8 @@ def ws_receive(message):
         domain_url = 'nu.crypto-daio.co.uk'
     tenant = get_tenant_model().objects.get(domain_url=domain_url)
     with tenant_context(tenant):
-        if message['path'] == '/get_block_transactions/':
-            get_block_transactions(message_dict, message)
+        if message['path'] == '/get_block_details/':
+            get_block_details(message_dict, message)
 
             return
 
@@ -70,6 +71,14 @@ def ws_receive(message):
                 except UserSocket.DoesNotExist:
                     pass
 
+            return
+
+        if message['path'] == '/get_current_grants/':
+            get_current_grants(message)
+            return
+
+        if message['path'] == '/get_current_motions/':
+            get_current_motions(message)
             return
 
 

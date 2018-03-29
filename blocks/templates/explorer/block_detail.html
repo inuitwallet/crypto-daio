@@ -47,22 +47,22 @@ Block Detail: {{ object.height }}
                     <div class="row block-data">{{ object.size|filesizeformat }}</div>
                 </div>
             </div>
-            <div class="row spacer">
-                <div class="row">
-                    <div class="col-md-12 text-center">
-                        Total Amounts Transacted
-                    </div>
-                </div>
-                <div class="row">
-                    {% for total in object.totals_transacted %}
-                        {% if total.value > 0 %}
-                            <div class="col-md-3 text-center">
-                                {{ total.value|floatformat:4|intcomma }} {{ total.name }}
-                            </div>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
+{#            <div class="row spacer">#}
+{#                <div class="row">#}
+{#                    <div class="col-md-12 text-center">#}
+{#                        Total Amounts Transacted#}
+{#                    </div>#}
+{#                </div>#}
+{#                <div class="row">#}
+{#                    {% for total in object.totals_transacted %}#}
+{#                        {% if total.value > 0 %}#}
+{#                            <div class="col-md-3 text-center">#}
+{#                                {{ total.value|floatformat:4|intcomma }} {{ total.name }}#}
+{#                            </div>#}
+{#                        {% endif %}#}
+{#                    {% endfor %}#}
+{#                </div>#}
+{#            </div>#}
         </div>
     </div>
     <div class="row transactions spacer">
@@ -70,8 +70,117 @@ Block Detail: {{ object.height }}
 
         </div>
     </div>
+    <div class="row grants spacer">
+        <div id="grants" class="col-md-10 col-md-offset-1">
+            <div class="row">
+                <!-- Grants go here -->
+            </div>
+        </div>
+    </div>
+    <div class="row motions spacer">
+        <div id="motions" class="col-md-10 col-md-offset-1">
+            <div class="row">
+                <!-- Motions go here -->
+            </div>
+        </div>
+    </div>
+    <div class="row park-rates spacer">
+        <div id="park-rates" class="col-md-10 col-md-offset-1">
+            <div class="row">
+                <!-- Park rates go here -->
+            </div>
+        </div>
+    </div>
+    <div class="row fees spacer">
+        <div id="fees" class="col-md-10 col-md-offset-1">
+            <div class="row">
+                <!-- Fees go here -->
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block afterbody %}
-    <script type="text/javascript" src='{% static 'explorer/js/get_block_transactions.js' %}'></script>
+{#    <script type="text/javascript" src='{% static 'explorer/js/get_block_transactions.js' %}'></script>#}
+    <script>
+        $(function() {
+            const webSocketBridge = new channels.WebSocketBridge();
+            webSocketBridge.connect('/get_block_details/');
+
+            var block_hash = $("#block-hash").text();
+
+            var transactions_div = $("#transactions");
+            var grants_div = $("#grants");
+            var motions_div = $("#motions");
+            var park_rates_div = $("#park-rates");
+            var fees_div = $("#fees");
+
+            var extra_detail = $('.show-extra-detail');
+
+            transactions_div.on('click', extra_detail, function (e) {
+                var tx_id = $(e.target).attr("data");
+                var detail = $(e.target).text();
+                if (detail === "Show Advanced Details") {
+                    $(".min-detail-" + tx_id).fadeOut('fast', function() {
+                        $(".full-detail-" + tx_id).fadeIn('fast');
+                        $(e.target).text("Hide Advanced Details");
+                    });
+                }
+                if (detail === "Hide Advanced Details") {
+                    $(".full-detail-" + tx_id).fadeOut('fast', function() {
+                        $(".min-detail-" + tx_id).fadeIn('fast');
+                        $(e.target).text("Show Advanced Details");
+                    });
+                }
+
+            });
+
+            webSocketBridge.socket.addEventListener('open', function() {
+                webSocketBridge.stream(block_hash).send({'host': window.location.hostname});
+                webSocketBridge.listen(function(data) {
+                    if (data["message_type"] === "clear_block_details"){
+                        transactions_div.empty();
+                        grants_div.empty();
+                        motions_div.empty();
+                        park_rates_div.empty();
+                        fees_div.empty();
+                    }
+                    if (data["message_type"] === "has_transactions"){
+                        transactions_div.append("<h3>Transactions</h3>");
+                    }
+                    if (data["message_type"] === "block_transaction"){
+                        transactions_div.append(data["html"]);
+                    }
+                    if (data["message_type"] === "has_grants"){
+                        grants_div.addClass("well well-lg");
+                        grants_div.append("<h3>Custodial Grant votes</h3>");
+                    }
+                    if (data["message_type"] === "block_grant"){
+                        grants_div.append(data["html"]);
+                    }
+                    if (data["message_type"] === "has_motions"){
+                        motions_div.addClass("well well-lg");
+                        motions_div.append("<h3>Motion votes</h3>");
+                    }
+                    if (data["message_type"] === "block_motion"){
+                        motions_div.append(data["html"]);
+                    }
+                    if (data["message_type"] === "has_park_rates"){
+                        park_rates_div.addClass("well well-lg");
+                        park_rates_div.append("<h3>Park rate votes</h3>");
+                    }
+                    if (data["message_type"] === "block_park_rate"){
+                        park_rates_div.append(data["html"]);
+                    }
+                    if (data["message_type"] === "has_fees"){
+                        fees_div.addClass("well well-lg");
+                        fees_div.append("<h3>Fee votes</h3>");
+                    }
+                    if (data["message_type"] === "block_fees"){
+                        fees_div.append(data["html"]);
+                    }
+                });
+            });
+        });
+    </script>
 {% endblock %}

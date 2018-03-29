@@ -1,10 +1,8 @@
 {% load humanize %}
 
 <tr>
-    <td class="address text-right"><a href="{% url 'address' address=grant.address %}">{{ grant.address }}</a></td>
-    <td class="amount text-right">{{ grant.amount|floatformat:4|intcomma }}</td>
-    <td class="first-seen text-right"><a href="{% url 'block' block_height=grant.first_seen %}">{{ grant.first_seen }}</a></td>
-    <td class="votes text-right">{{ grant.number_of_votes }}<br />({{ grant.vote_percentage }}%)</td>
-    <td class="coinage text-right">{{ grant.sharedays_destroyed }}<br />({{  grant.sharedays_percentage }}%)</td>
-    <td class="granted text-right">{% if grant.granted %}<a href="{% url 'block' block_height=grant.granted.height %}">{{ grant.granted.height }}</a>{% else %} - {% endif %}</td>
+    <td class="motion-hash text-right">{{ motion.hash }}</td>
+    <td class="votes text-right">{{ motion.number_of_votes }}<br />({{ motion.vote_percentage }}%)</td>
+    <td class="coinage text-right">{{ motion.sharedays_destroyed }}<br />({{  motion.sharedays_percentage }}%)</td>
+    <td class="motioned text-right">{% if motion.motioned %}<a href="{% url 'block' block_height=motion.motioned.height %}">{{ motion.motioned.height }}</a>{% else %} - {% endif %}</td>
 </tr>

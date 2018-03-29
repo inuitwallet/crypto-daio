@@ -186,4 +186,6 @@ Blocks
     font-size: 80%;
 }
 
-
+.loading-indicator {
+    display: none;
+}

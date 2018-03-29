@@ -1,0 +1,14 @@
+{% load humanize %}
+
+<div class="col-md-3">
+    <div class="row text-center">
+        {{ park_rate.coin }}
+    </div>
+    <div class="row">
+    {% for rate in park_rate.rates.all %}
+        <div class="col-md-12 text-center">
+            {{ rate.blocks }} blocks: {{ rate.rate }}
+        </div>
+    {% endfor %}
+    </div>
+</div>

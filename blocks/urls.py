@@ -29,7 +29,7 @@ urlpatterns = [
 
     url(r'^menu/charts$', ChartsView.as_view(), name='charts_menu'),
 
-    url(r'^motions$', ChartsView.as_view(), name='motions'),
+    url(r'^motions$', MotionView.as_view(), name='motions'),
     url(r'^grants$', GrantView.as_view(), name='grants'),
 
     # API
