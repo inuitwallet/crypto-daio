@@ -1,10 +1,7 @@
 import json
-
-from django.db.models import Sum, Min
 from django.template.loader import render_to_string
 
-from blocks.models import Block, TxOutput, CustodianVote
-
+from blocks.models import Block, TxOutput
 
 def send_transactions(block, message):
     # send the block transactions

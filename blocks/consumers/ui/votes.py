@@ -4,8 +4,7 @@ import logging
 from django.db.models import Max, Sum, Min
 from django.template.loader import render_to_string
 
-from blocks.models import Block, CustodianVote, TxOutput
-from models import MotionVote
+from blocks.models import Block, CustodianVote, TxOutput, MotionVote
 
 logger = logging.getLogger(__name__)
 
