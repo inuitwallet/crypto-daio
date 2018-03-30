@@ -578,13 +578,6 @@ class Block(CachingMixin, models.Model):
             sorted(custodians, key=lambda c: c['address']) !=
             sorted(self.vote.get('custodians', []), key=lambda c: c['address'])
         ):
-            logger.warning(
-                '## CUSTODIAN VOTES {}:\n{}\n{}'.format(
-                    self,
-                    sorted(custodians, key=lambda c: c['address']),
-                    sorted(self.vote.get('custodians', []), key=lambda c: c['address'])
-                )
-            )
             return False, 'custodian votes do not match'
 
         # park rate votes
@@ -614,14 +607,6 @@ class Block(CachingMixin, models.Model):
                 sorted(rate_vote.get('rates', []), key=lambda r: r['blocks']) !=
                 sorted(raw_rate_vote.get('rates', []), key=lambda r: r['blocks'])
             ):
-                logger.warning(
-                    '## PARK RATE VOTES for {} {}:\n{}\n{}'.format(
-                        rate_vote['unit'],
-                        self,
-                        sorted(rate_vote.get('rates', []), key=lambda r: r['blocks']),
-                        sorted(raw_rate_vote.get('rates', []), key=lambda r: r['blocks'])
-                    )
-                )
                 return False, 'park rate votes for {} do not match'.format(
                     rate_vote['unit']
                 )
@@ -636,13 +621,6 @@ class Block(CachingMixin, models.Model):
             sorted(motions) !=
             sorted(self.vote.get('motions', []))
         ):
-            logger.warning(
-                '## MOTION VOTES {}:\n{}\n{}'.format(
-                    self,
-                    sorted(motions),
-                    sorted(self.vote.get('motions', []))
-                )
-            )
             return False, 'motion votes do not match'
 
         # fee votes
@@ -655,13 +633,6 @@ class Block(CachingMixin, models.Model):
             sorted(fees) !=
             sorted(self.vote.get('fees', {}))
         ):
-            logger.warning(
-                '## FEE VOTES {}:\n{}\n{}'.format(
-                    self,
-                    sorted(fees),
-                    sorted(self.vote.get('fees', {}))
-                )
-            )
             return False, 'fee votes do not match'
 
         # check active park rates against raw
@@ -693,14 +664,6 @@ class Block(CachingMixin, models.Model):
                 sorted(park_rate.get('rates', []), key=lambda r: r['blocks']) !=
                 sorted(raw_rate.get('rates', []), key=lambda r: r['blocks'])
             ):
-                logger.warning(
-                    '## ACTIVE PARK RATES for {} {}:\n{}\n{}'.format(
-                        park_rate['unit'],
-                        self,
-                        sorted(park_rate.get('rates', []), key=lambda r: r['blocks']),
-                        sorted(raw_rate.get('rates', []), key=lambda r: r['blocks'])
-                    )
-                )
                 return False, 'active park rates for {} do not match'.format(
                     park_rate['unit']
                 )
