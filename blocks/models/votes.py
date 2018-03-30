@@ -85,6 +85,7 @@ class ParkRate(models.Model):
 
     class Meta:
         unique_together = ("blocks", "rate")
+        ordering = ['blocks']
 
 
 class ParkRateVote(models.Model):

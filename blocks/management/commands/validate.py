@@ -152,6 +152,8 @@ class Command(BaseCommand):
                                 page_invalid_blocks.append(block)
                             self.save_tx(tx)
 
+
+
                 logger.info(
                     '{} ({} blocks validated with {} '
                     'invalid blocks found this round)'.format(

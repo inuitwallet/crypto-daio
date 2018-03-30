@@ -2,7 +2,6 @@ import codecs
 import hashlib
 import logging
 import time
-from copy import copy
 from datetime import datetime
 
 import psycopg2
@@ -11,9 +10,10 @@ from caching.base import CachingMixin, CachingManager
 from channels import Channel
 from django.contrib.postgres.fields import JSONField
 from django.db import models, connection
-from django.db.models import Max, Sum, F
+from django.db.models import Max, Sum
 from django.utils.timezone import make_aware
 from django.db.utils import IntegrityError
+from tenant_schemas.utils import tenant_context
 
 from blocks.models import (
     Transaction,
@@ -124,7 +124,17 @@ class Block(CachingMixin, models.Model):
         blank=True,
         null=True,
     )
-    amount_parked = JSONField(default=dict())
+    amount_parked = JSONField(default=dict)
+    vote = JSONField(
+        default=dict,
+        blank=True,
+        null=True
+    )
+    park_rates = JSONField(
+        default=list,
+        blank=True,
+        null=True
+    )
 
     objects = CachingManager()
 
@@ -256,6 +266,8 @@ class Block(CachingMixin, models.Model):
         self.modifier = rpc_block.get('modifier')
         self.modifier_checksum = rpc_block.get('modifierchecksum')
         self.coinage_destroyed = rpc_block.get('coinagedestroyed')
+        self.vote = rpc_block.get('vote')
+        self.park_rates = rpc_block.get('parkrate')
 
         # using the previousblockhash, get the block object to connect
         prev_block_hash = rpc_block.get('previousblockhash')
@@ -480,7 +492,6 @@ class Block(CachingMixin, models.Model):
         if self.height == 0:
             return True, 'Genesis Block'
 
-        # check hash is corr-
         # first check the header attributes
 
         for attribute in [
@@ -550,6 +561,144 @@ class Block(CachingMixin, models.Model):
         for x in range(self.transactions.all().count()):
             if self.transactions.filter(index=x).count() != 1:
                 return False, 'incorrect tx indexing'
+
+        # check that the serialized votes match the saved raw votes
+        # custodian votes
+        custodians = []
+
+        for custodian_vote in self.custodianvote_set.all():
+            custodians.append(
+                {
+                    'address': custodian_vote.address.address,
+                    'amount': float(custodian_vote.amount)
+                }
+            )
+
+        if (
+            sorted(custodians, key=lambda c: c['address']) !=
+            sorted(self.vote.get('custodians', []), key=lambda c: c['address'])
+        ):
+            logger.warning(
+                '## CUSTODIAN VOTES:\n{}\n{}'.format(
+                    sorted(custodians, key=lambda c: c['address']),
+                    sorted(self.vote.get('custodians', []), key=lambda c: c['address'])
+                )
+            )
+            return False, 'custodian votes do not match'
+
+        # park rate votes
+        park_rate_votes = []
+
+        for park_rate_coin in self.parkratevote_set.all().distinct('coin'):
+            coin_park_rates = {'unit': park_rate_coin.coin.unit_code, 'rates': []}
+            for park_rate_vote in self.parkratevote_set.filter(coin=park_rate_coin.coin):
+                for rate in park_rate_vote.rates.all():
+                    coin_park_rates['rates'].append(
+                        {
+                            'blocks': rate.blocks,
+                            'rate': rate.rate
+                        }
+                    )
+                park_rate_votes.append(coin_park_rates)
+
+        for rate_vote in self.vote.get('parkrates', []):
+            raw_rate_vote = next(
+                (
+                    r for r in park_rate_votes
+                    if r['unit'] == rate_vote['unit']
+                ),
+                {}
+            )
+            if (
+                sorted(rate_vote.get('rates', []), key=lambda r: r['blocks']) !=
+                sorted(raw_rate_vote.get('rates', []), key=lambda r: r['blocks'])
+            ):
+                logger.warning(
+                    '## PARK RATE VOTES for {}:\n{}\n{}'.format(
+                        rate_vote['unit'],
+                        sorted(rate_vote.get('rates', []), key=lambda r: r['blocks']),
+                        sorted(raw_rate_vote.get('rates', []), key=lambda r: r['blocks'])
+                    )
+                )
+                return False, 'park rate votes for {} do not match'.format(
+                    rate_vote['unit']
+                )
+
+        # motion votes
+        motions = []
+
+        for motion in self.motionvote_set.all():
+            motions.append(motion.hash)
+
+        if (
+            sorted(motions) !=
+            sorted(self.vote.get('motions', []))
+        ):
+            logger.warning(
+                '## MOTION VOTES:\n{}\n{}'.format(
+                    sorted(motions),
+                    sorted(self.vote.get('motions', []))
+                )
+            )
+            return False, 'motion votes do not match'
+
+        # fee votes
+        fees = {}
+
+        for fee_vote in self.feesvote_set.all():
+            fees[fee_vote.coin.unit_code] = fee_vote.fee
+
+        if (
+            sorted(fees) !=
+            sorted(self.vote.get('fees', {}))
+        ):
+            logger.warning(
+                '## FEE VOTES:\n{}\n{}'.format(
+                    sorted(fees),
+                    sorted(self.vote.get('fees', {}))
+                )
+            )
+            return False, 'fee votes do not match'
+
+        # check active park rates against raw
+        active_park_rates = []
+
+        for apr in self.activeparkrate_set.all().distinct('coin'):
+            coin_park_rates = {'unit': apr.coin.unit_code, 'rates': []}
+            for park_rate in self.activeparkrate_set.filter(coin=apr.coin):
+                for rate in park_rate.rates.all():
+                    coin_park_rates['rates'].append(
+                        {
+                            'blocks': rate.blocks,
+                            'rate': rate.rate
+                        }
+                    )
+                active_park_rates.append(coin_park_rates)
+
+        raw_park_rates = self.park_rates if self.park_rates is not None else []
+
+        for park_rate in raw_park_rates:
+            raw_rate = next(
+                (
+                    r for r in active_park_rates
+                    if r['unit'] == park_rate['unit']
+                ),
+                {}
+            )
+            if (
+                sorted(park_rate.get('rates', []), key=lambda r: r['blocks']) !=
+                sorted(raw_rate.get('rates', []), key=lambda r: r['blocks'])
+            ):
+                logger.warning(
+                    '## ACTIVE PARK RATES for {}:\n{}\n{}'.format(
+                        park_rate['unit'],
+                        sorted(park_rate.get('rates', []), key=lambda r: r['blocks']),
+                        sorted(raw_rate.get('rates', []), key=lambda r: r['blocks'])
+                    )
+                )
+                return False, 'active park rates for {} do not match'.format(
+                    park_rate['unit']
+                )
 
         return True, 'Block is valid'
 

@@ -36,8 +36,6 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        chain = connection.tenant
-
         if options['block']:
             blocks = Block.objects.filter(height=options['block']).order_by('-height')
         else:
@@ -73,7 +71,8 @@ class Command(BaseCommand):
 
                         votes = MotionVote.objects.filter(
                             hash=vote.hash,
-                            block__height__gte=max(block.height - 10000, 0)
+                            block__height__gte=max(block.height - 10000, 0),
+                            block__height__lte=block.height
                         )
 
                         vote.blocks_percentage = (votes.count() / 10000) * 100
@@ -92,6 +91,7 @@ class Command(BaseCommand):
 
                         vote.sdd_percentage = (voted_sdd / total_sdd) * 100
                         vote.save()
+                        logger.info('saved {}'.format(vote))
 
                 logger.info('Got motion vote data for {} blocks'.format(total_blocks))
 
