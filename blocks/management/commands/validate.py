@@ -4,6 +4,7 @@ from asgiref.base_layer import BaseChannelLayer
 from django.core.management import BaseCommand
 from django.core.paginator import Paginator
 from django.db import connection
+from django.db.models import Min
 
 from blocks.models import Block
 from django.utils import timezone
@@ -38,6 +39,13 @@ class Command(BaseCommand):
             '--limit',
             help='limit the number of blocks to process. useful in combination with -s',
             dest='limit',
+            default=None
+        )
+        parser.add_argument(
+            '-t',
+            '--last',
+            help='use the last x blocks',
+            dest='last',
             default=None
         )
 
@@ -113,9 +121,14 @@ class Command(BaseCommand):
             # no block specified so validate all blocks starting from start_height
             blocks = Block.objects.filter(
                 height__gte=options['start_height']
+            ).exclude(
+                height__isnull=True
             ).order_by(
                 'height'
             )
+
+        if options['last']:
+            blocks = blocks[blocks.count() - int(options['last']):]
 
         if options['limit']:
             blocks = blocks[:int(options['limit'])]
@@ -123,7 +136,7 @@ class Command(BaseCommand):
         logger.info(
             'validating {} blocks starting from {}'.format(
                 blocks.count(),
-                options['start_height']
+                blocks.aggregate(Min('height'))['height__min']
             )
         )
 
