@@ -579,7 +579,8 @@ class Block(CachingMixin, models.Model):
             sorted(self.vote.get('custodians', []), key=lambda c: c['address'])
         ):
             logger.warning(
-                '## CUSTODIAN VOTES:\n{}\n{}'.format(
+                '## CUSTODIAN VOTES {}:\n{}\n{}'.format(
+                    self,
                     sorted(custodians, key=lambda c: c['address']),
                     sorted(self.vote.get('custodians', []), key=lambda c: c['address'])
                 )
@@ -614,8 +615,9 @@ class Block(CachingMixin, models.Model):
                 sorted(raw_rate_vote.get('rates', []), key=lambda r: r['blocks'])
             ):
                 logger.warning(
-                    '## PARK RATE VOTES for {}:\n{}\n{}'.format(
+                    '## PARK RATE VOTES for {} {}:\n{}\n{}'.format(
                         rate_vote['unit'],
+                        self,
                         sorted(rate_vote.get('rates', []), key=lambda r: r['blocks']),
                         sorted(raw_rate_vote.get('rates', []), key=lambda r: r['blocks'])
                     )
@@ -635,7 +637,8 @@ class Block(CachingMixin, models.Model):
             sorted(self.vote.get('motions', []))
         ):
             logger.warning(
-                '## MOTION VOTES:\n{}\n{}'.format(
+                '## MOTION VOTES {}:\n{}\n{}'.format(
+                    self,
                     sorted(motions),
                     sorted(self.vote.get('motions', []))
                 )
@@ -653,7 +656,8 @@ class Block(CachingMixin, models.Model):
             sorted(self.vote.get('fees', {}))
         ):
             logger.warning(
-                '## FEE VOTES:\n{}\n{}'.format(
+                '## FEE VOTES {}:\n{}\n{}'.format(
+                    self,
                     sorted(fees),
                     sorted(self.vote.get('fees', {}))
                 )
@@ -690,8 +694,9 @@ class Block(CachingMixin, models.Model):
                 sorted(raw_rate.get('rates', []), key=lambda r: r['blocks'])
             ):
                 logger.warning(
-                    '## ACTIVE PARK RATES for {}:\n{}\n{}'.format(
+                    '## ACTIVE PARK RATES for {} {}:\n{}\n{}'.format(
                         park_rate['unit'],
+                        self,
                         sorted(park_rate.get('rates', []), key=lambda r: r['blocks']),
                         sorted(raw_rate.get('rates', []), key=lambda r: r['blocks'])
                     )
