@@ -3,6 +3,7 @@ from django.template.loader import render_to_string
 
 from blocks.models import Block, TxOutput
 
+
 def send_transactions(block, message):
     # send the block transactions
     transactions = block.transactions.all()
@@ -183,3 +184,8 @@ def get_block_details(message_dict, message):
     send_motion_votes(block, message)
     send_park_rate_votes(block, message)
     send_fees_votes(block, message)
+
+
+def get_next_blocks(message, last_height):
+    for block in Block.objects.filter(height__lt=last_height, height__gte=last_height-50):
+        print(block)

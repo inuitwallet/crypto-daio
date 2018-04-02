@@ -618,8 +618,8 @@ class Block(CachingMixin, models.Model):
             motions.append(motion.hash)
 
         if (
-            sorted(motions) !=
-            sorted(self.vote.get('motions', []))
+            sorted(set(motions)) !=
+            sorted(set(self.vote.get('motions', [])))
         ):
             return False, 'motion votes do not match'
 

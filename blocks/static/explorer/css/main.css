@@ -25,6 +25,7 @@ Info Panel
 
 .chain-logo {
     height: 8vh;
+    display: block;
 }
 
 .chain-logo-img {
