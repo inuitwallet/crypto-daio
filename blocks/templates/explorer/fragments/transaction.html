@@ -1,9 +1,15 @@
 {% load humanize block_extras %}
 
 <div class="row transaction spacer">
+    {% if not tx.is_valid %}
+        <script>
+            $(function() {
+                console.log('Transaction {{ tx.tx_id }} is invalid: {{ tx.validate.1|safe }}');
+            });
+        </script>
+    {% endif %}
     <div class="col-md-12">
-        {% with valid=tx.is_valid %}
-        <div class="row tx-header {% if not valid %}invalid{% endif %}">
+        <div class="row tx-header {% if not tx.is_valid %}invalid{% endif %}">
             <div class="col-md-7 tx-id">
                 {{ tx.index }} : {{ tx.tx_id }}
             </div>
@@ -14,7 +20,6 @@
                 {{ tx.time }}
             </div>
         </div>
-        {% endwith %}
         <div class="row tx-extra-detail spacer full-detail-{{ tx.tx_id }}">
             <div class="col-md-10 col-md-offset-1">
                 <div class="row">

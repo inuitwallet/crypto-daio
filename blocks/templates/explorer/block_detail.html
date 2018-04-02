@@ -7,6 +7,13 @@ Block Detail: {{ object.height }}
 {% endblock %}
 
 {% block content %}
+    {% if not object.is_valid %}
+        <script>
+            $(function() {
+                console.log('Block {{ object.height }} is invalid: {{ object.validate.1|safe }}');
+            });
+        </script>
+    {% endif %}
     <div class="row block-navigation">
         <div class="col-md-4 col-md-offset-2 text-left">
             {% if object.previous_block.height %}
