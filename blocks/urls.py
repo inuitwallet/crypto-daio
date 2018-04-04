@@ -19,7 +19,7 @@ urlpatterns = [
 
     # Explorer
     url(r'^$', LatestBlocksList.as_view(), name='index'),
-    url(r'^blocks$', All_Blocks.as_view(), name='blocks'),
+    url(r'^blocks$', AllBlocks.as_view(), name='blocks'),
     url(r'^block/(?P<block_height>.*)$', BlockDetailView.as_view(), name='block'),
     url(r'^address/(?P<address>.*)$', AddressDetailView.as_view(), name='address'),
 

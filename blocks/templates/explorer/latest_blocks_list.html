@@ -33,6 +33,27 @@ Latest Blocks
             </div>
             <h5><a href="{% url 'blocks' %}">All Blocks</a></h5>
         </div>
+        {% if active_park_rates %}
+            <div class="col-md-5 col-md-offset-1">
+                <h4>Current Park Rates</h4>
+                <div class="row">
+                    {% for park_rate in active_park_rates %}
+                        <div class="col-md-4">
+                            <div class="row text-center">
+                                {{ park_rate.coin }}
+                            </div>
+                            <div class="row text-center">
+                                {% for rate in park_rate.rates.all %}
+                                    <div class="col-md-12">
+                                        {{ rate.blocks }} blocks - {{ rate.rate }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
     </div>
 {% endblock %}
 
@@ -46,6 +67,9 @@ Latest Blocks
             var first_row = $("#latest-blocks-table>tbody tr:first");
 
             webSocketBridge.socket.addEventListener('open', function() {
+                webSocketBridge.stream('get_active_park_rates').send(
+                    {'host': window.location.hostname}
+                );
                 webSocketBridge.listen(function (data, channel) {
                     var message_type = data["message_type"];
 
@@ -67,7 +91,6 @@ Latest Blocks
                             }
                             row.html(block_html).fadeIn('fast')
                         });
-
                     }
 
                 });

@@ -1,0 +1,13 @@
+<tr class="{% if not block.is_valid %}warning{% endif %}">
+    <td class="height text-right"><a href="{% url 'block' block.height %}">{{ block.height }}</a></td>
+    <td class="hash text-right">{{ block.hash|slice:":8" }}</td>
+    <td class="age text-right">{% if block.time %}{{ block.time|timesince }}{% endif %}</td>
+    <td class="solved text-right">{{ block.solved_by.address }}</td>
+    <td class="valid text-right">
+        {% if block.is_valid %}
+            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+        {% else %}
+            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+        {% endif %}
+    </td>
+</tr>

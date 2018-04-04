@@ -80,16 +80,26 @@ def new(request):
         )
     local_mnemonic = mnemonic.generate(256)
     export_mnemonic = mnemonic.generate(128)
-    key = BIP32Key.fromEntropy(
-        mnemonic.to_seed(
-            local_mnemonic,
-            export_mnemonic
+    try:
+        key = BIP32Key.fromEntropy(
+            mnemonic.to_seed(
+                local_mnemonic,
+                export_mnemonic
+            )
         )
-    )
+    except ValueError as e:
+        print(e)
+        return JsonResponse(
+            {
+                'success': False,
+                'error': 'failed to generate key: {}'.format(e)
+            }
+        )
     extpub_key = key.ExtendedKey(
         private=False,
         encoded=True
     )
+    print(extpub_key)
     wallet = Wallet.objects.create(
         mnemonic=local_mnemonic
     )

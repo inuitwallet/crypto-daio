@@ -4,7 +4,7 @@ from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView
 
-from blocks.models import Block, Transaction
+from blocks.models import Block, Transaction, ActiveParkRate
 
 
 class LatestBlocksList(ListView):
@@ -18,6 +18,18 @@ class LatestBlocksList(ListView):
     def get_context_data(self, **kwargs):
         context = super(LatestBlocksList, self).get_context_data(**kwargs)
         context['chain'] = connection.tenant
+        context['active_park_rates'] = []
+
+        for coin in connection.tenant.coins.all():
+            park_rate = ActiveParkRate.objects.filter(
+                coin=coin
+            ).order_by(
+                '-block__height'
+            ).first()
+
+            if park_rate:
+                context['active_park_rates'].append(park_rate)
+
         return context
 
 
@@ -60,15 +72,24 @@ class BlockDetailView(View):
         )
 
 
-class All_Blocks(LatestBlocksList):
+class AllBlocks(ListView):
     model = Block
-    paginate_by = 50
+    paginate_by = 20
     template_name = 'explorer/all_blocks_list.html'
 
+    def get(self, request, *args, **kwargs):
+        self.kwargs['GET'] = request.GET
+        return super().get(request, *args, **kwargs)
+
     def get_queryset(self):
-        return Block.objects.exclude(height=None).order_by('-height')
+        blocks = Block.objects.exclude(height=None).order_by('-height')
+
+        if 'start-from' in self.kwargs['GET']:
+            blocks = blocks.filter(height__lte=self.kwargs['GET']['start-from'])
+
+        return blocks
 
     def get_context_data(self, **kwargs):
-        context = super(LatestBlocksList, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         context['chain'] = connection.tenant
         return context

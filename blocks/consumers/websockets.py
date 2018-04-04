@@ -84,9 +84,16 @@ def ws_receive(message):
             return
 
         if message['path'] == '/all_blocks_list/':
-            last_height = message_dict['payload']['last_height']
+            try:
+                last_height = int(message_dict['payload']['last_height'])
+            except ValueError:
+                return
+
             get_next_blocks(message, last_height)
             return
+
+        if message['path'] == '/latest_blocks_list/':
+            print('yo')
 
 
 def ws_disconnect(message):

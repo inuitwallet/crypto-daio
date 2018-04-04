@@ -18,13 +18,14 @@ from ecdsa.numbertheory import square_root_mod_prime as sqrt_mod
 from re import match as re_match
 
 MIN_ENTROPY_LEN = 128        # bits
-BIP32_HARDEN    = 0x80000000 # choose from hardened set of child keys
+BIP32_HARDEN    = 0x80000000  # choose from hardened set of child keys
 CURVE_GEN       = ecdsa.ecdsa.generator_secp256k1
 CURVE_ORDER     = CURVE_GEN.order()
 FIELD_ORDER     = SECP256k1.curve.p()
 INFINITY        = ecdsa.ellipticcurve.INFINITY
-EX_MAIN_PRIVATE = codecs.decode('0488ade4', 'hex')  # Version string for mainnet extended private keys
-EX_MAIN_PUBLIC  = codecs.decode('0488b21e', 'hex')  # Version string for mainnet extended public keys
+EX_MAIN_PRIVATE = codecs.decode('0488ade4', 'hex')  # mainnet extended private keys
+EX_MAIN_PUBLIC  = codecs.decode('0488b21e', 'hex')  # mainnet extended public keys
+
 
 class BIP32Key(object):
 
@@ -33,12 +34,13 @@ class BIP32Key(object):
     @staticmethod
     def fromEntropy(entropy, public=False):
         "Create a BIP32Key using supplied entropy >= MIN_ENTROPY_LEN"
+
         if entropy == None:
-            entropy = os.urandom(MIN_ENTROPY_LEN/8) # Python doesn't have os.random()
+            entropy = os.urandom(MIN_ENTROPY_LEN/8)  # Python doesn't have os.random()
         if not len(entropy) >= MIN_ENTROPY_LEN/8:
             raise ValueError("Initial entropy %i must be at least %i bits" %
                                 (len(entropy), MIN_ENTROPY_LEN))
-        I = hmac.new("Bitcoin seed", entropy, hashlib.sha512).digest()
+        I = hmac.new(b'Daio Seed', entropy, hashlib.sha512).digest()
         Il, Ir = I[:32], I[32:]
         # FIXME test Il for 0 or less than SECP256k1 prime field order
         key = BIP32Key(secret=Il, chain=Ir, depth=0, index=0, fpr='\0\0\0\0', public=False)
@@ -279,21 +281,35 @@ class BIP32Key(object):
         raw = '\xBF' + self.k.to_string() + '\x01' # Always compressed
         return Base58.check_encode(raw)
 
-
     def ExtendedKey(self, private=True, encoded=True):
-        "Return extended private or public key as string, optionally Base58 encoded"
+        """
+        Return extended private or public key as string, optionally Base58 encoded
+        """
         if self.public is True and private is True:
-            raise Exception("Cannot export an extended private key from a public-only deterministic key")
+            raise Exception(
+                "Cannot export an extended private key "
+                "from a public-only deterministic key"
+            )
+
         version = EX_MAIN_PRIVATE if private else EX_MAIN_PUBLIC
         depth = chr(self.depth)
         fpr = self.parent_fpr
         child = struct.pack('>L', self.index)
         chain = self.C
+
         if self.public is True or private is False:
             data = self.PublicKey()
         else:
             data = '\x00' + self.PrivateKey()
-        raw = version+depth+fpr+child+chain+data
+        raw = '{}{}{}{}{}{}'.format(
+            version,
+            depth,
+            fpr,
+            child,
+            chain,
+            data
+        ).encode('utf-8')
+
         if not encoded:
             return raw
         else:

@@ -190,3 +190,9 @@ Blocks
 .loading-indicator {
     display: none;
 }
+
+/*#blocks-table-container {*/
+    /*height: 600px;*/
+    /*overflow-y: scroll;*/
+    /*border-radius: 5px;*/
+/*}*/

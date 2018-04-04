@@ -187,5 +187,20 @@ def get_block_details(message_dict, message):
 
 
 def get_next_blocks(message, last_height):
-    for block in Block.objects.filter(height__lt=last_height, height__gte=last_height-50):
-        print(block)
+    for block in Block.objects.filter(
+        height__lt=last_height,
+        height__gte=last_height-50
+    ).order_by(
+        '-height'
+    ):
+        message.reply_channel.send(
+            {'text': json.dumps(
+                {
+                    'message_type': 'new_block',
+                    'html': render_to_string(
+                        'explorer/fragments/full_block.html',
+                        {'block': block}
+                    )
+                }
+            )}
+        )
