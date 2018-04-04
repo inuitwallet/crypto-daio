@@ -113,19 +113,19 @@ class Command(BaseCommand):
         if not current_highest_block:
             current_highest_block = -1
 
-        # while max_height > current_highest_block:
-        #     current_highest_block += 1
-        #     rpc_hash = send_rpc(
-        #         {
-        #             'method': 'getblockhash',
-        #             'params': [current_highest_block]
-        #         },
-        #         schema_name=chain.schema_name
-        #     )
-        #     block, _ = Block.objects.get_or_create(hash=rpc_hash)
-        #     logger.info('saved block {}'.format(block))
-        #
-        # # give a short amount of time for the block(s) to be saved
+        while max_height > current_highest_block:
+            current_highest_block += 1
+            rpc_hash = send_rpc(
+                {
+                    'method': 'getblockhash',
+                    'params': [current_highest_block]
+                },
+                schema_name=chain.schema_name
+            )
+            block, _ = Block.objects.get_or_create(hash=rpc_hash)
+            logger.info('saved block {}'.format(block))
+
+        # give a short amount of time for the block(s) to be saved
         sleep(5)
 
         top_blocks = Block.objects.exclude(height=None).order_by('-height')[:50]
