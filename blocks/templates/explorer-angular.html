@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block beforeheadimports %}
+    <meta charset="utf-8">
+    <base href="/angular">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+{% endblock %}
+
+{% block head %}
+    <link rel="icon" type="image/x-icon" href="{% static 'explorer-angular/favicon.ico' %}">
+    <link href="{% static 'explorer-angular/styles.bundle.css' %}" rel="stylesheet"/>
+{% endblock %}
+
+{% block content %}
+    <app-root>Loading...</app-root>
+{% endblock %}
+
+{% block afterbody %}
+    <script type="text/javascript" src="{% static 'explorer-angular/inline.bundle.js' %}"></script>
+    <script type="text/javascript" src="{% static 'explorer-angular/polyfills.bundle.js' %}"></script>
+    <script type="text/javascript" src="{% static 'explorer-angular/main.bundle.js' %}"></script>
+{% endblock %}
+

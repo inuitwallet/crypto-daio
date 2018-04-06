@@ -6,6 +6,8 @@ from blocks.views.search import Search
 from blocks.views.health import HealthView
 from blocks.views.votes import GrantView, MotionView
 
+from blocks.views.explorer_angular import AngularExplorer
+
 __all__ = [
     'AddressDetailView',
     'BlockDetailView',
@@ -16,5 +18,7 @@ __all__ = [
     'Search',
     'HealthView',
     'GrantView',
-    'MotionView'
+    'MotionView',
+
+    'AngularExplorer'
 ]

@@ -87,6 +87,15 @@ def repair_block(message):
             fix_next_block(block, message.get('chain'))
             return
 
+        if error_message in ['custodian votes do not match',
+                             'park rate votes do not match',
+                             'motion votes do not match',
+                             'fee votes do not match']:
+            fix_block_votes(block, message.get('chain'))
+
+        if error_message == 'active park rates do not match':
+            fix_block_park_rates(block, message.get('chain'))
+
         # all other errors with the block can be solved by re-parsing it
         logger.info('re-parsing {}'.format(block))
         rpc = send_rpc(
@@ -208,6 +217,44 @@ def fix_merkle_root(block, chain):
         tx.save()
 
     # reinitialise validation
+    block.save()
+
+
+def fix_block_votes(block, chain):
+    logger.info('fixing votes on block {}'.format(block))
+    rpc = send_rpc(
+        {
+            'method': 'getblock',
+            'params': [block.hash],
+        },
+        schema_name=chain
+    )
+
+    if not rpc:
+        return False
+
+    vote = rpc.get('vote', {})
+    block.parse_rpc_votes(vote)
+    block.vote = vote
+    block.save()
+
+
+def fix_block_park_rates(block, chain):
+    logger.info('fixing park rates on block {}'.format(block))
+    rpc = send_rpc(
+        {
+            'method': 'getblock',
+            'params': [block.hash],
+        },
+        schema_name=chain
+    )
+
+    if not rpc:
+        return False
+
+    park_rates = rpc.get('parkrates', [])
+    block.parse_rpc_parkrates(park_rates)
+    block.park_rates = park_rates
     block.save()
 
 

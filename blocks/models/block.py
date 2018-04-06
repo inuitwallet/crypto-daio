@@ -607,9 +607,7 @@ class Block(CachingMixin, models.Model):
                 sorted(rate_vote.get('rates', []), key=lambda r: r['blocks']) !=
                 sorted(raw_rate_vote.get('rates', []), key=lambda r: r['blocks'])
             ):
-                return False, 'park rate votes for {} do not match'.format(
-                    rate_vote['unit']
-                )
+                return False, 'park rate votes do not match'
 
         # motion votes
         motions = []
@@ -664,9 +662,7 @@ class Block(CachingMixin, models.Model):
                 sorted(park_rate.get('rates', []), key=lambda r: r['blocks']) !=
                 sorted(raw_rate.get('rates', []), key=lambda r: r['blocks'])
             ):
-                return False, 'active park rates for {} do not match'.format(
-                    park_rate['unit']
-                )
+                return False, 'active park rates do not match'
 
         return True, 'Block is valid'
 
