@@ -8,6 +8,7 @@ import psycopg2
 from asgiref.base_layer import BaseChannelLayer
 from caching.base import CachingMixin, CachingManager
 from channels import Channel
+from decimal import Decimal
 from django.contrib.postgres.fields import JSONField
 from django.db import models, connection
 from django.db.models import Max, Sum
@@ -345,13 +346,13 @@ class Block(CachingMixin, models.Model):
                 CustodianVote.objects.get(
                     block=self,
                     address=address,
-                    amount=amount
+                    amount=Decimal(amount)
                 )
             except CustodianVote.DoesNotExist:
                 custodian_vote = CustodianVote(
                     block=self,
                     address=address,
-                    amount=amount
+                    amount=Decimal(amount)
                 )
                 time.sleep(1)
                 custodian_vote.save()
