@@ -338,32 +338,32 @@ class Block(CachingMixin, models.Model):
                 continue
             address, _ = Address.objects.get_or_create(address=custodian_address)
             try:
-                CustodianVote.objects.get_or_create(
+                CustodianVote.objects.get(
                     block=self,
                     address=address,
                     amount=custodian_vote.get('amount', 0)
                 )
-            except CustodianVote.MultipleObjectsReturned:
-                logger.warning(
-                    'got multiple custodian votes {}:{}:{}'.format(
-                        self,
-                        address,
-                        custodian_vote.get('amount', 0)
-                    )
+            except CustodianVote.DoesNotExist:
+                custodian_vote = CustodianVote(
+                    block=self,
+                    address=address,
+                    amount=custodian_vote.get('amount', 0)
                 )
-                continue
+                time.sleep(1)
+                custodian_vote.save()
+
         # motion votes
         for motion_vote in votes.get('motions', []):
             try:
-                motion_object, _ = MotionVote.objects.get_or_create(
+                motion_object = MotionVote.objects.get(
                     block=self,
                     hash=motion_vote
                 )
-            except MotionVote.MultipleObjectsReturned:
-                logger.warning(
-                    'got multiple motion votes for {}:{}'.format(self, motion_vote)
+            except MotionVote.DoesNotExist:
+                motion_object = MotionVote(
+                    block=self,
+                    hash=motion_vote
                 )
-                continue
 
             # calculate block percentage
             motion_votes = MotionVote.objects.filter(
@@ -401,20 +401,19 @@ class Block(CachingMixin, models.Model):
                 continue
 
             try:
-                FeesVote.objects.get_or_create(
+                FeesVote.objects.get(
                     block=self,
                     coin=coin,
                     fee=fee_votes[fee_vote]
                 )
-            except FeesVote.MultipleObjectsReturned:
-                logger.warning(
-                    'got multiple fees votes {}:{}:{}'.format(
-                        self,
-                        coin,
-                        fee_votes[fee_vote]
-                    )
+            except FeesVote.DoesNotExist:
+                fees_vote = FeesVote(
+                    block=self,
+                    coin=coin,
+                    fee=fee_votes[fee_vote]
                 )
-                continue
+                time.sleep(1)
+                fees_vote.save()
         # park rate votes
         for park_rate_vote in votes.get('parkrates', []):
             try:
@@ -426,29 +425,31 @@ class Block(CachingMixin, models.Model):
                 continue
 
             try:
-                vote, _ = ParkRateVote.objects.get_or_create(
+                vote = ParkRateVote.objects.get(
                     block=self,
                     coin=coin
                 )
-            except ParkRateVote.MultipleObjectsReturned:
-                logger.warning('got multiple parkrate votes for {}:{}'.format(self, coin))
-                continue
+            except ParkRateVote.DoesNotExist:
+                vote = ParkRateVote(
+                    block=self,
+                    coin=coin
+                )
+                time.sleep(1)
+                vote.save()
 
             for rate in park_rate_vote.get('rates', []):
                 try:
-                    park_rate, _ = ParkRate.objects.get_or_create(
+                    park_rate = ParkRate.objects.get(
                         blocks=rate.get('blocks', 0),
                         rate=rate.get('rate', 0)
                     )
-                except ParkRate.MultipleObjectsReturned:
-                    logger.error(
-                        'Got Multiple ParkRates for {}:{} Attaching to {}'.format(
-                            rate.get('blocks', 0),
-                            rate.get('rate', 0),
-                            self
-                        )
+                except ParkRate.DoesNotExist:
+                    park_rate = ParkRate(
+                        blocks=rate.get('blocks', 0),
+                        rate=rate.get('rate', 0)
                     )
-                    continue
+                    time.sleep(1)
+                    park_rate.save()
 
                 vote.rates.add(park_rate)
 
