@@ -92,9 +92,11 @@ def repair_block(message):
                              'motion votes do not match',
                              'fee votes do not match']:
             fix_block_votes(block, message.get('chain'))
+            return
 
         if error_message == 'active park rates do not match':
             fix_block_park_rates(block, message.get('chain'))
+            return
 
         # all other errors with the block can be solved by re-parsing it
         logger.info('re-parsing {}'.format(block))
