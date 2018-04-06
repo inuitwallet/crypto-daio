@@ -335,13 +335,17 @@ class Block(CachingMixin, models.Model):
         # custodian votes
         for custodian_vote in votes.get('custodians', []):
             custodian_address = custodian_vote.get('address')
+
             if not custodian_address:
                 continue
+
             address, _ = Address.objects.get_or_create(address=custodian_address)
-            amount = custodian_vote.get('amount')
+            amount = '{:.8f}'.format(custodian_vote.get('amount'))
+
             if amount is None:
                 logger.error('Got custodian vote amount = None parsing {}'.format(self))
                 continue
+
             try:
                 CustodianVote.objects.get(
                     block=self,
