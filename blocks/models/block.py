@@ -337,17 +337,21 @@ class Block(CachingMixin, models.Model):
             if not custodian_address:
                 continue
             address, _ = Address.objects.get_or_create(address=custodian_address)
+            amount = custodian_vote.get('amount')
+            if amount is None:
+                logger.error('Got custodian vote amount = None parsing {}'.format(self))
+                continue
             try:
                 CustodianVote.objects.get(
                     block=self,
                     address=address,
-                    amount=custodian_vote.get('amount', 0)
+                    amount=amount
                 )
             except CustodianVote.DoesNotExist:
                 custodian_vote = CustodianVote(
                     block=self,
                     address=address,
-                    amount=custodian_vote.get('amount', 0)
+                    amount=amount
                 )
                 time.sleep(1)
                 custodian_vote.save()
@@ -438,15 +442,32 @@ class Block(CachingMixin, models.Model):
                 vote.save()
 
             for rate in park_rate_vote.get('rates', []):
+                blocks = rate.get('blocks')
+
+                if blocks is None:
+                    logger.error(
+                        'Got blocks = None when parsing Park Rate Votes for {}'.format(
+                            self
+                        )
+                    )
+
+                this_rate = rate.get('rate')
+
+                if this_rate is None:
+                    logger.error(
+                        'Got rate = None when parsing Park Rate Votes for {}'.format(
+                            self
+                        )
+                    )
                 try:
                     park_rate = ParkRate.objects.get(
-                        blocks=rate.get('blocks', 0),
-                        rate=rate.get('rate', 0)
+                        blocks=blocks,
+                        rate=this_rate
                     )
                 except ParkRate.DoesNotExist:
                     park_rate = ParkRate(
-                        blocks=rate.get('blocks', 0),
-                        rate=rate.get('rate', 0)
+                        blocks=blocks,
+                        rate=this_rate
                     )
                     time.sleep(1)
                     park_rate.save()
