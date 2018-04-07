@@ -423,6 +423,7 @@ class Block(CachingMixin, models.Model):
                 )
                 time.sleep(1)
                 fees_vote.save()
+
         # park rate votes
         for park_rate_vote in votes.get('parkrates', []):
             try:
@@ -716,10 +717,10 @@ class Block(CachingMixin, models.Model):
 
     @property
     def solved_by(self):
-        index = 0
+        index = 1
 
-        if self.flags == 'proof-of-stake':
-            index = 1
+        if self.flags == 'proof-of-work':
+            index = 0
 
         for tx in self.transactions.all():
             if tx.index == index:
