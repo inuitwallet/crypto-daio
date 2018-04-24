@@ -39,8 +39,7 @@ SHARED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sites',
-    'django_nvd3',
-    'djangobower',
+    'django.contrib.sessions',
     'storages',
     'daio',
 ]
@@ -51,14 +50,11 @@ TENANT_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
-    'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.staticfiles',
     'django.contrib.messages',
     'django.contrib.humanize',
-    'alerts',
     'blocks',
-    'charts',
     'wallet',
     'rest_framework',
     'channels',
@@ -66,6 +62,10 @@ TENANT_APPS = [
     'corsheaders',
     'redisboard',
 ]
+
+SESSION_COOKIE_DOMAIN = None
+
+TENANT_LIMIT_SET_CALLS = True
 
 INSTALLED_APPS = SHARED_APPS + list(app for app in TENANT_APPS if app not in SHARED_APPS)
 
@@ -223,17 +223,7 @@ LOGGING = {
 
 STATICFILES_FINDERS = [
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',
-    'djangobower.finders.BowerFinder',
 ]
-
-BOWER_COMPONENTS_ROOT = os.path.join(APPLICATION_DIR, 'components')
-
-BOWER_PATH = '/usr/local/bin/bower'
-
-BOWER_INSTALLED_APPS = (
-    'd3#3.5.5',
-    'nvd3#1.7.1',
-)
 
 STATICFILES_STORAGE = 'daio.storages.DaioStorage'
 
@@ -251,3 +241,5 @@ CACHES = {
 CACHE_COUNT_TIMEOUT = 60  # seconds, not too long.
 CACHE_MACHINE_USE_REDIS = True
 REDIS_BACKEND = 'redis://localhost:6379'
+
+APPEND_SLASH = False

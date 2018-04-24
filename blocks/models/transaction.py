@@ -1,12 +1,14 @@
 import codecs
 import hashlib
+import json
 import logging
 import time
 from datetime import datetime
 
 from asgiref.base_layer import BaseChannelLayer
 from caching.base import CachingManager, CachingMixin
-from channels import Channel
+from channels import Channel, Group
+from django.core.cache import cache
 from django.db import models, connection, IntegrityError
 from django.db.models import Sum
 from django.utils.timezone import make_aware
@@ -68,6 +70,68 @@ class Transaction(CachingMixin, models.Model):
     class Meta:
         ordering = ['index']
 
+    def send_for_repair(self):
+        try:
+            Channel('repair_transaction').send({
+                'chain': connection.tenant.schema_name,
+                'tx_id': self.tx_id
+            })
+        except BaseChannelLayer.ChannelFull:
+            logger.error('CHANNEL FULL!')
+
+    def serialize(self):
+        serialized_tx = None
+        is_valid = self.is_valid
+
+        if is_valid:
+            serialized_tx = cache.get(
+                '{}_{}'.format(
+                    connection.tenant.schema_name,
+                    self.tx_id
+                )
+            )
+        else:
+            self.send_for_repair()
+
+        if serialized_tx is None:
+            serialized_tx = {
+                'tx_id': self.tx_id,
+                'index': self.index,
+                'version': self.version,
+                'time': (
+                    datetime.strftime(
+                        self.time,
+                        '%Y-%m-%d %H:%M:%S %Z'
+                    ) if self.time else None
+                ),
+                'lock_time': self.lock_time,
+                'coin': self.coin.code if self.coin else None,
+                'inputs': [
+                    tx_input.serialize() for tx_input in self.inputs.all()
+                ],
+                'outputs': [
+                    tx_output.serialize() for tx_output in self.outputs.all()
+                ],
+                'valid': is_valid,
+                'total_input': self.total_input,
+                'total_output': self.total_output,
+                'address_inputs': self.address_inputs,
+                'address_outputs':  self.address_outputs,
+                'balance': self.balance,
+                'coinbase': self.is_coinbase
+            }
+
+            if is_valid:
+                cache.set(
+                    '{}_{}'.format(
+                        connection.tenant.schema_name,
+                        self.tx_id
+                    ),
+                    serialized_tx
+                )
+
+        return serialized_tx
+
     def save(self, *args, **kwargs):
         validate = kwargs.pop('validate', True)
 
@@ -82,13 +146,25 @@ class Transaction(CachingMixin, models.Model):
 
         if validate:
             if not self.is_valid:
-                try:
-                    Channel('repair_transaction').send({
-                        'chain': connection.tenant.schema_name,
-                        'tx_id': self.tx_id
-                    })
-                except BaseChannelLayer.ChannelFull:
-                    logger.error('CHANNEL FULL!')
+                self.send_for_repair()
+
+        logger.info('sending to transaction group')
+        Group(
+            '{}_transaction'.format(connection.tenant.schema_name)
+        ).send(
+            {
+                'text': json.dumps(
+                    {
+                        'stream': 'transaction_update',
+                        'payload': {
+                            'tx_id': self.tx_id,
+                            'tx': self.serialize()
+                        }
+                    }
+                )
+            },
+            immediately=True
+        )
 
     @property
     def class_type(self):
@@ -403,8 +479,6 @@ class Transaction(CachingMixin, models.Model):
 
         for tin in self.inputs.all():
             if not tin.previous_output or not tin.previous_output.address:
-                self.save()
-                self.block.save()
                 continue
             if tin.previous_output.address.address not in address_inputs:
                 address_inputs[tin.previous_output.address.address] = float(0)
@@ -425,8 +499,6 @@ class Transaction(CachingMixin, models.Model):
             'address__address'
         ):
             if not address_tx.address:
-                self.save()
-                self.block.save()
                 continue
             address_outputs[address_tx.address.address] = self.outputs.filter(
                 address=address_tx.address
@@ -508,6 +580,27 @@ class TxOutput(CachingMixin, models.Model):
         except TxInput.DoesNotExist:
             return False
 
+    def serialize(self):
+        try:
+            spent_in = self.input.transaction.block.height
+        except TxInput.DoesNotExist:
+            spent_in = None
+
+        return {
+            'value': self.value,
+            'index': self.index,
+            'pub_key_asm': self.script_pub_key_asm,
+            'pub_key_hex': self.script_pub_key_hex,
+            'pub_key_type': self.script_pub_key_type,
+            'pub_key_req_sig': self.script_pub_key_req_sig,
+            'address': self.address.address if self.address else None,
+            'park_duration': self.park_duration,
+            'display_value': self.display_value,
+            'spent': self.is_spent,
+            'spent_in': spent_in,
+            'block_height': self.transaction.block.height if self.transaction.block else None
+        }
+
 
 class TxInput(CachingMixin, models.Model):
     """
@@ -553,3 +646,13 @@ class TxInput(CachingMixin, models.Model):
     class Meta:
         ordering = ['index']
         unique_together = ('transaction', 'index')
+
+    def serialize(self):
+        return {
+            'index': self.index,
+            'previous_output': self.previous_output.serialize() if self.previous_output else None,
+            'coin_base': self.coin_base,
+            'sequence': self.sequence,
+            'sig_asm': self.script_sig_asm,
+            'sig_hex': self.script_sig_hex
+        }

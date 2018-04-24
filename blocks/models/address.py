@@ -50,7 +50,7 @@ class Address(CachingMixin, models.Model):
 
         return balance['value__sum'] if balance['value__sum'] else 0
 
-    def transactions(self, page=1):
+    def transactions(self):
         inputs = TxInput.objects.values_list('transaction', flat=True).filter(
             previous_output__address=self,
             transaction__block__isnull=False,
@@ -63,14 +63,11 @@ class Address(CachingMixin, models.Model):
         )
         tx_ids = [tx for tx in inputs] + [tx for tx in outputs]
 
-        transactions = Transaction.objects.filter(
+        return Transaction.objects.filter(
             id__in=tx_ids
         ).order_by(
             '-time'
         )
-        paginator = Paginator(transactions, 10)
-
-        return paginator.page(page)
 
 
 class WatchAddress(CachingMixin, models.Model):

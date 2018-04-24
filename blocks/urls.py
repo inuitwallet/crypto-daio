@@ -27,12 +27,12 @@ urlpatterns = [
 
     url(r'^health$', HealthView.as_view(), name='health'),
 
-    url(r'^menu/charts$', ChartsView.as_view(), name='charts_menu'),
+    # url(r'^menu/charts$', ChartsView.as_view(), name='charts_menu'),
 
     url(r'^motions$', MotionView.as_view(), name='motions'),
     url(r'^grants$', GrantView.as_view(), name='grants'),
 
-    url(r'^angular$', AngularExplorer.as_view(), name='angular_explorer'),
+    url(r'^angular/$', AngularExplorer.as_view(), name='angular_explorer'),
 
     # API
     url(r'^api/v1/', include('blocks.api.urls.v1'))

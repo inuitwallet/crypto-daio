@@ -204,3 +204,22 @@ def get_next_blocks(message, last_height):
                 }
             )}
         )
+
+
+def get_latest_blocks(message):
+    latest_blocks = Block.objects.exclude(
+        height__isnull=True
+    ).order_by(
+        '-height'
+    )[:50]
+
+    message.reply_channel.send(
+        {'text': json.dumps(
+            {
+                'message_type': 'latest_blocks',
+                'message': [
+                    block.serialize() for block in latest_blocks
+                ]
+            }
+        )}
+    )

@@ -1,5 +1,6 @@
 import codecs
 import hashlib
+import json
 import logging
 import time
 from datetime import datetime
@@ -7,14 +8,14 @@ from datetime import datetime
 import psycopg2
 from asgiref.base_layer import BaseChannelLayer
 from caching.base import CachingMixin, CachingManager
-from channels import Channel
+from channels import Channel, Group
 from decimal import Decimal
 from django.contrib.postgres.fields import JSONField
-from django.db import models, connection
+from django.core.cache import cache
+from django.db import models, connection, transaction
 from django.db.models import Max, Sum
 from django.utils.timezone import make_aware
 from django.db.utils import IntegrityError
-from tenant_schemas.utils import tenant_context
 
 from blocks.models import (
     Transaction,
@@ -142,16 +143,19 @@ class Block(CachingMixin, models.Model):
     def __str__(self):
         return '{}:{}'.format(self.height, self.hash[:8])
 
+    @transaction.non_atomic_requests
     def save(self, *args, **kwargs):
         validate = kwargs.pop('validate', True)
+        fix_block = False
 
         try:
-            super(Block, self).save(*args, **kwargs)
-        except (IntegrityError, psycopg2.IntegrityError) as e:
+            super().save(*args, **kwargs)
+        except IntegrityError as e:
             logger.error('error saving {}: {}'.format(self, e))
-            connection.close()
             validate = False
+            fix_block = True
 
+        if fix_block:
             # most likely a block already exists at this height and we've been on a fork.
             # get the block currently at this height
             try:
@@ -175,27 +179,22 @@ class Block(CachingMixin, models.Model):
                 # register this block hash as an Orphan
                 Orphan.objects.get_or_create(hash=height_block.hash)
 
+
+                # see if a block with this hash already exists
+                try:
+                    hash_block = Block.objects.get(hash=self.hash)
+                    hash_block.height = self.height
+                except Block.DoesNotExist:
+                    hash_block = self
+
+                hash_block.save()
+
             except Block.DoesNotExist:
                 logger.info('no existing block at {}'.format(self.height))
 
-            # see if a block with this hash already exists
-            try:
-                hash_block = Block.objects.get(hash=self.hash)
-                hash_block.height = self.height
-            except Block.DoesNotExist:
-                hash_block = self
-
-            hash_block.save()
-                
         if validate:
             if not self.is_valid:
-                try:
-                    Channel('repair_block').send({
-                        'chain': connection.tenant.schema_name,
-                        'block_hash': self.hash
-                    })
-                except BaseChannelLayer.ChannelFull:
-                    logger.error('CHANNEL FULL!')
+                self.send_for_repair()
             else:
                 # block is valid. validate the transactions too
                 for tx in self.transactions.all():
@@ -208,39 +207,96 @@ class Block(CachingMixin, models.Model):
                         except BaseChannelLayer.ChannelFull:
                             logger.error('CHANNEL FULL!')
 
+        Group(
+            '{}_block'.format(connection.tenant.schema_name)
+        ).send(
+            {
+                'text': json.dumps(
+                    {
+                        'stream': 'block_update',
+                        'payload': {
+                            'hash': self.hash,
+                            'block': self.serialize(),
+                            'next_block': self.next_block.height if self.next_block else None,
+                            'previous_block': self.previous_block.height if self.previous_block else None,
+                        }
+                    }
+                )
+            },
+            immediately=True
+        )
+
     @property
     def class_type(self):
         return 'Block'
 
+    def send_for_repair(self):
+        try:
+            Channel('repair_block').send({
+                'chain': connection.tenant.schema_name,
+                'block_hash': self.hash
+            })
+        except BaseChannelLayer.ChannelFull:
+            logger.error('CHANNEL FULL!')
+
     def serialize(self):
-        return {
-            'height': self.height,
-            'size': self.size,
-            'version': self.version,
-            'merkleroot': self.merkle_root,
-            'time': (
-                datetime.strftime(
-                    self.time,
-                    '%Y-%m-%d %H:%M:%S %Z'
-                ) if self.time else None
-            ),
-            'nonce': self.nonce,
-            'bits': self.bits,
-            'difficulty': self.difficulty,
-            'mint': self.mint,
-            'flags': self.flags,
-            'proofhash': self.proof_hash,
-            'entropybit': self.entropy_bit,
-            'modifier': self.modifier,
-            'modifierchecksum': self.modifier_checksum,
-            'coinagedestroyed': self.coinage_destroyed,
-            'previousblockhash': (
-                self.previous_block.hash if self.previous_block else None
-            ),
-            'nextblockhash': (
-                self.next_block.hash if self.next_block else None
-            ),
-        }
+        serialized_block = None
+        is_valid = self.is_valid
+
+        if is_valid:
+            serialized_block = cache.get(
+                '{}_{}'.format(
+                    connection.tenant.schema_name,
+                    self.hash
+                )
+            )
+        else:
+            self.send_for_repair()
+
+        if serialized_block is None:
+            serialized_block = {
+                'hash': self.hash,
+                'height': self.height,
+                'size': self.size,
+                'version': self.version,
+                'merkleroot': self.merkle_root,
+                'time': (
+                    datetime.strftime(
+                        self.time,
+                        '%Y-%m-%d %H:%M:%S %Z'
+                    ) if self.time else None
+                ),
+                'nonce': self.nonce,
+                'bits': self.bits,
+                'difficulty': self.difficulty,
+                'mint': self.mint,
+                'flags': self.flags,
+                'proofhash': self.proof_hash,
+                'entropybit': self.entropy_bit,
+                'modifier': self.modifier,
+                'modifierchecksum': self.modifier_checksum,
+                'coinagedestroyed': self.coinage_destroyed,
+                'previousblockhash': (
+                    self.previous_block.hash if self.previous_block else None
+                ),
+                'nextblockhash': (
+                    self.next_block.hash if self.next_block else None
+                ),
+                'valid': self.is_valid,
+                'number_of_transactions': self.transactions.all().count(),
+                'solved_by': self.solved_by if self.solved_by else ''
+            }
+
+            if is_valid:
+                cache.set(
+                    '{}_{}'.format(
+                        connection.tenant.schema_name,
+                        self.hash
+                    ),
+                    serialized_block
+                )
+
+        return serialized_block
 
     def parse_rpc_block(self, rpc_block):
         self.height = rpc_block.get('height')
@@ -347,32 +403,25 @@ class Block(CachingMixin, models.Model):
                 continue
 
             try:
-                CustodianVote.objects.get(
+                CustodianVote.objects.get_or_create(
                     block=self,
                     address=address,
                     amount=Decimal(amount)
                 )
-            except CustodianVote.DoesNotExist:
-                custodian_vote = CustodianVote(
-                    block=self,
-                    address=address,
-                    amount=Decimal(amount)
-                )
-                time.sleep(1)
-                custodian_vote.save()
+            except (CustodianVote.DoesNotExist, IntegrityError) as e:
+                logger.warning(e)
+                continue
 
         # motion votes
         for motion_vote in votes.get('motions', []):
             try:
-                motion_object = MotionVote.objects.get(
+                motion_object, _ = MotionVote.objects.get_or_create(
                     block=self,
                     hash=motion_vote
                 )
-            except MotionVote.DoesNotExist:
-                motion_object = MotionVote(
-                    block=self,
-                    hash=motion_vote
-                )
+            except (MotionVote.DoesNotExist, IntegrityError) as e:
+                logger.warning(e)
+                continue
 
             # calculate block percentage
             motion_votes = MotionVote.objects.filter(
@@ -410,19 +459,14 @@ class Block(CachingMixin, models.Model):
                 continue
 
             try:
-                FeesVote.objects.get(
+                FeesVote.objects.get_or_create(
                     block=self,
                     coin=coin,
                     fee=fee_votes[fee_vote]
                 )
-            except FeesVote.DoesNotExist:
-                fees_vote = FeesVote(
-                    block=self,
-                    coin=coin,
-                    fee=fee_votes[fee_vote]
-                )
-                time.sleep(1)
-                fees_vote.save()
+            except (FeesVote.DoesNotExist, IntegrityError) as e:
+                logger.warning(e)
+                continue
 
         # park rate votes
         for park_rate_vote in votes.get('parkrates', []):
@@ -435,17 +479,13 @@ class Block(CachingMixin, models.Model):
                 continue
 
             try:
-                vote = ParkRateVote.objects.get(
+                vote, _ = ParkRateVote.objects.get_or_create(
                     block=self,
                     coin=coin
                 )
-            except ParkRateVote.DoesNotExist:
-                vote = ParkRateVote(
-                    block=self,
-                    coin=coin
-                )
-                time.sleep(1)
-                vote.save()
+            except (ParkRateVote.DoesNotExist, IntegrityError) as e:
+                logger.warning(e)
+                continue
 
             for rate in park_rate_vote.get('rates', []):
                 blocks = rate.get('blocks')
@@ -466,19 +506,18 @@ class Block(CachingMixin, models.Model):
                         )
                     )
                 try:
-                    park_rate = ParkRate.objects.get(
+                    park_rate, _ = ParkRate.objects.get_or_create(
                         blocks=blocks,
                         rate=this_rate
                     )
-                except ParkRate.DoesNotExist:
-                    park_rate = ParkRate(
-                        blocks=blocks,
-                        rate=this_rate
-                    )
-                    time.sleep(1)
-                    park_rate.save()
+                except (ParkRate.DoesNotExist, IntegrityError) as e:
+                    logger.warning(e)
+                    continue
 
-                vote.rates.add(park_rate)
+                try:
+                    vote.rates.add(park_rate)
+                except IntegrityError as e:
+                    logger.warning(e)
 
     def parse_rpc_parkrates(self, rates):
         for park_rate in rates:
@@ -495,21 +534,24 @@ class Block(CachingMixin, models.Model):
                     block=self,
                     coin=coin
                 )
-            except ActiveParkRate.MultipleObjectsReturned:
-                logger.error(
-                    'Got Multiple ParkRates for {}:{}'.format(
-                        self,
-                        coin
-                    )
-                )
+            except (ActiveParkRate.DoesNotExist, IntegrityError) as e:
+                logger.warning(e)
                 continue
 
             for rate in park_rate.get('rates', []):
-                park_rate, _ = ParkRate.objects.get_or_create(
-                    blocks=rate.get('blocks', 0),
-                    rate=rate.get('rate')
-                )
-                active_rate.rates.add(park_rate)
+                try:
+                    park_rate, _ = ParkRate.objects.get_or_create(
+                        blocks=rate.get('blocks', 0),
+                        rate=rate.get('rate')
+                    )
+                except (ParkRate.DoesNotExist, IntegrityError) as e:
+                    logger.warning(e)
+                    continue
+
+                try:
+                    active_rate.rates.add(park_rate)
+                except IntegrityError as e:
+                    logger.warning(e)
 
     @property
     def is_valid(self):
@@ -726,7 +768,9 @@ class Block(CachingMixin, models.Model):
             if tx.index == index:
                 for tx_out in tx.outputs.all():
                     if tx_out.index == index:
-                        return tx_out.address
+                        if not tx_out.address:
+                            return ''
+                        return tx_out.address.address
         return ''
 
     @property

@@ -24,6 +24,5 @@ urlpatterns = [
     url(r'^jet/dashboard/', include('jet.dashboard.urls', 'jet-dashboard')),
 
     url(r'^admin/', admin.site.urls),
-    url(r'^charts/', include('charts.urls'), name='charts'),
     url(r'^', include('blocks.urls')),
 ]

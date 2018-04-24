@@ -1,5 +1,7 @@
+import json
 import logging
 
+from channels import Group
 from tenant_schemas.utils import schema_context
 
 from blocks.models import Transaction, Block, Address, TxOutput
@@ -33,9 +35,26 @@ def repair_transaction(message):
 
         block_hash = rpc_tx.get('blockhash')
         if not block_hash:
-            logger.error('no block hash found in rpc_tx: {}'.format(tx_id[:8]))
+            logger.error('no block hash found in rpc for tx {}'.format(tx_id[:8]))
             # indicates that block is orphaned?
-            return
+            # get the transaction to get the block it is attached to
+            try:
+                tx = Transaction.objects.get(tx_id=tx_id)
+            except Transaction.DoesNotExist:
+                logger.warning('no existing tx with id {}'.format(tx_id[:8]))
+                return
+
+            if not tx.block:
+                logger.warning('tx {} has no block'.format(tx_id[:8]))
+
+            # get the current height of this block
+            block_height = tx.block.height
+
+            # then delete the block
+            tx.block.delete()
+
+            # get the block hash of the actual block at this height
+            block_hash = get_block_hash(block_height, message.get('chain'))
 
         block, block_created = Block.objects.get_or_create(hash=block_hash)
         if block_created:

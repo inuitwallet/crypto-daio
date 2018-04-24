@@ -1,20 +1,24 @@
 import json
+import logging
 
 from channels import Group, Channel
+from channels.generic.websockets import WebsocketDemultiplexer, JsonWebsocketConsumer
 from tenant_schemas.utils import get_tenant_model, tenant_context
 
-from charts.consumers.tx_browser import add_onward_nodes
 from blocks.models import Address
-from charts.models import UserSocket
 from .ui import (
     get_address_balance,
     get_address_details,
     get_block_details,
     get_current_grants,
     get_current_motions,
-    get_next_blocks
+    get_next_blocks,
+    get_latest_blocks,
 )
 from daio.models import Chain
+
+
+logger = logging.getLogger(__name__)
 
 
 def get_schema_from_host(message):
@@ -33,16 +37,26 @@ def ws_connect(message):
     message.reply_channel.send({'accept': True}, immediately=True)
     Group('{}_update_info'.format(schema)).add(message.reply_channel)
     Channel('display_info').send({'chain': schema}, immediately=True)
+
     if message['path'] == '/latest_blocks_list/':
         Group('{}_latest_blocks_list'.format(schema)).add(message.reply_channel)
+
+    if message['path'] == '/latest_blocks/':
+        Group('{}_latest_blocks'.format(schema)).add(message.reply_channel)
 
 
 def ws_receive(message):
     message_dict = json.loads(message['text'])
     domain_url = message_dict['payload']['host']
+
     if domain_url == 'explorer.nubits.com':
         domain_url = 'nu.crypto-daio.co.uk'
-    tenant = get_tenant_model().objects.get(domain_url=domain_url)
+
+    try:
+        tenant = get_tenant_model().objects.get(domain_url=domain_url)
+    except get_tenant_model().DoesNotExist:
+        tenant = get_tenant_model().objects.get(domain_url='nu.crypto-test.co.uk')
+
     with tenant_context(tenant):
         if message['path'] == '/get_block_details/':
             get_block_details(message_dict, message)
@@ -59,21 +73,21 @@ def ws_receive(message):
 
             return
 
-        if message['path'] == '/tx_browser/':
-            if message_dict.get('stream') == 'add_nodes':
-                add_onward_nodes(message_dict, message)
-
-            if message_dict.get('stream') == 'stop_nodes':
-                try:
-                    user_socket = UserSocket.objects.get(
-                        reply_channel=message.reply_channel
-                    )
-                    user_socket.tx_browser_running = False
-                    user_socket.save()
-                except UserSocket.DoesNotExist:
-                    pass
-
-            return
+        # if message['path'] == '/tx_browser/':
+        #     if message_dict.get('stream') == 'add_nodes':
+        #         add_onward_nodes(message_dict, message)
+        #
+        #     if message_dict.get('stream') == 'stop_nodes':
+        #         try:
+        #             user_socket = UserSocket.objects.get(
+        #                 reply_channel=message.reply_channel
+        #             )
+        #             user_socket.tx_browser_running = False
+        #             user_socket.save()
+        #         except UserSocket.DoesNotExist:
+        #             pass
+        #
+        #     return
 
         if message['path'] == '/get_current_grants/':
             get_current_grants(message)
@@ -92,8 +106,8 @@ def ws_receive(message):
             get_next_blocks(message, last_height)
             return
 
-        if message['path'] == '/latest_blocks_list/':
-            print('yo')
+        if message['path'] == '/latest_blocks/':
+            get_latest_blocks(message)
 
 
 def ws_disconnect(message):
