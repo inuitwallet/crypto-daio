@@ -52,7 +52,7 @@ class LatestBlocksConsumer(JsonWebsocketConsumer):
 
         Group(
             '{}_latest_blocks'.format(message.channel_session['schema'])
-        ).remove(
+        ).discard(
             message.reply_channel
         )
 
