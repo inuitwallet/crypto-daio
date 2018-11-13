@@ -100,7 +100,7 @@ def repair_block(message):
 
         # all other errors with the block can be solved by re-parsing it
         logger.info('re-parsing {}'.format(block))
-        rpc = send_rpc(
+        rpc, msg = send_rpc(
             {
                 'method': 'getblock',
                 'params': [block_hash, True, True]
@@ -177,7 +177,7 @@ def fix_next_block(block, chain):
 
 def fix_merkle_root(block, chain):
     logger.info('fixing merkle root on block {}'.format(block))
-    rpc = send_rpc(
+    rpc, msg = send_rpc(
         {
             'method': 'getblock',
             'params': [block.hash],
@@ -224,7 +224,7 @@ def fix_merkle_root(block, chain):
 
 def fix_block_votes(block, chain):
     logger.info('fixing votes on block {}'.format(block))
-    rpc = send_rpc(
+    rpc, msg = send_rpc(
         {
             'method': 'getblock',
             'params': [block.hash],
@@ -243,7 +243,7 @@ def fix_block_votes(block, chain):
 
 def fix_block_park_rates(block, chain):
     logger.info('fixing park rates on block {}'.format(block))
-    rpc = send_rpc(
+    rpc, msg = send_rpc(
         {
             'method': 'getblock',
             'params': [block.hash],

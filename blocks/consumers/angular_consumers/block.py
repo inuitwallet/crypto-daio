@@ -18,6 +18,11 @@ class LatestBlocksConsumer(JsonWebsocketConsumer):
                 domain_url=get_host(message.content)
             )
         except get_tenant_model().DoesNotExist:
+            logger.error(
+                'no tenant found for {}'.format(
+                    get_host(message.content)
+                )
+            )
             message.reply_channel.send({"close": True})
             return
 
@@ -66,6 +71,11 @@ class MoreBlocksConsumer(JsonWebsocketConsumer):
                 domain_url=get_host(message.content)
             )
         except get_tenant_model().DoesNotExist:
+            logger.error(
+                'no tenant found for {}'.format(
+                    get_host(message.content)
+                )
+            )
             message.reply_channel.send({"close": True})
             return
 
@@ -73,12 +83,16 @@ class MoreBlocksConsumer(JsonWebsocketConsumer):
         super().connect(message, **kwargs)
 
     def receive(self, content, **kwargs):
-        if 'tenant' not in self.message.channel_session:
+        tenant_pk = self.message.channel_session.get('tenant')
+        logger.info('tenant pk: {}'.format(tenant_pk))
+
+        if tenant_pk is None:
+            logger.error('TransactionConsumer tenant not in session')
             return
 
         try:
             tenant = get_tenant_model().objects.get(
-                pk=self.message.channel_session['tenant']
+                pk=tenant_pk
             )
         except get_tenant_model().DoesNotExist:
             return
@@ -104,33 +118,45 @@ class MoreBlocksConsumer(JsonWebsocketConsumer):
 class BlockConsumer(JsonWebsocketConsumer):
     channel_session = True
 
-    def connect(self, message, multiplexer, **kwargs):
-        try:
-            tenant = get_tenant_model().objects.get(
-                domain_url=get_host(message.content)
-            )
-        except get_tenant_model().DoesNotExist:
-            message.reply_channel.send({"close": True})
-            return
-
-        message.channel_session['tenant'] = tenant.pk
-        message.channel_session['schema'] = tenant.schema_name
-
-        Group(
-            '{}_block'.format(tenant.schema_name)
-        ).add(
-            message.reply_channel
-        )
-
-        super().connect(message, **kwargs)
+    # def connect(self, message, multiplexer, **kwargs):
+    #     try:
+    #         tenant = get_tenant_model().objects.get(
+    #             domain_url=get_host(message.content)
+    #         )
+    #     except get_tenant_model().DoesNotExist:
+    #         logger.error(
+    #             'no tenant found for {}'.format(
+    #                 get_host(message.content)
+    #             )
+    #         )
+    #         message.reply_channel.send({"close": True})
+    #         return
+    #
+    #     self.message.channel_session['tenant'] = tenant.pk
+    #     self.message.channel_session['schema'] = tenant.schema_name
+    #
+    #     Group(
+    #         '{}_block'.format(tenant.schema_name)
+    #     ).add(
+    #         message.reply_channel
+    #     )
+    #
+    #     super().connect(message, **kwargs)
 
     def receive(self, content, multiplexer, **kwargs):
-        if 'tenant' not in self.message.channel_session:
+        logger.info(multiplexer)
+        logger.info(self.message)
+        tenant_pk = self.message.channel_session.get('tenant')
+        logger.info('tenant pk: {}'.format(tenant_pk))
+
+        if tenant_pk is None:
+            logger.error('TransactionConsumer tenant not in session')
+            logger.info(self.message.channel)
             return
 
         try:
             tenant = get_tenant_model().objects.get(
-                pk=self.message.channel_session['tenant']
+                pk=tenant_pk
             )
         except get_tenant_model().DoesNotExist:
             return
@@ -163,32 +189,43 @@ class BlockConsumer(JsonWebsocketConsumer):
 class TransactionConsumer(JsonWebsocketConsumer):
     channel_session = True
 
-    def connect(self, message, multiplexer, **kwargs):
-        try:
-            tenant = get_tenant_model().objects.get(
-                domain_url=get_host(message.content)
-            )
-        except get_tenant_model().DoesNotExist:
-            message.reply_channel.send({"close": True})
-            return
-
-        Group(
-            '{}_transaction'.format(tenant.schema_name)
-        ).add(
-            message.reply_channel
-        )
-
-        message.channel_session['tenant'] = tenant.pk
-        message.channel_session['schema'] = tenant.schema_name
-        super().connect(message, **kwargs)
+    # def connect(self, message, multiplexer, **kwargs):
+    #     try:
+    #         tenant = get_tenant_model().objects.get(
+    #             domain_url=get_host(message.content)
+    #         )
+    #     except get_tenant_model().DoesNotExist:
+    #         logger.error(
+    #             'no tenant found for {}'.format(
+    #                 get_host(message.content)
+    #             )
+    #         )
+    #         message.reply_channel.send({"close": True})
+    #         return
+    #
+    #     Group(
+    #         '{}_transaction'.format(tenant.schema_name)
+    #     ).add(
+    #         message.reply_channel
+    #     )
+    #
+    #     message.channel_session['tenant'] = tenant.pk
+    #     message.channel_session['schema'] = tenant.schema_name
+    #     super().connect(message, **kwargs)
 
     def receive(self, content, multiplexer, **kwargs):
-        if 'tenant' not in self.message.channel_session:
+        logger.info(multiplexer)
+        tenant_pk = self.message.channel_session.get('tenant')
+        logger.info('tenant pk: {}'.format(tenant_pk))
+
+        if tenant_pk is None:
+            logger.error('TransactionConsumer tenant not in session')
+            logger.info(self.message.content)
             return
 
         try:
             tenant = get_tenant_model().objects.get(
-                pk=self.message.channel_session['tenant']
+                pk=tenant_pk
             )
         except get_tenant_model().DoesNotExist:
             return

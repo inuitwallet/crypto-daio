@@ -18,7 +18,7 @@ def send_rpc(data, schema_name, rpc_port=None, retry=0):
     """
     if retry == 3:
         logger.error('3 retries have failed')
-        return
+        return False, '3 retries have failed'
 
     data['jsonrpc'] = "2.0"
     data['id'] = int(time.time())
@@ -35,7 +35,7 @@ def send_rpc(data, schema_name, rpc_port=None, retry=0):
             url=rpc_url,
             headers=headers,
             data=json.dumps(data),
-            timeout=120,
+            timeout=60,
         )
 
         try:
@@ -45,26 +45,27 @@ def send_rpc(data, schema_name, rpc_port=None, retry=0):
                 logger.error(
                     'rpc error sending {}: {}'.format(data, error)
                 )
-                return False
-            return result.get('result')
+                return False, error
+            return result.get('result'), 'success'
 
         except ValueError:
             logger.error('rpc error sending {}: {}'.format(data, response.text))
-            return False
+            return False, response.text
 
     except ConnectionError:
         logger.error('rpc error sending {}: {}'.format(data, 'no connection with daemon'))
-        return False
+        return False, 'no connection with daemon'
 
     except ReadTimeout:
         logger.warning('rpc error sending {}: {}'.format(data, 'daemon timeout'))
         send_rpc(data, schema_name=schema_name, retry=retry + 1)
-        return False
+        return False, 'daemon timeout'
 
 
 def get_block_hash(height, schema_name):
-    return send_rpc(
+    rpc, msg = send_rpc(
         {'method': 'getblockhash', 'params': [int(height)]},
         schema_name=schema_name
     )
+    return rpc
 

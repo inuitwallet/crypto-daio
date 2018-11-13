@@ -83,7 +83,7 @@ class TransactionBroadcast(View):
                 }
             )
 
-        rpc = send_rpc(
+        rpc, message = send_rpc(
             {
                 'method': 'sendrawtransaction',
                 'params': [raw_tx, 1],
@@ -95,7 +95,7 @@ class TransactionBroadcast(View):
             return JsonResponse(
                 {
                     'status': 'failure',
-                    'data': 'Daemon reported an error'
+                    'data': 'Daemon reported an error: {}'.format(message)
                 }
             )
 

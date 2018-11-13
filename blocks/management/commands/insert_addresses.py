@@ -133,7 +133,7 @@ class Command(BaseCommand):
                     continue
 
                 # get the raw rpc block
-                rpc_block = send_rpc(
+                rpc_block, msg = send_rpc(
                     {
                         'method': 'getblock',
                         'params': [block.hash, True, True]

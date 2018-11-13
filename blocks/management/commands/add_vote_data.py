@@ -97,7 +97,7 @@ class Command(BaseCommand):
 
     @staticmethod
     def get_data(schema, block):
-        rpc_block = send_rpc(
+        rpc_block, message = send_rpc(
             {
                 'method': 'getblock',
                 'params': [block.hash, True, True]
@@ -106,7 +106,7 @@ class Command(BaseCommand):
         )
 
         if not rpc_block:
-            logger.warning('No data for {}'.format(block))
+            logger.warning('No data for {}: {}'.format(block, message))
             return
 
         with schema_context(schema):

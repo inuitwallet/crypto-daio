@@ -23,7 +23,7 @@ def repair_transaction(message):
             logger.error('no tx_id passed')
 
         # get the raw transaction
-        rpc_tx = send_rpc(
+        rpc_tx, msg = send_rpc(
             {
                 'method': 'getrawtransaction',
                 'params': [tx_id, 1]
@@ -63,7 +63,7 @@ def repair_transaction(message):
             return
 
         # get the block too for the index
-        rpc_block = send_rpc(
+        rpc_block, msg = send_rpc(
             {
                 'method': 'getblock',
                 'params': [block_hash]
@@ -164,7 +164,7 @@ def repair_transaction(message):
                         if previous_tx_id in scanned_transactions:
                             continue
 
-                        rpc_prev_tx = send_rpc(
+                        rpc_prev_tx, msg = send_rpc(
                             {
                                 'method': 'getrawtransaction',
                                 'params': [previous_tx_id, 1]

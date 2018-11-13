@@ -146,6 +146,25 @@ class Block(CachingMixin, models.Model):
     @transaction.non_atomic_requests
     def save(self, *args, **kwargs):
         validate = kwargs.pop('validate', True)
+
+        # check if a block with this hash already exists
+        try:
+            block = Block.objects.get(hash=self.hash)
+            if block == self:
+                logger.info(
+                    'found existing block {}. setting height to None'.format(
+                        block
+                    )
+                )
+            block.height = None
+        except Block.DoesNotExist:
+            # check if block at this height exists
+            if self.height is not None:
+                try:
+                    block = Block.objects.get(height=self.height)
+                except Block.DoesNotExist:
+                    logger.info('hello')
+
         fix_block = False
 
         try:
