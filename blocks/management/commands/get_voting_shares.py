@@ -72,7 +72,7 @@ class Command(BaseCommand):
 
         logger.info(
             '{} blocks have been solved by {} different addresses with {} different voting profiles'.format(
-                blocks.count(),
+                paginator.per_page,
                 len(addresses.keys()),
                 len(voting_profiles.keys())
             )
