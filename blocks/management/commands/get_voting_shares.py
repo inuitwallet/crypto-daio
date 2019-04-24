@@ -92,9 +92,6 @@ class Command(BaseCommand):
             voting_profiles[voting_profile]['voting_shares'] = total_shares
             voting_profiles[voting_profile]['addresses'] = addresses
 
-        # dump the output
-        json.dump(voting_profiles, open('voting_profiles.json', 'w+'), sort_keys=True, indent=2)
-
         # generate a chart
         profile_index = 1
         x_labels = []
@@ -103,15 +100,8 @@ class Command(BaseCommand):
         num_blocks = []
 
         for voting_profile in voting_profiles:
-            profile_dict = json.loads(voting_profile)
-            x_labels.append(
-                '{} C {} M {} P {} F'.format(
-                    len(profile_dict['custodians']),
-                    len(profile_dict['motions']),
-                    len(profile_dict['parkrates']),
-                    len(profile_dict['fees'].keys())
-                )
-            )
+            x_labels.append(profile_index)
+            voting_profiles[voting_profile]['profile_index'] = profile_index
             profile_index += 1
 
             num_addresses.append(len(voting_profiles[voting_profile]['addresses']))
@@ -125,3 +115,6 @@ class Command(BaseCommand):
         line_chart.add('Total Number of Shares', num_shares, secondary=True)
         line_chart.add('Number of Solved Blocks', num_blocks)
         line_chart.render_to_file('chart.svg')
+
+        # dump the output
+        json.dump(voting_profiles, open('voting_profiles.json', 'w+'), indent=2)
