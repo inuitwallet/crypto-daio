@@ -103,14 +103,22 @@ class Command(BaseCommand):
         num_blocks = []
 
         for voting_profile in voting_profiles:
-            x_labels.append(profile_index)
+            profile_dict = json.loads(voting_profile)
+            x_labels.append(
+                '{} C {} M {} P {} F'.format(
+                    len(profile_dict['custodians']),
+                    len(profile_dict['motions']),
+                    len(profile_dict['parkrates']),
+                    len(profile_dict['fees'].keys())
+                )
+            )
             profile_index += 1
 
             num_addresses.append(len(voting_profiles[voting_profile]['addresses']))
             num_shares.append(voting_profiles[voting_profile]['voting_shares']/10000)
             num_blocks.append(voting_profiles[voting_profile]['number_of_blocks'])
 
-        line_chart = pygal.Bar(legend_at_bottom=True, x_title='Voting Profile')
+        line_chart = pygal.Bar(legend_at_bottom=True, x_title='Voting Profile', x_label_rotation=45)
         line_chart.title = 'Voting share distribution'
         line_chart.x_labels = x_labels
         line_chart.add('Number of Addresses', num_addresses)
