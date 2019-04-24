@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument(
-            '-s',
+            '-b',
             '--start-height',
             help='The block height to start the parse from. Parse goes downwards fromm this number',
             dest='start_height',
@@ -40,7 +40,7 @@ class Command(BaseCommand):
 
         # get the unique addresses that have solved blocks
 
-        addresses = {}
+        addresses = []
         voting_profiles = {}
 
         for block in paginator.page(1):
@@ -48,6 +48,10 @@ class Command(BaseCommand):
                 logger.warning('no solved by address for block {}'.format(block.height))
                 block.save()
                 continue
+
+            if block.solved_by not in addresses:
+                logger.info('Address {}'.format(block.solved_by))
+                addresses.append(block.solved_by)
 
             # the block votes should be the same for each client or for different clients attached to the same datafeed
             voting_profile = block.vote
@@ -69,7 +73,7 @@ class Command(BaseCommand):
         logger.info(
             '{} blocks have been solved by {} different addresses with {} different voting profiles'.format(
                 paginator.per_page,
-                len(addresses.keys()),
+                len(addresses),
                 len(voting_profiles.keys())
             )
         )
@@ -103,13 +107,13 @@ class Command(BaseCommand):
             profile_index += 1
 
             num_addresses.append(len(voting_profiles[voting_profile]['addresses']))
-            num_shares.append(voting_profiles[voting_profile]['voting_shares'])
+            num_shares.append(voting_profiles[voting_profile]['voting_shares']/1000)
             num_blocks.append(voting_profiles[voting_profile]['number_of_blocks'])
 
-        line_chart = pygal.Bar()
+        line_chart = pygal.Bar(legend_at_bottom=True, x_title='Voting Profile')
         line_chart.title = 'Voting share distribution'
         line_chart.x_labels = x_labels
         line_chart.add('Number of Addresses', num_addresses)
-        line_chart.add('Total Number of Shares', num_shares)
+        line_chart.add('Total Number of Shares', num_shares, secondary=True)
         line_chart.add('Number of Solved Blocks', num_blocks)
         line_chart.render_to_file('chart.svg')
