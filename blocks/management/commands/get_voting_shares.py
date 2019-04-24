@@ -85,8 +85,9 @@ class Command(BaseCommand):
             addresses = []
 
             for address in voting_profiles[voting_profile]['addresses']:
-                total_shares += address.balance
-                addresses.append(address.address)
+                balance = address.balance
+                total_shares += balance
+                addresses.append({address.address : balance})
 
             voting_profiles[voting_profile]['voting_shares'] = total_shares
             voting_profiles[voting_profile]['addresses'] = addresses
