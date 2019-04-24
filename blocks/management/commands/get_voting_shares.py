@@ -14,7 +14,7 @@ class Command(BaseCommand):
         parser.add_argument(
             '-s',
             '--start-height',
-            help='The block height to start the parse from',
+            help='The block height to start the parse from. Parse goes downwards fromm this number',
             dest='start_height',
             default=0
         )
@@ -28,7 +28,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         blocks = Block.objects.filter(
-            height__gte=options['start_height']
+            height__lte=options['start_height']
         ).exclude(
             height__isnull=True
         ).order_by(
