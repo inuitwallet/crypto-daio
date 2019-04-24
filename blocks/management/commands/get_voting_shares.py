@@ -71,7 +71,7 @@ class Command(BaseCommand):
         # we can show how many addresses have been voting with how many voting profiles
 
         logger.info(
-            '{} blocks have been solved by {} different addresses with {} different voting profiles'.format(
+            'The last {} blocks have been solved by {} different addresses with {} different voting profiles'.format(
                 paginator.per_page,
                 len(addresses),
                 len(voting_profiles.keys())
@@ -109,7 +109,7 @@ class Command(BaseCommand):
             num_blocks.append(voting_profiles[voting_profile]['number_of_blocks'])
 
         line_chart = pygal.Bar(legend_at_bottom=True, x_title='Voting Profile', x_label_rotation=45)
-        line_chart.title = 'Voting share distribution'
+        line_chart.title = 'Voting share distribution as of Block {}'.format(options['start_height'])
         line_chart.x_labels = x_labels
         line_chart.add('Number of Addresses', num_addresses)
         line_chart.add('Total Number of Shares', num_shares, secondary=True)
