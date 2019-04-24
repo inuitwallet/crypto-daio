@@ -1,6 +1,7 @@
 import json
 import logging
 
+import pygal
 from django.core.management import BaseCommand
 from django.core.paginator import Paginator
 
@@ -48,22 +49,17 @@ class Command(BaseCommand):
                 block.save()
                 continue
 
-            if block.solved_by not in addresses:
-                logger.info('New Address: {}'.format(block.solved_by))
-                addresses[block.solved_by] = {'voting_profiles': []}
-
-            # the block votes should be the same for each client
+            # the block votes should be the same for each client or for different clients attached to the same datafeed
             voting_profile = block.vote
 
-            # we want to be able to attach voting profiles to addresses
-            if voting_profile not in addresses[block.solved_by]['voting_profiles']:
-                addresses[block.solved_by]['voting_profiles'].append(voting_profile)
-
-            # we should also attach addresses to voting profiles
+            # we should attach addresses to voting profiles
             voting_profile_string = json.dumps(voting_profile, sort_keys=True)
 
             if voting_profile_string not in voting_profiles:
-                voting_profiles[voting_profile_string] = {'addresses': []}
+                voting_profiles[voting_profile_string] = {'addresses': [], 'number_of_blocks': 0}
+
+            # increment number of blocks
+            voting_profiles[voting_profile_string]['number_of_blocks'] += 1
 
             if block.solved_by_address not in voting_profiles[voting_profile_string]['addresses']:
                 voting_profiles[voting_profile_string]['addresses'].append(block.solved_by_address)
@@ -92,6 +88,28 @@ class Command(BaseCommand):
             voting_profiles[voting_profile]['voting_shares'] = total_shares
             voting_profiles[voting_profile]['addresses'] = addresses
 
-        json.dump(addresses, open('voting_addresses.json', 'w+'), sort_keys=True, indent=2)
+        # dump the output
         json.dump(voting_profiles, open('voting_profiles.json', 'w+'), sort_keys=True, indent=2)
-        # logger.info('using a total of {} Voting Shares'.format(total_shares))
+
+        # generate a chart
+        profile_index = 1
+        x_labels = []
+        num_addresses = []
+        num_shares = []
+        num_blocks = []
+
+        for voting_profile in voting_profiles:
+            x_labels.append(profile_index)
+            profile_index += 1
+
+            num_addresses.append(len(voting_profiles[voting_profile]['addresses']))
+            num_shares.append(voting_profiles[voting_profile]['voting_shares'])
+            num_blocks.append(voting_profiles[voting_profile]['number_of_blocks'])
+
+        line_chart = pygal.Bar()
+        line_chart.title = 'Voting share distribution'
+        line_chart.x_labels = x_labels
+        line_chart.add('Number of Addresses', num_addresses)
+        line_chart.add('Total Number of Shares', num_shares)
+        line_chart.add('Number of Solved Blocks', num_blocks)
+        line_chart.render_to_file('chart.svg')
