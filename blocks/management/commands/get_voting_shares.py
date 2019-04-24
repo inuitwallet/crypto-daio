@@ -107,7 +107,7 @@ class Command(BaseCommand):
             profile_index += 1
 
             num_addresses.append(len(voting_profiles[voting_profile]['addresses']))
-            num_shares.append(voting_profiles[voting_profile]['voting_shares']/1000)
+            num_shares.append(voting_profiles[voting_profile]['voting_shares']/10000)
             num_blocks.append(voting_profiles[voting_profile]['number_of_blocks'])
 
         line_chart = pygal.Bar(legend_at_bottom=True, x_title='Voting Profile')
