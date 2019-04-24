@@ -108,8 +108,11 @@ class Command(BaseCommand):
             num_shares.append(voting_profiles[voting_profile]['voting_shares']/10000)
             num_blocks.append(voting_profiles[voting_profile]['number_of_blocks'])
 
-        line_chart = pygal.Bar(legend_at_bottom=True, x_title='Voting Profile', x_label_rotation=45)
-        line_chart.title = 'Voting share distribution as of Block {}'.format(options['start_height'])
+        line_chart = pygal.Bar(legend_at_bottom=True, x_title='Voting Profile')
+        line_chart.title = 'Voting share distribution over {} blocks as of Block {}'.format(
+            options['number'],
+            options['start_height']
+        )
         line_chart.x_labels = x_labels
         line_chart.add('Number of Addresses', num_addresses)
         line_chart.add('Total Number of Shares', num_shares, secondary=True)
