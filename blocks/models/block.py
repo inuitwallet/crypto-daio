@@ -793,6 +793,22 @@ class Block(CachingMixin, models.Model):
         return ''
 
     @property
+    def solved_by_address(self):
+        index = 1
+
+        if self.flags == 'proof-of-work':
+            index = 0
+
+        for tx in self.transactions.all():
+            if tx.index == index:
+                for tx_out in tx.outputs.all():
+                    if tx_out.index == index:
+                        if not tx_out.address:
+                            return None
+                        return tx_out.address
+        return None
+
+    @property
     def totals_transacted(self):
         chain = connection.tenant
         totals = []
