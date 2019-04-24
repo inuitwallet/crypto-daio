@@ -2,6 +2,7 @@ import json
 import logging
 
 from django.core.management import BaseCommand
+from django.core.paginator import Paginator
 
 from blocks.models import Block
 
@@ -34,14 +35,14 @@ class Command(BaseCommand):
             'height'
         )
 
-        blocks = blocks[blocks.count() - int(options['number']):]
+        paginator = Paginator(blocks, int(options['number']))
 
         # get the unique addresses that have solved blocks
 
         addresses = {}
         voting_profiles = {}
 
-        for block in blocks:
+        for block in paginator.page(1):
             if not block.solved_by:
                 logger.warning('no solved by address for block {}'.format(block.height))
                 block.save()
