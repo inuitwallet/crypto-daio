@@ -32,7 +32,7 @@ class Command(BaseCommand):
         ).exclude(
             height__isnull=True
         ).order_by(
-            'height'
+            '-height'
         )
 
         paginator = Paginator(blocks, int(options['number']))
