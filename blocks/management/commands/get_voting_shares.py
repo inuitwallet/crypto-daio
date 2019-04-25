@@ -92,21 +92,104 @@ class Command(BaseCommand):
             voting_profiles[voting_profile]['voting_shares'] = total_shares
             voting_profiles[voting_profile]['addresses'] = addresses
 
-        # generate a chart
+        profile_links = {}
+        linked_profiles = []
+
+        new_profiles = {}
+
         profile_index = 1
+
+        for profile in voting_profiles:
+            # format profiles to the preferred format
+            new_profiles[profile_index] = {
+                'votes': [profile],
+                'number_of_blocks': voting_profiles[profile]['number_of_blocks'],
+                'addresses': voting_profiles[profile]['addresses']
+            }
+
+            links = {}
+            # get the linked profiles by examining the addresses
+            for address in new_profiles[profile_index]['addresses']:
+                links = self.check_match(voting_profiles, profile, address, links)
+
+            # generate the links
+            for link in links:
+                if links[link] > 0:
+                    parent_profile = min(profile_index, link)
+                    linked_profile = max(profile_index, link)
+
+                    if parent_profile in linked_profiles:
+                        continue
+
+                    if parent_profile not in profile_links:
+                        profile_links[parent_profile] = []
+
+                    if linked_profile not in profile_links[parent_profile]:
+                        print('{} links to {}'.format(parent_profile, linked_profile))
+                        profile_links[parent_profile].append(linked_profile)
+
+                        linked_profiles.append(linked_profile)
+
+            profile_index += 1
+
+        # these are all the profiles that appear in the linked lists
+        linked_profiles += profile_links.keys()
+
+        # merge the profiles
+        merged_profiles = {}
+
+        processed_profiles = []
+
+        for id in new_profiles:
+            if id in processed_profiles:
+                continue
+
+            if id not in linked_profiles:
+                merged_profiles[list(new_profiles[id]['addresses'][0].keys())[0]] = new_profiles[id]
+                continue
+
+            parent_profile = next(new_profiles[p] for p in new_profiles if int(p) == int(id))
+
+            for link in profile_links[id]:
+                linked_profile = next(new_profiles[p] for p in new_profiles if int(p) == int(link))
+
+                merged_addresses = []
+
+                for address in parent_profile['addresses'] + linked_profile['addresses']:
+                    if address not in merged_addresses:
+                        merged_addresses.append(address)
+
+                parent_profile['addresses'] = merged_addresses
+                parent_profile['votes'] += linked_profile['votes']
+                parent_profile['number_of_blocks'] += linked_profile['number_of_blocks']
+
+                voting_shares = 0
+
+                for address in merged_addresses:
+                    for addr in address:
+                        voting_shares += address[addr]
+
+                parent_profile['voting_shares'] = voting_shares
+
+                processed_profiles.append(link)
+
+            merged_profiles[list(parent_profile['addresses'][0].keys())[0]] = parent_profile
+
+            processed_profiles.append(id)
+
+        json.dump(merged_profiles, open('merged_profiles.json', 'w+'), indent=2)
+
+        # generate a chart
         x_labels = []
         num_addresses = []
         num_shares = []
         num_blocks = []
 
-        for voting_profile in voting_profiles:
-            x_labels.append(profile_index)
-            voting_profiles[voting_profile]['profile_index'] = profile_index
-            profile_index += 1
-
-            num_addresses.append(len(voting_profiles[voting_profile]['addresses']))
-            num_shares.append(voting_profiles[voting_profile]['voting_shares']/10000)
-            num_blocks.append(voting_profiles[voting_profile]['number_of_blocks'])
+        for profile in merged_profiles:
+            x_labels.append(profile)
+            num_addresses.append(len(merged_profiles[profile]['addresses']))
+            num_shares.append(merged_profiles[profile]['voting_shares'] / 10000)
+            num_blocks.append(merged_profiles[profile]['number_of_blocks'])
 
         line_chart = pygal.Bar(legend_at_bottom=True, x_title='Voting Profile')
         line_chart.title = 'Voting share distribution over {} blocks as of Block {}'.format(
@@ -121,3 +204,23 @@ class Command(BaseCommand):
 
         # dump the output
         json.dump(voting_profiles, open('voting_profiles.json', 'w+'), indent=2)
+
+    @staticmethod
+    def check_match(profiles, own_profile, search_address, links=None):
+        if links is None:
+            links = {}
+
+        for profile in profiles:
+            if profile == own_profile:
+                continue
+
+            profile_id = profiles[profile]['profile_index']
+
+            if profile_id not in links:
+                links[profile_id] = 0
+
+            for address in profiles[profile]['addresses']:
+                if address == search_address:
+                    links[profile_id] += 1
+
+        return links
