@@ -104,7 +104,8 @@ class Command(BaseCommand):
             new_profiles[profile_index] = {
                 'votes': [profile],
                 'number_of_blocks': voting_profiles[profile]['number_of_blocks'],
-                'addresses': voting_profiles[profile]['addresses']
+                'addresses': voting_profiles[profile]['addresses'],
+                'voting_shares': voting_profiles[profile]['voting_shares']
             }
 
             links = {}
