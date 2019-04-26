@@ -110,7 +110,7 @@ class Command(BaseCommand):
             links = {}
             # get the linked profiles by examining the addresses
             for address in new_profiles[profile_index]['addresses']:
-                links = self.check_match(voting_profiles, profile, address, links)
+                links = self.check_match(voting_profiles, profile, profile_index, address, links)
 
             # generate the links
             for link in links:
@@ -206,15 +206,13 @@ class Command(BaseCommand):
         json.dump(voting_profiles, open('voting_profiles.json', 'w+'), indent=2)
 
     @staticmethod
-    def check_match(profiles, own_profile, search_address, links=None):
+    def check_match(profiles, own_profile, profile_id, search_address, links=None):
         if links is None:
             links = {}
 
         for profile in profiles:
             if profile == own_profile:
                 continue
-
-            profile_id = profiles[profile]['profile_index']
 
             if profile_id not in links:
                 links[profile_id] = 0
