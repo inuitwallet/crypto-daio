@@ -44,14 +44,16 @@ class Command(BaseCommand):
         voting_profiles = {}
 
         for block in paginator.page(1):
-            if not block.solved_by:
+            solved_by = block.solved_by
+
+            if not solved_by:
                 logger.warning('no solved by address for block {}'.format(block.height))
                 block.save()
                 continue
 
-            if block.solved_by not in addresses:
-                logger.info('Address {}'.format(block.solved_by))
-                addresses.append(block.solved_by)
+            if solved_by not in addresses:
+                logger.info('Address {}'.format(solved_by))
+                addresses.append(solved_by)
 
             # the block votes should be the same for each client or for different clients attached to the same datafeed
             voting_profile = block.vote
@@ -60,7 +62,7 @@ class Command(BaseCommand):
             voting_profile_string = json.dumps(voting_profile, sort_keys=True)
 
             if voting_profile_string not in voting_profiles:
-                voting_profiles[voting_profile_string] = {'addresses': [], 'number_of_blocks': 0}
+                voting_profiles[voting_profile_string] = {'addresses': [], 'number_of_blocks': 0, 'voting_shares': 0}
 
             # increment number of blocks
             voting_profiles[voting_profile_string]['number_of_blocks'] += 1
@@ -69,7 +71,6 @@ class Command(BaseCommand):
                 voting_profiles[voting_profile_string]['addresses'].append(block.solved_by_address)
 
         # we can show how many addresses have been voting with how many voting profiles
-
         logger.info(
             'The last {} blocks have been solved by {} different addresses with {} different voting profiles'.format(
                 paginator.per_page,
@@ -79,29 +80,38 @@ class Command(BaseCommand):
         )
 
         # we can now go through and calculate how many shares are voting for each profile
+        # first we give each profile an index number
+        profile_index = 1
+
+        for profile in voting_profiles:
+            voting_profiles[profile]['id'] = profile_index
+            profile_index += 1
+
         for voting_profile in voting_profiles:
-            logger.info('Calculating share total for {}'.format(voting_profile))
+            logger.info('Calculating share total for {}'.format(voting_profiles[voting_profile]['id']))
             total_shares = 0
             addresses = []
 
             for address in voting_profiles[voting_profile]['addresses']:
+                logger.info('Getting balance for {}'.format(address))
                 balance = address.balance
                 total_shares += balance
-                addresses.append({address.address : balance})
+                addresses.append({address.address: balance})
 
             voting_profiles[voting_profile]['voting_shares'] = total_shares
             voting_profiles[voting_profile]['addresses'] = addresses
 
+        # calculate the links between voting profiles based on shared addresses
+
+        # now we can se which shared addresses there are
         profile_links = {}
         linked_profiles = []
-
         new_profiles = {}
 
-        profile_index = 1
-
         for profile in voting_profiles:
+            profile_id = voting_profiles[profile]['id']
             # format profiles to the preferred format
-            new_profiles[profile_index] = {
+            new_profiles[profile_id] = {
                 'votes': [profile],
                 'number_of_blocks': voting_profiles[profile]['number_of_blocks'],
                 'addresses': voting_profiles[profile]['addresses'],
@@ -110,8 +120,8 @@ class Command(BaseCommand):
 
             links = {}
             # get the linked profiles by examining the addresses
-            for address in new_profiles[profile_index]['addresses']:
-                links = self.check_match(voting_profiles, profile, profile_index, address, links)
+            for address in new_profiles[profile_id]['addresses']:
+                links = self.check_match(voting_profiles, profile, address, links)
 
             # generate the links
             for link in links:
@@ -131,8 +141,6 @@ class Command(BaseCommand):
 
                         linked_profiles.append(linked_profile)
 
-            profile_index += 1
-
         # these are all the profiles that appear in the linked lists
         linked_profiles += profile_links.keys()
 
@@ -141,17 +149,18 @@ class Command(BaseCommand):
 
         processed_profiles = []
 
-        for id in new_profiles:
-            if id in processed_profiles:
+        for profile_id in new_profiles:
+            if profile_id in processed_profiles:
                 continue
 
-            if id not in linked_profiles:
-                merged_profiles[list(new_profiles[id]['addresses'][0].keys())[0]] = new_profiles[id]
+            if profile_id not in linked_profiles:
+                primary_address = self.get_primary_address(new_profiles[profile_id]['addresses'])
+                merged_profiles[primary_address] = new_profiles[profile_id]
                 continue
 
-            parent_profile = next(new_profiles[p] for p in new_profiles if int(p) == int(id))
+            parent_profile = next(new_profiles[p] for p in new_profiles if int(p) == int(profile_id))
 
-            for link in profile_links[id]:
+            for link in profile_links[profile_id]:
                 linked_profile = next(new_profiles[p] for p in new_profiles if int(p) == int(link))
 
                 merged_addresses = []
@@ -174,9 +183,10 @@ class Command(BaseCommand):
 
                 processed_profiles.append(link)
 
-            merged_profiles[list(parent_profile['addresses'][0].keys())[0]] = parent_profile
+            primary_address = self.get_primary_address(parent_profile['addresses'])
+            merged_profiles[primary_address] = parent_profile
 
-            processed_profiles.append(id)
+            processed_profiles.append(profile_id)
 
         json.dump(merged_profiles, open('merged_profiles.json', 'w+'), indent=2)
 
@@ -207,13 +217,15 @@ class Command(BaseCommand):
         json.dump(voting_profiles, open('voting_profiles.json', 'w+'), indent=2)
 
     @staticmethod
-    def check_match(profiles, own_profile, profile_id, search_address, links=None):
+    def check_match(profiles, own_profile, search_address, links=None):
         if links is None:
             links = {}
 
         for profile in profiles:
             if profile == own_profile:
                 continue
+
+            profile_id = profiles[profile]['id']
 
             if profile_id not in links:
                 links[profile_id] = 0
@@ -223,3 +235,18 @@ class Command(BaseCommand):
                     links[profile_id] += 1
 
         return links
+
+    @staticmethod
+    def get_primary_address(addresses):
+        """
+        addresses is a list of dicts. each dict is {address: number_of_shares}
+        we get the addresses and return the first alphabetically
+        """
+        addr_list = []
+
+        for address in addresses:
+            for addr in address:
+                addr_list.append(addr)
+
+        return sorted(addr_list)[0]
+
