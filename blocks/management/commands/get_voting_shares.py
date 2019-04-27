@@ -87,9 +87,6 @@ class Command(BaseCommand):
             voting_profiles[profile]['id'] = profile_index
             profile_index += 1
 
-        # dump the output
-        json.dump(voting_profiles, open('voting_profiles.json', 'w+'), indent=2)
-
         # TODO- move this after profile merging to avoid dupes
         for voting_profile in voting_profiles:
             logger.info('Calculating share total for profile {}'.format(voting_profiles[voting_profile]['id']))
@@ -104,6 +101,9 @@ class Command(BaseCommand):
 
             voting_profiles[voting_profile]['voting_shares'] = total_shares
             voting_profiles[voting_profile]['addresses'] = addresses
+
+        # dump the output
+        json.dump(voting_profiles, open('voting_profiles.json', 'w+'), indent=2)
 
         # calculate the links between voting profiles based on shared addresses
 
