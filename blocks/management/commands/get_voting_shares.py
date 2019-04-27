@@ -87,8 +87,12 @@ class Command(BaseCommand):
             voting_profiles[profile]['id'] = profile_index
             profile_index += 1
 
+        # dump the output
+        json.dump(voting_profiles, open('voting_profiles.json', 'w+'), indent=2)
+
+        # TODO- move this after profile merging to avoid dupes
         for voting_profile in voting_profiles:
-            logger.info('Calculating share total for {}'.format(voting_profiles[voting_profile]['id']))
+            logger.info('Calculating share total for profile {}'.format(voting_profiles[voting_profile]['id']))
             total_shares = 0
             addresses = []
 
@@ -213,9 +217,6 @@ class Command(BaseCommand):
         line_chart.add('Number of Solved Blocks', num_blocks)
         line_chart.render_to_file('chart.svg')
 
-        # dump the output
-        json.dump(voting_profiles, open('voting_profiles.json', 'w+'), indent=2)
-
     @staticmethod
     def check_match(profiles, own_profile, search_address, links=None):
         if links is None:
@@ -231,6 +232,7 @@ class Command(BaseCommand):
                 links[profile_id] = 0
 
             for address in profiles[profile]['addresses']:
+                print(address, search_address)
                 if address == search_address:
                     links[profile_id] += 1
 
