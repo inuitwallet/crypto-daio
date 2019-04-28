@@ -38,13 +38,13 @@ class Command(BaseCommand):
 
         paginator = Paginator(blocks, int(options['number']))
 
-        # get the unique addresses that have solved blocks
+        # 1) Attach addresses to voting profiles with number of blocks solved
 
         addresses = []
         voting_profiles = {}
 
         for block in paginator.page(1):
-            solved_by = block.solved_by
+            solved_by = block.solved_by_address
 
             if not solved_by:
                 logger.warning('no solved by address for block {}'.format(block.height))
@@ -55,20 +55,20 @@ class Command(BaseCommand):
                 logger.info('Address {}'.format(solved_by))
                 addresses.append(solved_by)
 
-            # the block votes should be the same for each client or for different clients attached to the same datafeed
+            # the block votes should be the same for each client or for different clients attached to the same data feed
             voting_profile = block.vote
 
             # we should attach addresses to voting profiles
             voting_profile_string = json.dumps(voting_profile, sort_keys=True)
 
             if voting_profile_string not in voting_profiles:
-                voting_profiles[voting_profile_string] = {'addresses': [], 'number_of_blocks': 0, 'voting_shares': 0}
+                voting_profiles[voting_profile_string] = {'addresses': [], 'number_of_blocks': 0}
 
             # increment number of blocks
             voting_profiles[voting_profile_string]['number_of_blocks'] += 1
 
-            if block.solved_by_address not in voting_profiles[voting_profile_string]['addresses']:
-                voting_profiles[voting_profile_string]['addresses'].append(block.solved_by_address)
+            if solved_by not in voting_profiles[voting_profile_string]['addresses']:
+                voting_profiles[voting_profile_string]['addresses'].append(solved_by)
 
         # we can show how many addresses have been voting with how many voting profiles
         logger.info(
@@ -87,26 +87,7 @@ class Command(BaseCommand):
             voting_profiles[profile]['id'] = profile_index
             profile_index += 1
 
-        # TODO- move this after profile merging to avoid dupes
-        for voting_profile in voting_profiles:
-            logger.info('Calculating share total for profile {}'.format(voting_profiles[voting_profile]['id']))
-            total_shares = 0
-            addresses = []
-
-            for address in voting_profiles[voting_profile]['addresses']:
-                logger.info('Getting balance for {}'.format(address))
-                balance = address.balance
-                total_shares += balance
-                addresses.append({address.address: balance})
-
-            voting_profiles[voting_profile]['voting_shares'] = total_shares
-            voting_profiles[voting_profile]['addresses'] = addresses
-
-        # dump the output
-        json.dump(voting_profiles, open('voting_profiles.json', 'w+'), indent=2)
-
         # calculate the links between voting profiles based on shared addresses
-
         # now we can se which shared addresses there are
         profile_links = {}
         linked_profiles = []
@@ -119,7 +100,6 @@ class Command(BaseCommand):
                 'votes': [profile],
                 'number_of_blocks': voting_profiles[profile]['number_of_blocks'],
                 'addresses': voting_profiles[profile]['addresses'],
-                'voting_shares': voting_profiles[profile]['voting_shares']
             }
 
             links = {}
@@ -130,8 +110,8 @@ class Command(BaseCommand):
             # generate the links
             for link in links:
                 if links[link] > 0:
-                    parent_profile = min(profile_index, link)
-                    linked_profile = max(profile_index, link)
+                    parent_profile = min(profile_id, link)
+                    linked_profile = max(profile_id, link)
 
                     if parent_profile in linked_profiles:
                         continue
@@ -140,7 +120,14 @@ class Command(BaseCommand):
                         profile_links[parent_profile] = []
 
                     if linked_profile not in profile_links[parent_profile]:
-                        print('{} links to {}'.format(parent_profile, linked_profile))
+                        logger.info(
+                            '{} has {} links to {} of {} addresses'.format(
+                                parent_profile,
+                                links[link],
+                                linked_profile,
+                                len(new_profiles[parent_profile]['addresses'])
+                            )
+                        )
                         profile_links[parent_profile].append(linked_profile)
 
                         linked_profiles.append(linked_profile)
@@ -158,6 +145,7 @@ class Command(BaseCommand):
                 continue
 
             if profile_id not in linked_profiles:
+                # no merging needed as profile isn't linked to anything
                 primary_address = self.get_primary_address(new_profiles[profile_id]['addresses'])
                 merged_profiles[primary_address] = new_profiles[profile_id]
                 continue
@@ -176,21 +164,26 @@ class Command(BaseCommand):
                 parent_profile['addresses'] = merged_addresses
                 parent_profile['votes'] += linked_profile['votes']
                 parent_profile['number_of_blocks'] += linked_profile['number_of_blocks']
-
-                voting_shares = 0
-
-                for address in merged_addresses:
-                    for addr in address:
-                        voting_shares += address[addr]
-
-                parent_profile['voting_shares'] = voting_shares
-
                 processed_profiles.append(link)
 
             primary_address = self.get_primary_address(parent_profile['addresses'])
             merged_profiles[primary_address] = parent_profile
 
             processed_profiles.append(profile_id)
+
+        for profile in merged_profiles:
+            logger.info('Calculating share total for profile {}'.format(profile))
+            total_shares = 0
+            addresses = []
+
+            for address in merged_profiles[profile]['addresses']:
+                logger.info('Getting balance for {}'.format(address))
+                balance = address.balance
+                total_shares += balance
+                addresses.append({address.address: balance})
+
+            merged_profiles[profile]['voting_shares'] = total_shares
+            merged_profiles[profile]['addresses'] = addresses
 
         json.dump(merged_profiles, open('merged_profiles.json', 'w+'), indent=2)
 
@@ -232,7 +225,6 @@ class Command(BaseCommand):
                 links[profile_id] = 0
 
             for address in profiles[profile]['addresses']:
-                print(address, search_address)
                 if address == search_address:
                     links[profile_id] += 1
 
@@ -247,8 +239,7 @@ class Command(BaseCommand):
         addr_list = []
 
         for address in addresses:
-            for addr in address:
-                addr_list.append(addr)
+            addr_list.append(address.address)
 
-        return sorted(addr_list)[0]
+        return sorted(addr_list, key=str.lower)[0]
 
