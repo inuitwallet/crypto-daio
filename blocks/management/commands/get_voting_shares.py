@@ -193,7 +193,7 @@ class Command(BaseCommand):
         num_shares = []
         num_blocks = []
 
-        for profile in merged_profiles:
+        for profile in sorted(merged_profiles, key=str.lower):
             x_labels.append(profile)
             num_addresses.append(len(merged_profiles[profile]['addresses']))
             num_shares.append(merged_profiles[profile]['voting_shares'] / 10000)
