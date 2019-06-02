@@ -581,13 +581,10 @@ class TxOutput(CachingMixin, models.Model):
             return False
 
     def serialize(self):
-        if self.input.transaction.block is None:
+        try:
+            spent_in = self.input.transaction.block.height
+        except TxInput.DoesNotExist:
             spent_in = None
-        else:
-            try:
-                spent_in = self.input.transaction.block.height
-            except TxInput.DoesNotExist:
-                spent_in = None
 
         return {
             'value': self.value,
