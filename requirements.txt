@@ -31,7 +31,7 @@ django-tenant-schemas==1.9.0
 djangorestframework==3.6.3
 docker-py==1.8.0
 docutils==0.13.1
-ecdsa==0.11
+ecdsa==0.13.3
 flake8==3.5.0
 funcsigs==1.0.2
 future==0.16.0
