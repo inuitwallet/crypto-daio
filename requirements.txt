@@ -87,7 +87,7 @@ service-identity==17.0.0
 sha256==0.1
 six==1.10.0
 tabulate==0.8.2
-Twisted==17.5.0
+Twisted==19.7.0
 two1==3.10.8
 txaio==2.8.0
 Unidecode==0.4.21
