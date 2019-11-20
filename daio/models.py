@@ -25,12 +25,13 @@ class Coin(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=255)
     unit_code = models.CharField(max_length=255)
-    chain = models.ForeignKey(Chain, related_name='coins', related_query_name='coin')
+    chain = models.ForeignKey(Chain, related_name='coins', related_query_name='coin', db_index=True)
     rpc_port = models.PositiveIntegerField(default=1)
     magic_byte = models.IntegerField()
     vout_n_value = models.CharField(max_length=255, default='ffffffff')
     index = models.IntegerField(
-        default=0
+        default=0,
+        db_index=True
     )
     decimal_places = models.PositiveIntegerField(default=8)
     # address_prefix = models.CharField(

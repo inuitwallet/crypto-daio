@@ -48,7 +48,10 @@ class Balance(models.Model):
         related_name='balances',
         related_query_name='balance'
     )
-    date_time = models.DateTimeField(auto_now=True)
+    date_time = models.DateTimeField(
+        auto_now=True,
+        db_index=True
+    )
     base_amount = models.DecimalField(
         max_digits=26,
         decimal_places=10,

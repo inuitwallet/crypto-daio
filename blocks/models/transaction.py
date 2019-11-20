@@ -38,7 +38,8 @@ class Transaction(CachingMixin, models.Model):
         on_delete=models.SET_NULL,
     )
     index = models.BigIntegerField(
-        default=-1
+        default=-1,
+        db_index=True
     )
     version = models.IntegerField(
         blank=True,
@@ -47,6 +48,7 @@ class Transaction(CachingMixin, models.Model):
     time = models.DateTimeField(
         blank=True,
         null=True,
+        db_index=True
     )
     lock_time = models.IntegerField(
         blank=True,
@@ -530,7 +532,9 @@ class TxOutput(CachingMixin, models.Model):
     value = models.BigIntegerField(
         default=0
     )
-    index = models.IntegerField()
+    index = models.IntegerField(
+        db_index=True
+    )
     script_pub_key_asm = models.TextField(
         blank=True,
         default='',
@@ -613,7 +617,9 @@ class TxInput(CachingMixin, models.Model):
         related_query_name='input',
         on_delete=models.CASCADE,
     )
-    index = models.BigIntegerField()
+    index = models.BigIntegerField(
+        db_index=True
+    )
     previous_output = models.OneToOneField(
         TxOutput,
         blank=True,

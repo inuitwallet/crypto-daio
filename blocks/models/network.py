@@ -44,7 +44,9 @@ class Info(models.Model):
     unit = models.CharField(
         max_length=255
     )
-    max_height = models.BigIntegerField()
+    max_height = models.BigIntegerField(
+        db_index=True
+    )
     money_supply = models.DecimalField(
         max_digits=16,
         decimal_places=4
@@ -53,7 +55,8 @@ class Info(models.Model):
         max_digits=16,
         decimal_places=4,
         blank=True,
-        null=True
+        null=True,
+        db_index=True
     )
     connections = models.BigIntegerField()
     difficulty = models.DecimalField(
@@ -65,7 +68,8 @@ class Info(models.Model):
         decimal_places=4
     )
     time_added = models.DateTimeField(
-        auto_now_add=True
+        auto_now_add=True,
+        db_index=True
     )
 
     objects = InfoManager()
@@ -81,7 +85,9 @@ class Peer(models.Model):
     port = models.IntegerField()
     services = models.IntegerField()
     last_send = models.DateTimeField()
-    last_receive = models.DateTimeField()
+    last_receive = models.DateTimeField(
+        db_index=True
+    )
     connection_time = models.DateTimeField()
     version = models.IntegerField()
     sub_version = models.CharField(
@@ -89,7 +95,9 @@ class Peer(models.Model):
     )
     inbound = models.BooleanField()
     release_time= models.IntegerField()
-    height = models.IntegerField()
+    height = models.IntegerField(
+        db_index=True
+    )
     ban_score = models.IntegerField()
 
     def __str__(self):
@@ -103,7 +111,8 @@ class Orphan(models.Model):
         db_index=True,
     )
     date_time = models.DateTimeField(
-        default=now
+        default=now,
+        db_index=True
     )
 
 

@@ -66,6 +66,7 @@ class Block(CachingMixin, models.Model):
     time = models.DateTimeField(
         blank=True,
         null=True,
+        db_index=True,
     )
     nonce = models.BigIntegerField(
         blank=True,

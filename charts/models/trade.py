@@ -49,7 +49,11 @@ class Trade(models.Model):
         related_name='orders',
         related_query_name='order'
     )
-    date_time = models.DateTimeField(blank=True, null=True)
+    date_time = models.DateTimeField(
+        blank=True,
+        null=True,
+        db_index=True
+    )
     order_type = models.CharField(
         max_length=255,
         choices=[

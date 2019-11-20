@@ -56,7 +56,8 @@ class WatchedAddressBalanceManager(models.Manager):
 
 class WatchedAddressBalance(models.Model):
     date_time = models.DateTimeField(
-        auto_now=True
+        auto_now=True,
+        db_index=True
     )
     address = models.ForeignKey(
         WatchedAddress
