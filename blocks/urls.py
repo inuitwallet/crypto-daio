@@ -35,7 +35,7 @@ urlpatterns = [
     # API
     url(r'^api/v1/', include('blocks.api.urls.v1')),
 
-    # Angular
-    url(r'^angular/$', AngularExplorer.as_view(), name='angular_explorer'),
-    url(r'.*', AngularExplorer.as_view(), name='angular_catchall'),
+    # # Angular
+    # url(r'^angular/$', AngularExplorer.as_view(), name='angular_explorer'),
+    # url(r'.*', AngularExplorer.as_view(), name='angular_catchall'),
 ]
