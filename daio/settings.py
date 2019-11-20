@@ -57,6 +57,7 @@ TENANT_APPS = [
     'blocks',
     'wallet',
     'rest_framework',
+    'django_nvd3',
     'channels',
     'channels.delay',
     'corsheaders',
