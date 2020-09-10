@@ -557,6 +557,7 @@ class TxOutput(CachingMixin, models.Model):
         related_query_name='output_address',
         blank=True,
         null=True,
+        on_delete=models.SET_NULL
     )
     park_duration = models.BigIntegerField(
         blank=True,

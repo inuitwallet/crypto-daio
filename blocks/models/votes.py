@@ -11,12 +11,14 @@ class CustodianVote(models.Model):
     block = models.ForeignKey(
         'Block',
         blank=True,
-        null=True
+        null=True,
+        on_delete=models.CASCADE
     )
     address = models.ForeignKey(
         Address,
         blank=True,
-        null=True
+        null=True,
+        on_delete=models.SET_NULL
     )
     amount = models.DecimalField(
         max_digits=25,
@@ -35,7 +37,8 @@ class MotionVote(models.Model):
     block = models.ForeignKey(
         'Block',
         blank=True,
-        null=True
+        null=True,
+        on_delete=models.CASCADE
     )
     hash = models.CharField(
         max_length=255,
@@ -57,12 +60,14 @@ class FeesVote(models.Model):
     block = models.ForeignKey(
         'Block',
         blank=True,
-        null=True
+        null=True,
+        on_delete=models.CASCADE
     )
     coin = models.ForeignKey(
         Coin,
         blank=True,
-        null=True
+        null=True,
+        on_delete=models.CASCADE
     )
     fee = models.FloatField(
         default=0
@@ -92,12 +97,14 @@ class ParkRateVote(models.Model):
     block = models.ForeignKey(
         'Block',
         blank=True,
-        null=True
+        null=True,
+        on_delete=models.CASCADE
     )
     coin = models.ForeignKey(
         Coin,
         blank=True,
-        null=True
+        null=True,
+        on_delete=models.CASCADE
     )
     rates = models.ManyToManyField(
         'ParkRate'

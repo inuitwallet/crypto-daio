@@ -6,7 +6,7 @@ class Chain(TenantMixin):
     auto_create_schema = True
     name = models.CharField(
         max_length=255,
-        unique=True
+        unique=True,
     )
     rpc_user = models.CharField(max_length=255)
     rpc_password = models.CharField(max_length=255)
@@ -25,7 +25,13 @@ class Coin(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=255)
     unit_code = models.CharField(max_length=255)
-    chain = models.ForeignKey(Chain, related_name='coins', related_query_name='coin', db_index=True)
+    chain = models.ForeignKey(
+        Chain,
+        related_name='coins',
+        related_query_name='coin',
+        db_index=True,
+        on_delete=models.CASCADE
+    )
     rpc_port = models.PositiveIntegerField(default=1)
     magic_byte = models.IntegerField()
     vout_n_value = models.CharField(max_length=255, default='ffffffff')

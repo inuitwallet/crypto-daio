@@ -120,12 +120,14 @@ class ActiveParkRate(models.Model):
     block = models.ForeignKey(
         'Block',
         blank=True,
-        null=True
+        null=True,
+        on_delete=models.CASCADE
     )
     coin = models.ForeignKey(
         Coin,
         blank=True,
-        null=True
+        null=True,
+        on_delete=models.CASCADE
     )
     rates = models.ManyToManyField(
         'ParkRate'
@@ -149,7 +151,8 @@ class NetworkFund(models.Model):
     coin = models.ForeignKey(
         Coin,
         blank=True,
-        null=True
+        null=True,
+        on_delete=models.CASCADE
     )
 
 
@@ -160,7 +163,8 @@ class ExchangeBalance(models.Model):
     coin = models.ForeignKey(
         Coin,
         blank=True,
-        null=True
+        null=True,
+        on_delete=models.CASCADE
     )
     exchange = models.CharField(
         max_length=255,

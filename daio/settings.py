@@ -55,13 +55,9 @@ TENANT_APPS = [
     'django.contrib.messages',
     'django.contrib.humanize',
     'blocks',
-    'wallet',
-    'rest_framework',
-    'django_nvd3',
     'channels',
     'channels.delay',
     'corsheaders',
-    'redisboard',
 ]
 
 SESSION_COOKIE_DOMAIN = None
@@ -78,7 +74,7 @@ DEFAULT_FILE_STORAGE = 'daio.storages.DaioStorage'
 
 AWS_QUERYSTRING_AUTH = False
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
     'tenant_schemas.middleware.TenantMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -86,7 +82,7 @@ MIDDLEWARE_CLASSES = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
+    #'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]

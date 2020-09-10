@@ -26,19 +26,19 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='transaction',
             name='block',
-            field=models.ForeignKey(related_query_name='transaction', related_name='transactions', default=0, to='blocks.Block'),
+            field=models.ForeignKey(related_query_name='transaction', related_name='transactions', default=0, to='blocks.Block', on_delete=models.SET_NULL),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='txinput',
             name='transaction',
-            field=models.ForeignKey(related_query_name='input', related_name='inputs', default=0, to='blocks.Transaction'),
+            field=models.ForeignKey(related_query_name='input', related_name='inputs', default=0, to='blocks.Transaction', on_delete=models.CASCADE),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='txoutput',
             name='transaction',
-            field=models.ForeignKey(related_query_name='output', related_name='outputs', default=0, to='blocks.Transaction'),
+            field=models.ForeignKey(related_query_name='output', related_name='outputs', default=0, to='blocks.Transaction', on_delete=models.CASCADE),
             preserve_default=False,
         ),
     ]

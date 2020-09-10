@@ -26,7 +26,8 @@ class Address(CachingMixin, models.Model):
     coin = models.ForeignKey(
         Coin,
         blank=True,
-        null=True
+        null=True,
+        on_delete=models.CASCADE
     )
 
     objects = CachingManager()
@@ -75,6 +76,7 @@ class WatchAddress(CachingMixin, models.Model):
         Address,
         related_name='watch_addresses',
         related_query_name='watch_address',
+        on_delete=models.CASCADE
     )
     amount = models.DecimalField(
         max_digits=20,
