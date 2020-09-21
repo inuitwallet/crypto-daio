@@ -201,11 +201,33 @@ class Block(CachingMixin, models.Model):
             # if the hash exists as an orphan, remove it
             Orphan.objects.filter(hash=self.hash).delete()
 
-            return True
+            return existing_block
         except Block.DoesNotExist:
             # return False to show that no alteration took place
             logger.info(f'No blocks found with hash {self.hash}')
             return False
+
+    def check_validity(self):
+        logger.info(f'Checking validity of {self}')
+
+        if not self.is_valid:
+            logger.info(f'Sending {self} for repair')
+            self.send_for_repair()
+        else:
+            logger.info(f'{self} is valid')
+
+        # validate the transactions too
+        logger.info(f'Validating transactions for {self}')
+        for tx in self.transactions.all():
+            if not tx.is_valid:
+                logger.warning(f'tx {tx} is not valid. Sending for repair')
+                try:
+                    Channel('repair_transaction').send({
+                        'chain': connection.tenant.schema_name,
+                        'tx_id': tx.tx_id
+                    })
+                except BaseChannelLayer.ChannelFull:
+                    logger.error('CHANNEL FULL!')
 
     def save(self, *args, **kwargs):
         # after saving the block will be tested for validity if this is True
@@ -231,48 +253,7 @@ class Block(CachingMixin, models.Model):
         super().save()
 
         if validate:
-            logger.info(f'Checking validity of {self}')
-
-            if not self.is_valid:
-                logger.info(f'Sending {self} for repair')
-                self.send_for_repair()
-            else:
-                logger.info(f'{self} is valid')
-
-            # validate the transactions too
-            logger.info(f'Validating transactions for {self}')
-            for tx in self.transactions.all():
-                if not tx.is_valid:
-                    logger.warning(f'tx {tx} is not valid. Sending for repair')
-                    try:
-                        Channel('repair_transaction').send({
-                            'chain': connection.tenant.schema_name,
-                            'tx_id': tx.tx_id
-                        })
-                    except BaseChannelLayer.ChannelFull:
-                        logger.error('CHANNEL FULL!')
-
-        # try:
-        #     Group(
-        #         '{}_block'.format(connection.tenant.schema_name)
-        #     ).send(
-        #         {
-        #             'text': json.dumps(
-        #                 {
-        #                     'stream': 'block_update',
-        #                     'payload': {
-        #                         'hash': self.hash,
-        #                         'block': self.serialize(),
-        #                         'next_block': self.next_block.height if self.next_block else None,
-        #                         'previous_block': self.previous_block.height if self.previous_block else None,
-        #                     }
-        #                 }
-        #             )
-        #         },
-        #         immediately=True
-        #     )
-        # except BaseChannelLayer.ChannelFull:
-        #     logger.error('CHANNEL FULL!')
+            self.check_validity()
 
     @property
     def class_type(self):

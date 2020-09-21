@@ -41,7 +41,14 @@ class BlockDetailView(View):
     @staticmethod
     def get(request, block_height):
         block = get_object_or_404(Block, height=block_height)
-        block.save()
+        block.validate_block_height()
+        new_block = block.set_existing_block_height_if_found()
+
+        if new_block:
+            block = new_block
+
+        block.check_validity()
+
         return render(
             request,
             'explorer/block_detail.html',
