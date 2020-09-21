@@ -58,6 +58,7 @@ TENANT_APPS = [
     'channels',
     'channels.delay',
     'corsheaders',
+    'django_nvd3'
 ]
 
 SESSION_COOKIE_DOMAIN = None
