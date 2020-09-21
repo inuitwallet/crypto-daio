@@ -28,3 +28,19 @@ jobs:
       - name: Run pre-commit
         run: |
           pipenv run pre-commit run -a --verbose
+
+      - name: run tests
+        run: |
+          pipenv run pytest
+
+      - name: executing remote ssh commands using password
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSHKEY }}
+          port: ${{ secrets.PORT }}
+          script: |
+            cd /home/daio/crypto-daio
+            git pull origin master
+            sudo supervisorctl restart daio:*
