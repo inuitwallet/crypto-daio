@@ -1,6 +1,5 @@
 from blocks.views.addresses import AddressDetailView
 from blocks.views.blocks import AllBlocks, BlockDetailView, LatestBlocksList
-from blocks.views.explorer_angular import AngularExplorer
 from blocks.views.health import HealthView
 from blocks.views.notify import Notify
 from blocks.views.search import Search
@@ -16,5 +15,4 @@ __all__ = [
     "HealthView",
     "GrantView",
     "MotionView",
-    "AngularExplorer",
 ]
