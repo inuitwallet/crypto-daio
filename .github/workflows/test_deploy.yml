@@ -93,11 +93,12 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSHKEY }}
           port: ${{ secrets.PORT }}
+          envs: DJANGO_SETTINGS_MODULE
+          script_stop: true
           script: |
             cd /home/daio/crypto-daio
             git pull origin master
             pipenv sync
+            echo "DJANGO_SETTINGS_MODULE = ${DJANGO_SETTINGS_MODULE}"
             pipenv run python manage.py migrate_schemas
             sudo supervisorctl restart daio:*
-          envs: DJANGO_SETTINGS_MODULE
-
