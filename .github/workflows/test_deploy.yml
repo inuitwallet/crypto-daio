@@ -18,6 +18,9 @@ jobs:
         with:
           python-version: 3.8
 
+      - name: install pipenv
+        uses: dschep/install-pipenv-action@v1
+
       - name: Install dependencies
         run: |
           pipenv sync --dev
