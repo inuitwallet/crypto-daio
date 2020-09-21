@@ -210,21 +210,22 @@ class Block(CachingMixin, models.Model):
     def save(self, *args, **kwargs):
         # after saving the block will be tested for validity if this is True
         validate = kwargs.pop('validate', True)
-        # before saving,
-        # the block will be tested to see if other blocks with the same height/hash already exist if this is True
         checks = kwargs.pop('checks', True)
 
         logger.info(f'Start Saving {self}: {validate=}, {checks=}')
 
-        if checks:
-            # check for an existing block at this blocks height and remove them if found
-            self.validate_block_height()
+        if not checks and not validate:
+            logger.info(f'no checks or validation for {self}. saving')
+            super().save()
 
-            # check for an existing block with this blocks hash.
-            # Set the height of the existing block to this blocks height
-            # existing block will be saved without checks
-            if self.set_existing_block_height_if_found():
-                return
+        # check for an existing block at this blocks height and remove them if found
+        self.validate_block_height()
+
+        # check for an existing block with this blocks hash.
+        # Set the height of the existing block to this blocks height
+        # existing block will be saved without checks
+        if self.set_existing_block_height_if_found():
+            return
 
         logger.info(f'Saving {self}')
         super().save()
