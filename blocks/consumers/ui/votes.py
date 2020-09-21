@@ -1,41 +1,35 @@
 import json
 import logging
 
-from django.db.models import Max, Sum, Min
+from django.db.models import Max, Min, Sum
 from django.template.loader import render_to_string
 
-from blocks.models import Block, CustodianVote, TxOutput, MotionVote
+from blocks.models import Block, CustodianVote, MotionVote, TxOutput
 
 logger = logging.getLogger(__name__)
 
 
 def get_current_grants(message):
     message.reply_channel.send(
-        {'text': json.dumps({'message_type': 'loading'})},
-        immediately=True
+        {"text": json.dumps({"message_type": "loading"})}, immediately=True
     )
     # get the block height 10000 blocks ago
-    max_height = Block.objects.all().aggregate(Max('height'))['height__max']
+    max_height = Block.objects.all().aggregate(Max("height"))["height__max"]
     vote_window_min = max_height - 10000
 
     # get the distinct grants that have been voted for in the last 10000 blocks
-    grants = CustodianVote.objects.filter(
-        block__height__gte=vote_window_min,
-        block__height__lte=max_height
-    ).exclude(
-        block__isnull=True
-    ).distinct(
-        'address',
-        'amount'
+    grants = (
+        CustodianVote.objects.filter(
+            block__height__gte=vote_window_min, block__height__lte=max_height
+        )
+        .exclude(block__isnull=True)
+        .distinct("address", "amount")
     )
 
     # get the total number of sharedays destroyed in the current period
     sharedays_destroyed = Block.objects.filter(
-        height__gte=vote_window_min,
-        height__lte=max_height
-    ).aggregate(
-        Sum('coinage_destroyed')
-    )['coinage_destroyed__sum']
+        height__gte=vote_window_min, height__lte=max_height
+    ).aggregate(Sum("coinage_destroyed"))["coinage_destroyed__sum"]
 
     for grant in grants:
         granted = None
@@ -55,90 +49,79 @@ def get_current_grants(message):
             block__height__gte=vote_window_min,
             block__height__lte=max_height,
             address=grant.address,
-            amount=grant.amount
+            amount=grant.amount,
         )
         votes_count = votes.count()
-        grant_sharedays = votes.aggregate(
-            Sum('block__coinage_destroyed')
-        )['block__coinage_destroyed__sum']
+        grant_sharedays = votes.aggregate(Sum("block__coinage_destroyed"))[
+            "block__coinage_destroyed__sum"
+        ]
 
         message.reply_channel.send(
             {
-                'text': json.dumps(
+                "text": json.dumps(
                     {
-                        'message_type': 'new_current_grant',
-                        'html': render_to_string(
-                            'explorer/fragments/grant.html',
+                        "message_type": "new_current_grant",
+                        "html": render_to_string(
+                            "explorer/fragments/grant.html",
                             {
-                                'grant': {
-                                    'address': grant.address.address,
-                                    'amount': grant.amount,
-                                    'number_of_votes': votes_count,
-                                    'vote_percentage': round(
-                                        (votes_count / 10000) * 100,
-                                        2
+                                "grant": {
+                                    "address": grant.address.address,
+                                    "amount": grant.amount,
+                                    "number_of_votes": votes_count,
+                                    "vote_percentage": round(
+                                        (votes_count / 10000) * 100, 2
                                     ),
-                                    'first_seen': CustodianVote.objects.filter(
-                                        address=grant.address,
-                                        amount=grant.amount
-                                    ).aggregate(
-                                        Min('block__height')
-                                    )['block__height__min'],
-                                    'sharedays_destroyed': grant_sharedays,
-                                    'sharedays_percentage': round(
-                                        (grant_sharedays / sharedays_destroyed) * 100,
-                                        2
+                                    "first_seen": CustodianVote.objects.filter(
+                                        address=grant.address, amount=grant.amount
+                                    ).aggregate(Min("block__height"))[
+                                        "block__height__min"
+                                    ],
+                                    "sharedays_destroyed": grant_sharedays,
+                                    "sharedays_percentage": round(
+                                        (grant_sharedays / sharedays_destroyed) * 100, 2
                                     ),
-                                    'granted': granted
+                                    "granted": granted,
                                 }
-                            }
-                        )
+                            },
+                        ),
                     }
                 )
             },
-            immediately=True
+            immediately=True,
         )
 
     message.reply_channel.send(
-        {'text': json.dumps({'message_type': 'done'})},
-        immediately=True
+        {"text": json.dumps({"message_type": "done"})}, immediately=True
     )
 
 
 def get_current_motions(message):
     message.reply_channel.send(
-        {'text': json.dumps({'message_type': 'loading'})},
-        immediately=True
+        {"text": json.dumps({"message_type": "loading"})}, immediately=True
     )
     # get the block height 10000 blocks ago
-    max_height = Block.objects.all().aggregate(Max('height'))['height__max']
+    max_height = Block.objects.all().aggregate(Max("height"))["height__max"]
     vote_window_min = max_height - 10000
 
     # get the distinct grants that have been voted for in the last 10000 blocks
-    motions = MotionVote.objects.filter(
-        block__height__gte=vote_window_min,
-        block__height__lte=max_height
-    ).exclude(
-        block__isnull=True
-    ).distinct(
-        'hash'
+    motions = (
+        MotionVote.objects.filter(
+            block__height__gte=vote_window_min, block__height__lte=max_height
+        )
+        .exclude(block__isnull=True)
+        .distinct("hash")
     )
 
     # get the total number of sharedays destroyed in the current period
     sharedays_destroyed = Block.objects.filter(
-        height__gte=vote_window_min,
-        height__lte=max_height
-    ).aggregate(
-        Sum('coinage_destroyed')
-    )['coinage_destroyed__sum']
+        height__gte=vote_window_min, height__lte=max_height
+    ).aggregate(Sum("coinage_destroyed"))["coinage_destroyed__sum"]
 
     for motion in motions:
         # lets see if this has passed
         try:
             granted = MotionVote.objects.get(
-                hash=motion.hash,
-                block_percentage__gte=50,
-                sdd_percentage__gte=50
+                hash=motion.hash, block_percentage__gte=50, sdd_percentage__gte=50
             )
         except MotionVote.DoesNotExist:
             granted = False
@@ -147,49 +130,47 @@ def get_current_motions(message):
         votes = MotionVote.objects.filter(
             block__height__gte=vote_window_min,
             block__height__lte=max_height,
-            hash=motion.hash
+            hash=motion.hash,
         )
         votes_count = votes.count()
-        motion_sharedays = votes.aggregate(
-            Sum('block__coinage_destroyed')
-        )['block__coinage_destroyed__sum']
+        motion_sharedays = votes.aggregate(Sum("block__coinage_destroyed"))[
+            "block__coinage_destroyed__sum"
+        ]
 
         message.reply_channel.send(
             {
-                'text': json.dumps(
+                "text": json.dumps(
                     {
-                        'message_type': 'new_current_motion',
-                        'html': render_to_string(
-                            'explorer/fragments/motion.html',
+                        "message_type": "new_current_motion",
+                        "html": render_to_string(
+                            "explorer/fragments/motion.html",
                             {
-                                'motion': {
-                                    'hash': motion.hash,
-                                    'number_of_votes': votes_count,
-                                    'vote_percentage': round(
-                                        (votes_count / 10000) * 100,
-                                        2
+                                "motion": {
+                                    "hash": motion.hash,
+                                    "number_of_votes": votes_count,
+                                    "vote_percentage": round(
+                                        (votes_count / 10000) * 100, 2
                                     ),
-                                    'first_seen': MotionVote.objects.filter(
+                                    "first_seen": MotionVote.objects.filter(
                                         hash=motion.hash
-                                    ).aggregate(
-                                        Min('block__height')
-                                    )['block__height__min'],
-                                    'sharedays_destroyed': motion_sharedays,
-                                    'sharedays_percentage': round(
+                                    ).aggregate(Min("block__height"))[
+                                        "block__height__min"
+                                    ],
+                                    "sharedays_destroyed": motion_sharedays,
+                                    "sharedays_percentage": round(
                                         (motion_sharedays / sharedays_destroyed) * 100,
-                                        2
+                                        2,
                                     ),
-                                    'granted': granted
+                                    "granted": granted,
                                 }
-                            }
-                        )
+                            },
+                        ),
                     }
                 )
             },
-            immediately=True
+            immediately=True,
         )
 
     message.reply_channel.send(
-        {'text': json.dumps({'message_type': 'done'})},
-        immediately=True
+        {"text": json.dumps({"message_type": "done"})}, immediately=True
     )

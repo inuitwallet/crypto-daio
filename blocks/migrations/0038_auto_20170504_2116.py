@@ -8,13 +8,15 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0037_info_time_added'),
+        ("blocks", "0037_info_time_added"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='info',
-            name='total_parked',
-            field=models.DecimalField(blank=True, decimal_places=4, max_digits=16, null=True),
+            model_name="info",
+            name="total_parked",
+            field=models.DecimalField(
+                blank=True, decimal_places=4, max_digits=16, null=True
+            ),
         ),
     ]

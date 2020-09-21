@@ -8,18 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0016_transaction_unit'),
+        ("blocks", "0016_transaction_unit"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='transaction',
-            name='is_coin_base',
+            model_name="transaction",
+            name="is_coin_base",
             field=models.NullBooleanField(),
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='is_coin_stake',
+            model_name="transaction",
+            name="is_coin_stake",
             field=models.NullBooleanField(),
         ),
     ]

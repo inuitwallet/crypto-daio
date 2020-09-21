@@ -14,7 +14,7 @@ import os
 
 from django.contrib import messages
 
-APPLICATION_DIR = os.path.dirname(globals()['__file__'])
+APPLICATION_DIR = os.path.dirname(globals()["__file__"])
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,7 +24,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.9/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'eek(7%&roa%cfqsq$xaml(6qa&5#pyid^_0oq$-q2zw+8gm_3m'
+SECRET_KEY = "eek(7%&roa%cfqsq$xaml(6qa&5#pyid^_0oq$-q2zw+8gm_3m"
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -35,109 +35,106 @@ ALLOWED_HOSTS = []
 # Application definition
 
 SHARED_APPS = [
-    'tenant_schemas',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sites',
-    'django.contrib.sessions',
-    'storages',
-    'daio',
+    "tenant_schemas",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sites",
+    "django.contrib.sessions",
+    "storages",
+    "daio",
 ]
 
 TENANT_APPS = [
-    'jet.dashboard',
-    'jet',
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'django.contrib.contenttypes',
-    'django.contrib.sites',
-    'django.contrib.staticfiles',
-    'django.contrib.messages',
-    'django.contrib.humanize',
-    'blocks',
-    'channels',
-    'channels.delay',
-    'corsheaders',
-    'django_nvd3'
+    "jet.dashboard",
+    "jet",
+    "django.contrib.admin",
+    "django.contrib.auth",
+    "django.contrib.contenttypes",
+    "django.contrib.sites",
+    "django.contrib.staticfiles",
+    "django.contrib.messages",
+    "django.contrib.humanize",
+    "blocks",
+    "channels",
+    "channels.delay",
+    "corsheaders",
+    "django_nvd3",
 ]
 
 SESSION_COOKIE_DOMAIN = None
 
 TENANT_LIMIT_SET_CALLS = True
 
-INSTALLED_APPS = SHARED_APPS + list(app for app in TENANT_APPS if app not in SHARED_APPS)
+INSTALLED_APPS = SHARED_APPS + list(
+    app for app in TENANT_APPS if app not in SHARED_APPS
+)
 
-TENANT_MODEL = 'daio.Chain'
+TENANT_MODEL = "daio.Chain"
 
-MEDIA_ROOT = '/data/media'
-MEDIA_URL = '/media/'
-DEFAULT_FILE_STORAGE = 'daio.storages.DaioStorage'
+MEDIA_ROOT = "/data/media"
+MEDIA_URL = "/media/"
+DEFAULT_FILE_STORAGE = "daio.storages.DaioStorage"
 
 AWS_QUERYSTRING_AUTH = False
 
 MIDDLEWARE = [
-    'tenant_schemas.middleware.TenantMiddleware',
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    #'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    "tenant_schemas.middleware.TenantMiddleware",
+    "django.middleware.security.SecurityMiddleware",
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "corsheaders.middleware.CorsMiddleware",
+    "django.middleware.common.CommonMiddleware",
+    "django.middleware.csrf.CsrfViewMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.auth.middleware.SessionAuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+    "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = 'daio.urls'
+ROOT_URLCONF = "daio.urls"
 
 TEMPLATES = [
     {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "DIRS": [],
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.debug",
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
 ]
 
-WSGI_APPLICATION = 'daio.wsgi.application'
+WSGI_APPLICATION = "daio.wsgi.application"
 
 
 # Database
 # https://docs.djangoproject.com/en/1.9/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'tenant_schemas.postgresql_backend',
-        'CONN_MAX_AGE': 0
-    }
+    "default": {"ENGINE": "tenant_schemas.postgresql_backend", "CONN_MAX_AGE": 0}
 }
 
-DATABASE_ROUTERS = (
-    'tenant_schemas.routers.TenantSyncRouter',
-)
+DATABASE_ROUTERS = ("tenant_schemas.routers.TenantSyncRouter",)
 
 # Password validation
 # https://docs.djangoproject.com/en/1.9/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator",
     },
     {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",
     },
 ]
 
@@ -145,9 +142,9 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/1.9/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
+LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = "UTC"
 
 USE_I18N = True
 
@@ -161,11 +158,11 @@ SITE_ID = 1
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
-STATIC_URL = '/static/'
+STATIC_URL = "/static/"
 
 REST_FRAMEWORK = {
-    'DEFAULT_PERMISSION_CLASSES': ('rest_framework.permissions.IsAdminUser',),
-    'PAGE_SIZE': 10
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAdminUser",),
+    "PAGE_SIZE": 10,
 }
 
 # Channels
@@ -173,7 +170,7 @@ CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "asgi_redis.RedisChannelLayer",
         "CONFIG": {
-            "hosts": [os.environ.get('REDIS_URL', 'redis://localhost:6379')],
+            "hosts": [os.environ.get("REDIS_URL", "redis://localhost:6379")],
             "prefix": "daio:",
             "capacity": 5000,
             "expiry": 600,
@@ -183,51 +180,47 @@ CHANNEL_LAYERS = {
 }
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'filters': {
-        'tenant_context': {
-            '()': 'tenant_schemas.log.TenantContextFilter'
+    "version": 1,
+    "disable_existing_loggers": False,
+    "filters": {
+        "tenant_context": {"()": "tenant_schemas.log.TenantContextFilter"},
+    },
+    "formatters": {
+        "dated": {
+            "format": "[%(schema_name)s] %(asctime)s "
+            "[%(levelname)s] (%(funcName)s) %(message)s",
         },
     },
-    'formatters': {
-        'dated': {
-            'format': '[%(schema_name)s] %(asctime)s '
-                      '[%(levelname)s] (%(funcName)s) %(message)s',
+    "handlers": {
+        "console": {
+            "filters": ["tenant_context"],
+            "class": "logging.StreamHandler",
+            "formatter": "dated",
         },
     },
-    'handlers': {
-        'console': {
-            'filters': ['tenant_context'],
-            'class': 'logging.StreamHandler',
-            'formatter': 'dated',
+    "loggers": {
+        "alerts": {
+            "handlers": ["console"],
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
         },
-    },
-    'loggers': {
-        'alerts': {
-            'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        "blocks": {
+            "handlers": ["console"],
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
         },
-        'blocks': {
-            'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
-        },
-        'charts': {
-            'handlers': ['console'],
-            'level': os.getenv('DJANGO_LOG_LEVEL', 'INFO'),
+        "charts": {
+            "handlers": ["console"],
+            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
         },
     },
 }
 
 STATICFILES_FINDERS = [
-    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
 
-STATICFILES_STORAGE = 'daio.storages.DaioStorage'
+STATICFILES_STORAGE = "daio.storages.DaioStorage"
 
-MESSAGE_TAGS = {
-    messages.ERROR: 'danger'
-}
+MESSAGE_TAGS = {messages.ERROR: "danger"}
 
 # CACHES = {
 #     'default': {
@@ -238,10 +231,8 @@ MESSAGE_TAGS = {
 
 CACHE_COUNT_TIMEOUT = 60  # seconds, not too long.
 CACHE_MACHINE_USE_REDIS = True
-REDIS_BACKEND = 'redis://localhost:6379'
+REDIS_BACKEND = "redis://localhost:6379"
 
 APPEND_SLASH = False
 
-RPC_ALWAYS_LIST = [
-    'sendrawtransaction'
-]
+RPC_ALWAYS_LIST = ["sendrawtransaction"]

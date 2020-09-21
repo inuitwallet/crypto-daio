@@ -8,33 +8,33 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('daio', '0011_coin_decimal_places'),
-        ('blocks', '0054_address_coin'),
+        ("daio", "0011_coin_decimal_places"),
+        ("blocks", "0054_address_coin"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='activeparkrate',
-            unique_together=set([('block', 'coin')]),
+            name="activeparkrate",
+            unique_together=set([("block", "coin")]),
         ),
         migrations.AlterUniqueTogether(
-            name='custodianvote',
-            unique_together=set([('block', 'address', 'amount')]),
+            name="custodianvote",
+            unique_together=set([("block", "address", "amount")]),
         ),
         migrations.AlterUniqueTogether(
-            name='feesvote',
-            unique_together=set([('block', 'coin', 'fee')]),
+            name="feesvote",
+            unique_together=set([("block", "coin", "fee")]),
         ),
         migrations.AlterUniqueTogether(
-            name='motionvote',
-            unique_together=set([('block', 'hash')]),
+            name="motionvote",
+            unique_together=set([("block", "hash")]),
         ),
         migrations.AlterUniqueTogether(
-            name='parkrate',
-            unique_together=set([('blocks', 'rate')]),
+            name="parkrate",
+            unique_together=set([("blocks", "rate")]),
         ),
         migrations.AlterUniqueTogether(
-            name='parkratevote',
-            unique_together=set([('block', 'coin')]),
+            name="parkratevote",
+            unique_together=set([("block", "coin")]),
         ),
     ]

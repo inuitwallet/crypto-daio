@@ -9,23 +9,23 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0059_block_amount_parked'),
+        ("blocks", "0059_block_amount_parked"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='block',
-            name='park_rates',
+            model_name="block",
+            name="park_rates",
             field=django.contrib.postgres.fields.jsonb.JSONField(default=list),
         ),
         migrations.AddField(
-            model_name='block',
-            name='vote',
+            model_name="block",
+            name="vote",
             field=django.contrib.postgres.fields.jsonb.JSONField(default=dict),
         ),
         migrations.AlterField(
-            model_name='block',
-            name='amount_parked',
+            model_name="block",
+            name="amount_parked",
             field=django.contrib.postgres.fields.jsonb.JSONField(default=dict),
         ),
     ]

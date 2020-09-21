@@ -8,17 +8,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('daio', '0006_coin_magic_byte'),
+        ("daio", "0006_coin_magic_byte"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='coin',
-            options={'ordering': ['index']},
+            name="coin",
+            options={"ordering": ["index"]},
         ),
         migrations.AddField(
-            model_name='coin',
-            name='index',
+            model_name="coin",
+            name="index",
             field=models.IntegerField(default=0),
         ),
     ]

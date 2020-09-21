@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('daio', '0005_auto_20170504_1450'),
+        ("daio", "0005_auto_20170504_1450"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='coin',
-            name='magic_byte',
+            model_name="coin",
+            name="magic_byte",
             field=models.IntegerField(default=0),
             preserve_default=False,
         ),

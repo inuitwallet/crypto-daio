@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0023_auto_20170422_2026'),
+        ("blocks", "0023_auto_20170422_2026"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='txinput',
-            name='sequence',
+            model_name="txinput",
+            name="sequence",
             field=models.BigIntegerField(blank=True, default=4294967295),
         ),
     ]

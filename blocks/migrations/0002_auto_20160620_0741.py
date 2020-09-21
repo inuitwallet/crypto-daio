@@ -8,23 +8,23 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0001_initial'),
+        ("blocks", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='txoutput',
-            name='script_pub_key_asm',
+            model_name="txoutput",
+            name="script_pub_key_asm",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AlterField(
-            model_name='txoutput',
-            name='script_pub_key_hex',
+            model_name="txoutput",
+            name="script_pub_key_hex",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AlterField(
-            model_name='txoutput',
-            name='script_pub_key_type',
+            model_name="txoutput",
+            name="script_pub_key_type",
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
     ]

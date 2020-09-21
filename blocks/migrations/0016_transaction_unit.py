@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0015_auto_20161128_2135'),
+        ("blocks", "0015_auto_20161128_2135"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='transaction',
-            name='unit',
+            model_name="transaction",
+            name="unit",
             field=models.CharField(blank=True, max_length=15, null=True),
         ),
     ]

@@ -8,35 +8,45 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0005_auto_20160620_2019'),
+        ("blocks", "0005_auto_20160620_2019"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='transaction',
-            name='block',
+            model_name="transaction",
+            name="block",
         ),
         migrations.RemoveField(
-            model_name='txinput',
-            name='transaction',
+            model_name="txinput",
+            name="transaction",
         ),
         migrations.RemoveField(
-            model_name='txoutput',
-            name='transaction',
+            model_name="txoutput",
+            name="transaction",
         ),
         migrations.AddField(
-            model_name='block',
-            name='transactions',
-            field=models.ManyToManyField(related_name='transactions', related_query_name='transaction', to='blocks.Transaction'),
+            model_name="block",
+            name="transactions",
+            field=models.ManyToManyField(
+                related_name="transactions",
+                related_query_name="transaction",
+                to="blocks.Transaction",
+            ),
         ),
         migrations.AddField(
-            model_name='transaction',
-            name='inputs',
-            field=models.ManyToManyField(related_name='inputs', related_query_name='input', to='blocks.TxInput'),
+            model_name="transaction",
+            name="inputs",
+            field=models.ManyToManyField(
+                related_name="inputs", related_query_name="input", to="blocks.TxInput"
+            ),
         ),
         migrations.AddField(
-            model_name='transaction',
-            name='outputs',
-            field=models.ManyToManyField(related_name='outputs', related_query_name='output', to='blocks.TxOutput'),
+            model_name="transaction",
+            name="outputs",
+            field=models.ManyToManyField(
+                related_name="outputs",
+                related_query_name="output",
+                to="blocks.TxOutput",
+            ),
         ),
     ]

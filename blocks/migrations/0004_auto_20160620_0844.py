@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0003_auto_20160620_0842'),
+        ("blocks", "0003_auto_20160620_0842"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='block',
-            name='height',
+            model_name="block",
+            name="height",
             field=models.BigIntegerField(blank=True, null=True, unique=True),
         ),
     ]

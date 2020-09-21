@@ -8,14 +8,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0050_networkfund'),
+        ("blocks", "0050_networkfund"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='networkfund',
-            name='name',
-            field=models.CharField(default='', max_length=255),
+            model_name="networkfund",
+            name="name",
+            field=models.CharField(default="", max_length=255),
             preserve_default=False,
         ),
     ]

@@ -8,29 +8,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0029_auto_20170426_0746'),
+        ("blocks", "0029_auto_20170426_0746"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='transaction',
-            options={'ordering': ['index']},
+            name="transaction",
+            options={"ordering": ["index"]},
         ),
         migrations.AlterModelOptions(
-            name='txinput',
-            options={'ordering': ['-index']},
+            name="txinput",
+            options={"ordering": ["-index"]},
         ),
         migrations.AlterModelOptions(
-            name='txoutput',
-            options={'ordering': ['-index']},
+            name="txoutput",
+            options={"ordering": ["-index"]},
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='tx_id',
+            model_name="transaction",
+            name="tx_id",
             field=models.CharField(max_length=610, unique=True),
         ),
         migrations.AlterUniqueTogether(
-            name='txoutput',
-            unique_together=set([('transaction', 'index')]),
+            name="txoutput",
+            unique_together=set([("transaction", "index")]),
         ),
     ]

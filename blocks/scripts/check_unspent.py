@@ -1,7 +1,8 @@
 import django
-django.setup()
 
 from blocks.models import TxOutput
+
+django.setup()
 
 
 def main():
@@ -10,5 +11,6 @@ def main():
         output.is_unspent = output.unspent
         output.save()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

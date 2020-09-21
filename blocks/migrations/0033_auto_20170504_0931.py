@@ -8,28 +8,30 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0032_auto_20170430_1941'),
+        ("blocks", "0032_auto_20170430_1941"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='address',
-            name='address',
+            model_name="address",
+            name="address",
             field=models.CharField(db_index=True, max_length=610, unique=True),
         ),
         migrations.AlterField(
-            model_name='block',
-            name='hash',
+            model_name="block",
+            name="hash",
             field=models.CharField(db_index=True, max_length=610, unique=True),
         ),
         migrations.AlterField(
-            model_name='block',
-            name='height',
-            field=models.BigIntegerField(blank=True, db_index=True, null=True, unique=True),
+            model_name="block",
+            name="height",
+            field=models.BigIntegerField(
+                blank=True, db_index=True, null=True, unique=True
+            ),
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='tx_id',
+            model_name="transaction",
+            name="tx_id",
             field=models.CharField(db_index=True, max_length=610, unique=True),
         ),
     ]

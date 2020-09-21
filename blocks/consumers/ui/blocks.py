@@ -1,4 +1,5 @@
 import json
+
 from django.template.loader import render_to_string
 
 from blocks.models import Block, TxOutput
@@ -10,26 +11,22 @@ def send_transactions(block, message):
 
     if transactions.count() > 0:
         message.reply_channel.send(
-            {'text': json.dumps({'message_type': 'has_transactions'})},
-            immediately=True
+            {"text": json.dumps({"message_type": "has_transactions"})}, immediately=True
         )
 
     for tx in transactions:
         message.reply_channel.send(
             {
-                'text': json.dumps(
+                "text": json.dumps(
                     {
-                        'message_type': 'block_transaction',
-                        'html': render_to_string(
-                            'explorer/fragments/transaction.html',
-                            {
-                                'tx': tx
-                            }
-                        )
+                        "message_type": "block_transaction",
+                        "html": render_to_string(
+                            "explorer/fragments/transaction.html", {"tx": tx}
+                        ),
                     }
                 )
             },
-            immediately=True
+            immediately=True,
         )
 
 
@@ -39,8 +36,7 @@ def send_custodial_grant_votes(block, message):
 
     if custodian_votes.count() > 0:
         message.reply_channel.send(
-            {'text': json.dumps({'message_type': 'has_grants'})},
-            immediately=True
+            {"text": json.dumps({"message_type": "has_grants"})}, immediately=True
         )
 
     for grant in custodian_votes:
@@ -58,23 +54,23 @@ def send_custodial_grant_votes(block, message):
 
         message.reply_channel.send(
             {
-                'text': json.dumps(
+                "text": json.dumps(
                     {
-                        'message_type': 'block_grant',
-                        'html': render_to_string(
-                            'explorer/fragments/block_grant.html',
+                        "message_type": "block_grant",
+                        "html": render_to_string(
+                            "explorer/fragments/block_grant.html",
                             {
-                                'grant': {
-                                    'address': grant.address.address,
-                                    'amount': grant.amount,
-                                    'granted': granted
+                                "grant": {
+                                    "address": grant.address.address,
+                                    "amount": grant.amount,
+                                    "granted": granted,
                                 }
-                            }
-                        )
+                            },
+                        ),
                     }
                 )
             },
-            immediately=True
+            immediately=True,
         )
 
 
@@ -83,90 +79,83 @@ def send_motion_votes(block, message):
 
     if motion_votes.count() > 0:
         message.reply_channel.send(
-            {'text': json.dumps({'message_type': 'has_motions'})},
-            immediately=True
+            {"text": json.dumps({"message_type": "has_motions"})}, immediately=True
         )
 
     for motion in motion_votes:
         message.reply_channel.send(
             {
-                'text': json.dumps(
+                "text": json.dumps(
                     {
-                        'message_type': 'block_motion',
-                        'html': render_to_string(
-                            'explorer/fragments/block_motion.html',
+                        "message_type": "block_motion",
+                        "html": render_to_string(
+                            "explorer/fragments/block_motion.html",
                             {
-                                'motion': {
-                                    'hash': motion.hash,
+                                "motion": {
+                                    "hash": motion.hash,
                                 }
-                            }
-                        )
+                            },
+                        ),
                     }
                 )
             },
-            immediately=True
+            immediately=True,
         )
 
 
 def send_park_rate_votes(block, message):
-    park_rate_votes = block.parkratevote_set.all().order_by('coin__index')
+    park_rate_votes = block.parkratevote_set.all().order_by("coin__index")
 
     if park_rate_votes.count() > 0:
         message.reply_channel.send(
-            {'text': json.dumps({'message_type': 'has_park_rates'})},
-            immediately=True
+            {"text": json.dumps({"message_type": "has_park_rates"})}, immediately=True
         )
 
     for park_rate_vote in park_rate_votes:
         message.reply_channel.send(
             {
-                'text': json.dumps(
+                "text": json.dumps(
                     {
-                        'message_type': 'block_park_rate',
-                        'html': render_to_string(
-                            'explorer/fragments/block_park_rate.html',
+                        "message_type": "block_park_rate",
+                        "html": render_to_string(
+                            "explorer/fragments/block_park_rate.html",
                             {
-                                'park_rate': park_rate_vote,
-
-                            }
-                        )
+                                "park_rate": park_rate_vote,
+                            },
+                        ),
                     }
                 )
             },
-            immediately=True
+            immediately=True,
         )
 
 
 def send_fees_votes(block, message):
-    fees_votes = block.feesvote_set.all().order_by('coin__index')
+    fees_votes = block.feesvote_set.all().order_by("coin__index")
 
     if fees_votes.count() > 0:
         message.reply_channel.send(
-            {'text': json.dumps({'message_type': 'has_fees'})},
-            immediately=True
+            {"text": json.dumps({"message_type": "has_fees"})}, immediately=True
         )
 
     for fees in fees_votes:
         message.reply_channel.send(
             {
-                'text': json.dumps(
+                "text": json.dumps(
                     {
-                        'message_type': 'block_fees',
-                        'html': render_to_string(
-                            'explorer/fragments/block_fees.html',
-                            {
-                                'fees': fees
-                            }
-                        )
+                        "message_type": "block_fees",
+                        "html": render_to_string(
+                            "explorer/fragments/block_fees.html", {"fees": fees}
+                        ),
                     }
                 )
             },
-            immediately=True
+            immediately=True,
         )
 
 
 def get_block_details(message_dict, message):
-    block_hash = message_dict['stream']
+    block_hash = message_dict["stream"]
 
     try:
         block = Block.objects.get(hash=block_hash)
@@ -175,8 +164,7 @@ def get_block_details(message_dict, message):
 
     # clear the existing details
     message.reply_channel.send(
-        {'text': json.dumps({'message_type': 'clear_block_details'})},
-        immediately=True
+        {"text": json.dumps({"message_type": "clear_block_details"})}, immediately=True
     )
 
     send_transactions(block, message)
@@ -188,38 +176,32 @@ def get_block_details(message_dict, message):
 
 def get_next_blocks(message, last_height):
     for block in Block.objects.filter(
-        height__lt=last_height,
-        height__gte=last_height-50
-    ).order_by(
-        '-height'
-    ):
+        height__lt=last_height, height__gte=last_height - 50
+    ).order_by("-height"):
         message.reply_channel.send(
-            {'text': json.dumps(
-                {
-                    'message_type': 'new_block',
-                    'html': render_to_string(
-                        'explorer/fragments/full_block.html',
-                        {'block': block}
-                    )
-                }
-            )}
+            {
+                "text": json.dumps(
+                    {
+                        "message_type": "new_block",
+                        "html": render_to_string(
+                            "explorer/fragments/full_block.html", {"block": block}
+                        ),
+                    }
+                )
+            }
         )
 
 
 def get_latest_blocks(message):
-    latest_blocks = Block.objects.exclude(
-        height__isnull=True
-    ).order_by(
-        '-height'
-    )[:50]
+    latest_blocks = Block.objects.exclude(height__isnull=True).order_by("-height")[:50]
 
     message.reply_channel.send(
-        {'text': json.dumps(
-            {
-                'message_type': 'latest_blocks',
-                'message': [
-                    block.serialize() for block in latest_blocks
-                ]
-            }
-        )}
+        {
+            "text": json.dumps(
+                {
+                    "message_type": "latest_blocks",
+                    "message": [block.serialize() for block in latest_blocks],
+                }
+            )
+        }
     )

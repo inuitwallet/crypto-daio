@@ -3,6 +3,7 @@
 from __future__ import unicode_literals
 
 import datetime
+
 from django.db import migrations, models
 from django.utils.timezone import utc
 
@@ -10,13 +11,15 @@ from django.utils.timezone import utc
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0046_orphan'),
+        ("blocks", "0046_orphan"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='orphan',
-            name='date_time',
-            field=models.DateTimeField(default=datetime.datetime(2017, 8, 28, 22, 2, 33, 972161, tzinfo=utc)),
+            model_name="orphan",
+            name="date_time",
+            field=models.DateTimeField(
+                default=datetime.datetime(2017, 8, 28, 22, 2, 33, 972161, tzinfo=utc)
+            ),
         ),
     ]

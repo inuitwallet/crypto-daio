@@ -8,13 +8,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0011_auto_20161105_2214'),
+        ("blocks", "0011_auto_20161105_2214"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='txoutput',
-            name='addresses',
-            field=models.ManyToManyField(related_name='output_addresses', related_query_name='tx_output', to='blocks.Address'),
+            model_name="txoutput",
+            name="addresses",
+            field=models.ManyToManyField(
+                related_name="output_addresses",
+                related_query_name="tx_output",
+                to="blocks.Address",
+            ),
         ),
     ]

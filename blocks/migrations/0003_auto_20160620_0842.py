@@ -8,18 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0002_auto_20160620_0741'),
+        ("blocks", "0002_auto_20160620_0741"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='block',
-            name='hash',
+            model_name="block",
+            name="hash",
             field=models.CharField(max_length=255, unique=True),
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='tx_id',
+            model_name="transaction",
+            name="tx_id",
             field=models.CharField(max_length=255, unique=True),
         ),
     ]

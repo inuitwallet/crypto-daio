@@ -4,20 +4,22 @@ from django.shortcuts import redirect
 from django.urls import reverse
 from django.views import View
 
-from blocks.models import Block, Transaction, Address
+from blocks.models import Address, Block, Transaction
 
 
 class Search(View):
     @staticmethod
     def get(reqquest):
-        return redirect(reverse('index'))
+        return redirect(reverse("index"))
 
     @staticmethod
     def post(request):
-        search_term = request.POST.get('search', '').strip()
-        if search_term == '':
-            messages.add_message(request, messages.ERROR, 'You submitted a blank search')
-            return redirect(request.META.get('HTTP_REFERER'))
+        search_term = request.POST.get("search", "").strip()
+        if search_term == "":
+            messages.add_message(
+                request, messages.ERROR, "You submitted a blank search"
+            )
+            return redirect(request.META.get("HTTP_REFERER"))
 
         # we have a search term.
         # we need to match it to a block height, a block has, a transaction id or
@@ -27,11 +29,9 @@ class Search(View):
         try:
             block = Block.objects.get(height=search_term)
             messages.add_message(
-                request,
-                messages.SUCCESS,
-                'Found Block {}'.format(block.hash[:10])
+                request, messages.SUCCESS, "Found Block {}".format(block.hash[:10])
             )
-            return redirect(reverse('block', kwargs={'block_height': block.height}))
+            return redirect(reverse("block", kwargs={"block_height": block.height}))
         except (Block.DoesNotExist, ValueError):
             pass
 
@@ -39,11 +39,9 @@ class Search(View):
         try:
             block = Block.objects.get(hash=search_term)
             messages.add_message(
-                request,
-                messages.SUCCESS,
-                'Found Block {}'.format(block.height)
+                request, messages.SUCCESS, "Found Block {}".format(block.height)
             )
-            return redirect(reverse('block', kwargs={'block_height': block.height}))
+            return redirect(reverse("block", kwargs={"block_height": block.height}))
         except Block.DoesNotExist:
             pass
 
@@ -53,12 +51,11 @@ class Search(View):
             messages.add_message(
                 request,
                 messages.SUCCESS,
-                'Transaction {}... found in Block {}'.format(
-                    search_term[:10],
-                    tx.block.height
-                )
+                "Transaction {}... found in Block {}".format(
+                    search_term[:10], tx.block.height
+                ),
             )
-            return redirect(reverse('block', kwargs={'block_height': tx.block.height}))
+            return redirect(reverse("block", kwargs={"block_height": tx.block.height}))
         except Transaction.DoesNotExist:
             pass
 
@@ -66,11 +63,9 @@ class Search(View):
         try:
             address = Address.objects.get(address=search_term)
             messages.add_message(
-                request,
-                messages.SUCCESS,
-                'Found Address {}'.format(search_term)
+                request, messages.SUCCESS, "Found Address {}".format(search_term)
             )
-            return redirect(reverse('address', kwargs={'address': address}))
+            return redirect(reverse("address", kwargs={"address": address}))
         except Address.DoesNotExist:
             pass
 
@@ -78,6 +73,6 @@ class Search(View):
         messages.add_message(
             request,
             messages.ERROR,
-            'Nothing matched your search term: {}'.format(search_term)
+            "Nothing matched your search term: {}".format(search_term),
         )
-        return redirect(request.META.get('HTTP_REFERER'))
+        return redirect(request.META.get("HTTP_REFERER"))

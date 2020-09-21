@@ -8,33 +8,33 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0019_auto_20161210_1937'),
+        ("blocks", "0019_auto_20161210_1937"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='txoutput',
-            name='script_pub_key_asm',
+            model_name="txoutput",
+            name="script_pub_key_asm",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='txoutput',
-            name='script_pub_key_hex',
+            model_name="txoutput",
+            name="script_pub_key_hex",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='txoutput',
-            name='script_pub_key_req_sig',
+            model_name="txoutput",
+            name="script_pub_key_req_sig",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='txoutput',
-            name='script_pub_key_type',
+            model_name="txoutput",
+            name="script_pub_key_type",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AlterField(
-            model_name='txoutput',
-            name='value',
+            model_name="txoutput",
+            name="value",
             field=models.BigIntegerField(default=0),
         ),
     ]

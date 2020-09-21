@@ -8,18 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('daio', '0004_auto_20170504_1436'),
+        ("daio", "0004_auto_20170504_1436"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='coin',
-            name='rpc_port',
+            model_name="coin",
+            name="rpc_port",
             field=models.PositiveIntegerField(default=1),
         ),
         migrations.AlterField(
-            model_name='chain',
-            name='rpc_port',
+            model_name="chain",
+            name="rpc_port",
             field=models.PositiveIntegerField(default=1),
         ),
     ]

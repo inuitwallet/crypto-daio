@@ -8,21 +8,29 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0035_auto_20170504_1200'),
+        ("blocks", "0035_auto_20170504_1200"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Info',
+            name="Info",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('unit', models.CharField(max_length=255)),
-                ('max_height', models.BigIntegerField()),
-                ('money_supply', models.DecimalField(decimal_places=4, max_digits=16)),
-                ('total_parked', models.DecimalField(decimal_places=4, max_digits=16)),
-                ('connections', models.BigIntegerField()),
-                ('difficulty', models.DecimalField(decimal_places=10, max_digits=16)),
-                ('pay_tx_fee', models.DecimalField(decimal_places=4, max_digits=16)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("unit", models.CharField(max_length=255)),
+                ("max_height", models.BigIntegerField()),
+                ("money_supply", models.DecimalField(decimal_places=4, max_digits=16)),
+                ("total_parked", models.DecimalField(decimal_places=4, max_digits=16)),
+                ("connections", models.BigIntegerField()),
+                ("difficulty", models.DecimalField(decimal_places=10, max_digits=16)),
+                ("pay_tx_fee", models.DecimalField(decimal_places=4, max_digits=16)),
             ],
         ),
     ]

@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('daio', '0009_chain_logo'),
+        ("daio", "0009_chain_logo"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='chain',
-            name='logo',
-            field=models.FileField(max_length=255, upload_to='logo/'),
+            model_name="chain",
+            name="logo",
+            field=models.FileField(max_length=255, upload_to="logo/"),
         ),
     ]

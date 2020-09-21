@@ -10,13 +10,10 @@ class Chain(TenantMixin):
     )
     rpc_user = models.CharField(max_length=255)
     rpc_password = models.CharField(max_length=255)
-    rpc_host = models.GenericIPAddressField(default='192.168.0.1')
+    rpc_host = models.GenericIPAddressField(default="192.168.0.1")
     rpc_port = models.PositiveIntegerField(default=1)
     rpc_active = models.BooleanField(default=True)
-    logo = models.FileField(
-        upload_to='logo/',
-        max_length=255
-    )
+    logo = models.FileField(upload_to="logo/", max_length=255)
 
     def __str__(self):
         return self.name
@@ -28,18 +25,15 @@ class Coin(models.Model):
     unit_code = models.CharField(max_length=255)
     chain = models.ForeignKey(
         Chain,
-        related_name='coins',
-        related_query_name='coin',
+        related_name="coins",
+        related_query_name="coin",
         db_index=True,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
     )
     rpc_port = models.PositiveIntegerField(default=1)
     magic_byte = models.IntegerField()
-    vout_n_value = models.CharField(max_length=255, default='ffffffff')
-    index = models.IntegerField(
-        default=0,
-        db_index=True
-    )
+    vout_n_value = models.CharField(max_length=255, default="ffffffff")
+    index = models.IntegerField(default=0, db_index=True)
     decimal_places = models.PositiveIntegerField(default=8)
     # address_prefix = models.CharField(
     #     max_length=10,
@@ -50,4 +44,4 @@ class Coin(models.Model):
         return self.code
 
     class Meta:
-        ordering = ['index']
+        ordering = ["index"]

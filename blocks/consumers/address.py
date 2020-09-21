@@ -1,27 +1,28 @@
 import logging
 
-from blocks.models import Address, TxOutput
 from tenant_schemas.utils import schema_context
+
+from blocks.models import Address, TxOutput
 
 logger = logging.getLogger(__name__)
 
 
 def parse_address(message):
-    with schema_context(message.get('chain')):
-        addr = message.get('address')
+    with schema_context(message.get("chain")):
+        addr = message.get("address")
 
         if not addr:
-            logger.error('no address passed in message')
+            logger.error("no address passed in message")
             return
 
         try:
-            tx_output = TxOutput.objects.get(pk=message.get('tx_output'))
+            tx_output = TxOutput.objects.get(pk=message.get("tx_output"))
         except TxOutput.DoesNotExist:
-            logger.error('tx_output not found: {}'.format(message.get('tx_output')))
+            logger.error("tx_output not found: {}".format(message.get("tx_output")))
             return
 
         address, created = Address.objects.get_or_create(
-           address=addr,
+            address=addr,
         )
 
         if created:
@@ -34,6 +35,5 @@ def parse_address(message):
 
 
 def get_address_balance(message):
-    with schema_context(message.get('chain')):
-        addr = message.get('address')
-
+    with schema_context(message.get("chain")):
+        addr = message.get("address")

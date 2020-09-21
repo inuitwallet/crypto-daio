@@ -8,21 +8,21 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0010_auto_20161103_0840'),
+        ("blocks", "0010_auto_20161103_0840"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='block',
-            name='next_block_hash',
+            model_name="block",
+            name="next_block_hash",
         ),
         migrations.RemoveField(
-            model_name='block',
-            name='previous_block_hash',
+            model_name="block",
+            name="previous_block_hash",
         ),
         migrations.AddField(
-            model_name='txoutput',
-            name='is_unspent',
+            model_name="txoutput",
+            name="is_unspent",
             field=models.BooleanField(default=True),
         ),
     ]

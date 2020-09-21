@@ -7,4 +7,4 @@ class AngularExplorer(View):
     @staticmethod
     def get(request):
         chain = connection.tenant
-        return render(request, 'explorer-angular.html', {'chain': chain})
+        return render(request, "explorer-angular.html", {"chain": chain})

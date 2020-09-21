@@ -8,26 +8,34 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0044_txoutput_park_duration'),
+        ("blocks", "0044_txoutput_park_duration"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Peer',
+            name="Peer",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('address', models.GenericIPAddressField(unique=True)),
-                ('port', models.IntegerField()),
-                ('services', models.IntegerField()),
-                ('last_send', models.DateTimeField()),
-                ('last_receive', models.DateTimeField()),
-                ('connection_time', models.DateTimeField()),
-                ('version', models.IntegerField()),
-                ('sub_version', models.CharField(max_length=255)),
-                ('inbound', models.BooleanField()),
-                ('release_time', models.IntegerField()),
-                ('height', models.IntegerField()),
-                ('ban_score', models.IntegerField()),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("address", models.GenericIPAddressField(unique=True)),
+                ("port", models.IntegerField()),
+                ("services", models.IntegerField()),
+                ("last_send", models.DateTimeField()),
+                ("last_receive", models.DateTimeField()),
+                ("connection_time", models.DateTimeField()),
+                ("version", models.IntegerField()),
+                ("sub_version", models.CharField(max_length=255)),
+                ("inbound", models.BooleanField()),
+                ("release_time", models.IntegerField()),
+                ("height", models.IntegerField()),
+                ("ban_score", models.IntegerField()),
             ],
         ),
     ]

@@ -8,14 +8,14 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0031_auto_20170430_0819'),
+        ("blocks", "0031_auto_20170430_0819"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='txinput',
-            name='coin_base',
-            field=models.CharField(blank=True, default='', max_length=610),
+            model_name="txinput",
+            name="coin_base",
+            field=models.CharField(blank=True, default="", max_length=610),
             preserve_default=False,
         ),
     ]

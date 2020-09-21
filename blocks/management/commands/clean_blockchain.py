@@ -11,8 +11,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         # delete blocks with no height
         deleted_blocks = Block.objects.filter(height__isnull=True).delete()
-        logger.info('Removed Blocks: {}'.format(deleted_blocks))
+        logger.info("Removed Blocks: {}".format(deleted_blocks))
 
         # delete transactions with no block
         deleted_transactions = Transaction.objects.filter(block__isnull=True).delete()
-        logger.info('Removed Txs: {}'.format(deleted_transactions))
+        logger.info("Removed Txs: {}".format(deleted_transactions))

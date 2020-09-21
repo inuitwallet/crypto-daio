@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0048_auto_20170828_2203'),
+        ("blocks", "0048_auto_20170828_2203"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='address',
-            name='network_owned',
+            model_name="address",
+            name="network_owned",
             field=models.BooleanField(default=False),
         ),
     ]

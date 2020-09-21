@@ -8,13 +8,13 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('daio', '0003_auto_20170504_1300'),
+        ("daio", "0003_auto_20170504_1300"),
     ]
 
     operations = [
         migrations.RenameField(
-            model_name='chain',
-            old_name='rcp_user',
-            new_name='rpc_user',
+            model_name="chain",
+            old_name="rcp_user",
+            new_name="rpc_user",
         ),
     ]

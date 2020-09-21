@@ -8,22 +8,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0022_auto_20170422_2016'),
+        ("blocks", "0022_auto_20170422_2016"),
     ]
 
     operations = [
-        migrations.RunSQL('SET CONSTRAINTS ALL IMMEDIATE',
-                          reverse_sql=migrations.RunSQL.noop),
-        migrations.AlterField(
-            model_name='txinput',
-            name='script_sig_asm',
-            field=models.TextField(blank=True, default=''),
+        migrations.RunSQL(
+            "SET CONSTRAINTS ALL IMMEDIATE", reverse_sql=migrations.RunSQL.noop
         ),
         migrations.AlterField(
-            model_name='txinput',
-            name='script_sig_hex',
-            field=models.TextField(blank=True, default=''),
+            model_name="txinput",
+            name="script_sig_asm",
+            field=models.TextField(blank=True, default=""),
         ),
-        migrations.RunSQL(migrations.RunSQL.noop,
-                          reverse_sql='SET CONSTRAINTS ALL IMMEDIATE'),
+        migrations.AlterField(
+            model_name="txinput",
+            name="script_sig_hex",
+            field=models.TextField(blank=True, default=""),
+        ),
+        migrations.RunSQL(
+            migrations.RunSQL.noop, reverse_sql="SET CONSTRAINTS ALL IMMEDIATE"
+        ),
     ]

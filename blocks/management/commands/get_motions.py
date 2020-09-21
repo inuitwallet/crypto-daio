@@ -12,47 +12,43 @@ logger = logging.getLogger(__name__)
 
 
 class Command(BaseCommand):
-
     def add_arguments(self, parser):
         parser.add_argument(
-            '-s',
-            '--start-height',
-            help='The block height to start the parse from',
-            dest='start_height',
-            default=0
+            "-s",
+            "--start-height",
+            help="The block height to start the parse from",
+            dest="start_height",
+            default=0,
         )
         parser.add_argument(
-            '-b',
-            '--block',
-            help='The block height to validate',
-            dest='block',
+            "-b",
+            "--block",
+            help="The block height to validate",
+            dest="block",
         )
         parser.add_argument(
-            '-l',
-            '--limit',
-            help='limit the number of blocks to process. useful in combination with -s',
-            dest='limit',
-            default=None
+            "-l",
+            "--limit",
+            help="limit the number of blocks to process. useful in combination with -s",
+            dest="limit",
+            default=None,
         )
 
     def handle(self, *args, **options):
-        if options['block']:
-            blocks = Block.objects.filter(height=options['block']).order_by('-height')
+        if options["block"]:
+            blocks = Block.objects.filter(height=options["block"]).order_by("-height")
         else:
             # no block specified so validate all blocks starting from start_height
-            blocks = Block.objects.filter(
-                height__gte=options['start_height']
-            ).order_by(
-                '-height'
+            blocks = Block.objects.filter(height__gte=options["start_height"]).order_by(
+                "-height"
             )
 
-        if options['limit']:
-            blocks = blocks[:int(options['limit'])]
+        if options["limit"]:
+            blocks = blocks[: int(options["limit"])]
 
         logger.info(
-            'getting motion votes for {} blocks starting from {}'.format(
-                blocks.count(),
-                blocks.first().height
+            "getting motion votes for {} blocks starting from {}".format(
+                blocks.count(), blocks.first().height
             )
         )
 
@@ -72,7 +68,7 @@ class Command(BaseCommand):
                         votes = MotionVote.objects.filter(
                             hash=vote.hash,
                             block__height__gte=max(block.height - 10000, 0),
-                            block__height__lte=block.height
+                            block__height__lte=block.height,
                         )
 
                         vote.blocks_percentage = (votes.count() / 10000) * 100
@@ -80,22 +76,20 @@ class Command(BaseCommand):
                         # calculate the ShareDays Destroyed percentage
                         total_sdd = Block.objects.filter(
                             height__gte=max(block.height - 10000, 0),
-                            height__lte=block.height
-                        ).aggregate(
-                            Sum('coinage_destroyed')
-                        )['coinage_destroyed__sum']
+                            height__lte=block.height,
+                        ).aggregate(Sum("coinage_destroyed"))["coinage_destroyed__sum"]
 
-                        voted_sdd = votes.aggregate(
-                            Sum('block__coinage_destroyed')
-                        )['block__coinage_destroyed__sum']
+                        voted_sdd = votes.aggregate(Sum("block__coinage_destroyed"))[
+                            "block__coinage_destroyed__sum"
+                        ]
 
                         vote.sdd_percentage = (voted_sdd / total_sdd) * 100
                         vote.save()
-                        logger.info('saved {}'.format(vote))
+                        logger.info("saved {}".format(vote))
 
-                logger.info('Got motion vote data for {} blocks'.format(total_blocks))
+                logger.info("Got motion vote data for {} blocks".format(total_blocks))
 
         except KeyboardInterrupt:
             pass
 
-        logger.info('Finished')
+        logger.info("Finished")

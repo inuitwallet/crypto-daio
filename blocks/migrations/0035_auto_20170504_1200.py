@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0034_auto_20170504_1141'),
+        ("blocks", "0034_auto_20170504_1141"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='transaction',
-            name='index',
+            model_name="transaction",
+            name="index",
             field=models.BigIntegerField(default=-1),
         ),
     ]

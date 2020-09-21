@@ -8,18 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0014_auto_20161127_1218'),
+        ("blocks", "0014_auto_20161127_1218"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='txinput',
-            name='script_sig_asm',
+            model_name="txinput",
+            name="script_sig_asm",
             field=models.TextField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='txinput',
-            name='script_sig_hex',
+            model_name="txinput",
+            name="script_sig_hex",
             field=models.TextField(blank=True, null=True),
         ),
     ]

@@ -8,14 +8,16 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('daio', '0008_coin_vout_n_value'),
+        ("daio", "0008_coin_vout_n_value"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='chain',
-            name='logo',
-            field=models.FileField(default='test', max_length=255, upload_to='chain/logo/'),
+            model_name="chain",
+            name="logo",
+            field=models.FileField(
+                default="test", max_length=255, upload_to="chain/logo/"
+            ),
             preserve_default=False,
         ),
     ]

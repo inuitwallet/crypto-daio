@@ -8,36 +8,36 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('daio', '0001_initial'),
+        ("daio", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='chain',
-            name='rcp_user',
-            field=models.CharField(default='', max_length=255),
+            model_name="chain",
+            name="rcp_user",
+            field=models.CharField(default="", max_length=255),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='chain',
-            name='rpc_host',
+            model_name="chain",
+            name="rpc_host",
             field=models.GenericIPAddressField(blank=True, null=True),
         ),
         migrations.AddField(
-            model_name='chain',
-            name='rpc_password',
-            field=models.CharField(default='', max_length=255),
+            model_name="chain",
+            name="rpc_password",
+            field=models.CharField(default="", max_length=255),
             preserve_default=False,
         ),
         migrations.AddField(
-            model_name='chain',
-            name='rpc_port',
+            model_name="chain",
+            name="rpc_port",
             field=models.PositiveIntegerField(default=0),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='chain',
-            name='name',
+            model_name="chain",
+            name="name",
             field=models.CharField(max_length=255, unique=True),
         ),
     ]

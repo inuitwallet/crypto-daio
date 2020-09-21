@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0024_auto_20170422_2030'),
+        ("blocks", "0024_auto_20170422_2030"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='txinput',
-            name='index',
+            model_name="txinput",
+            name="index",
             field=models.BigIntegerField(default=-1),
             preserve_default=False,
         ),

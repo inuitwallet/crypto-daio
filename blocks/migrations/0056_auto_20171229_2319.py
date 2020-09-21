@@ -8,18 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0055_auto_20171229_2018'),
+        ("blocks", "0055_auto_20171229_2018"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='feesvote',
-            name='fee',
+            model_name="feesvote",
+            name="fee",
             field=models.FloatField(default=0),
         ),
         migrations.AlterField(
-            model_name='parkrate',
-            name='rate',
+            model_name="parkrate",
+            name="rate",
             field=models.FloatField(default=0),
         ),
     ]

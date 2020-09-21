@@ -8,13 +8,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0043_auto_20170604_2120'),
+        ("blocks", "0043_auto_20170604_2120"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='txoutput',
-            name='park_duration',
+            model_name="txoutput",
+            name="park_duration",
             field=models.BigIntegerField(blank=True, null=True),
         ),
     ]

@@ -8,16 +8,24 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0045_peer'),
+        ("blocks", "0045_peer"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Orphan',
+            name="Orphan",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('hash', models.CharField(db_index=True, max_length=610, unique=True)),
-                ('date_time', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("hash", models.CharField(db_index=True, max_length=610, unique=True)),
+                ("date_time", models.DateTimeField(auto_now_add=True)),
             ],
         ),
     ]

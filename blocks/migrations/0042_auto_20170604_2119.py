@@ -8,17 +8,17 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0041_auto_20170528_0619'),
+        ("blocks", "0041_auto_20170528_0619"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='transaction',
-            name='unit',
+            model_name="transaction",
+            name="unit",
         ),
         migrations.AlterField(
-            model_name='transaction',
-            name='lock_time',
+            model_name="transaction",
+            name="lock_time",
             field=models.IntegerField(default=0),
         ),
     ]

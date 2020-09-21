@@ -6,13 +6,13 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('daio', '0012_auto_20191120_0750'),
+        ("daio", "0012_auto_20191120_0750"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='chain',
-            name='rpc_active',
+            model_name="chain",
+            name="rpc_active",
             field=models.BooleanField(default=True),
         ),
     ]

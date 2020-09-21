@@ -8,12 +8,12 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0030_auto_20170427_1018'),
+        ("blocks", "0030_auto_20170427_1018"),
     ]
 
     operations = [
         migrations.AlterUniqueTogether(
-            name='txinput',
-            unique_together=set([('transaction', 'index')]),
+            name="txinput",
+            unique_together=set([("transaction", "index")]),
         ),
     ]

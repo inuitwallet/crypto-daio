@@ -8,42 +8,42 @@ def get_var_int(raw_bytes):
     :param raw_bytes:
     :return:
     """
-    check_var_int = codecs.encode(raw_bytes[:1], 'hex')
-    if check_var_int == b'fd':
-        return int.from_bytes(raw_bytes[1:3], 'little'), 3
-    elif check_var_int == b'fe':
-        return int.from_bytes(raw_bytes[1:5], 'little'), 5
-    elif check_var_int == b'ff':
-        return int.from_bytes(raw_bytes[1:9], 'little'), 9
+    check_var_int = codecs.encode(raw_bytes[:1], "hex")
+    if check_var_int == b"fd":
+        return int.from_bytes(raw_bytes[1:3], "little"), 3
+    elif check_var_int == b"fe":
+        return int.from_bytes(raw_bytes[1:5], "little"), 5
+    elif check_var_int == b"ff":
+        return int.from_bytes(raw_bytes[1:9], "little"), 9
     else:
-        return int.from_bytes(raw_bytes[:1], 'little'), 1
+        return int.from_bytes(raw_bytes[:1], "little"), 1
 
 
 def get_var_int_bytes(decimal_number):
     """
-    given a decimal number return the byte sequence representing the varint 
-    :param decimal_number: 
-    :return: 
+    given a decimal number return the byte sequence representing the varint
+    :param decimal_number:
+    :return:
     """
     if decimal_number < 253:
-        return decimal_number.to_bytes(1, 'little')
+        return decimal_number.to_bytes(1, "little")
     if decimal_number <= 65535:
-        return codecs.decode('FD', 'hex') + decimal_number.to_bytes(2, 'little')
+        return codecs.decode("FD", "hex") + decimal_number.to_bytes(2, "little")
     if decimal_number <= 4294967295:
-        return codecs.decode('FE', 'hex') + decimal_number.to_bytes(4, 'little')
+        return codecs.decode("FE", "hex") + decimal_number.to_bytes(4, "little")
     else:
-        return codecs.decode('FF', 'hex') + decimal_number.to_bytes(8, 'little')
+        return codecs.decode("FF", "hex") + decimal_number.to_bytes(8, "little")
 
 
 def convert_to_satoshis(number):
     """
     given a number, ensure 4 dp of precision then form into an int
-    :param number: 
-    :return: 
+    :param number:
+    :return:
     """
     # split the number into the parts before and after the decimal point
-    parts = str(number).split('.')
+    parts = str(number).split(".")
     decimal_part = parts[1]
     while len(decimal_part) < 4:
-        decimal_part += '0'
-    return int('{}{}'.format(parts[0], decimal_part))
+        decimal_part += "0"
+    return int("{}{}".format(parts[0], decimal_part))

@@ -1,22 +1,20 @@
 from blocks.views.addresses import AddressDetailView
-from blocks.views.blocks import BlockDetailView, LatestBlocksList, AllBlocks
+from blocks.views.blocks import AllBlocks, BlockDetailView, LatestBlocksList
+from blocks.views.explorer_angular import AngularExplorer
+from blocks.views.health import HealthView
 from blocks.views.notify import Notify
 from blocks.views.search import Search
-from blocks.views.health import HealthView
 from blocks.views.votes import GrantView, MotionView
 
-from blocks.views.explorer_angular import AngularExplorer
-
 __all__ = [
-    'AddressDetailView',
-    'BlockDetailView',
-    'AllBlocks',
-    'LatestBlocksList',
-    'Notify',
-    'Search',
-    'HealthView',
-    'GrantView',
-    'MotionView',
-
-    'AngularExplorer'
+    "AddressDetailView",
+    "BlockDetailView",
+    "AllBlocks",
+    "LatestBlocksList",
+    "Notify",
+    "Search",
+    "HealthView",
+    "GrantView",
+    "MotionView",
+    "AngularExplorer",
 ]

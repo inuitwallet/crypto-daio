@@ -8,35 +8,32 @@ def get_exchange_balances(coin_object):
         r = requests.get(
             url=exchange_balance.api_url,
             headers={
-                'Authorization': 'Bearer {}'.format(
-                    exchange_balance.api_token
-                ),
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
+                "Authorization": "Bearer {}".format(exchange_balance.api_token),
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            },
         )
 
         try:
             query_data = r.json()
         except ValueError as e:
             print(
-                'Invalid response when querying data for {}: {}'.format(
-                    exchange_balance.api_url,
-                    e
+                "Invalid response when querying data for {}: {}".format(
+                    exchange_balance.api_url, e
                 )
             )
             continue
 
         time = 0
-        exchange_balance = {'exchange': exchange_balance.exchange, 'balance': 0}
+        exchange_balance = {"exchange": exchange_balance.exchange, "balance": 0}
 
         print(query_data)
 
-        for data_point in query_data[0].get('datapoints', []):
+        for data_point in query_data[0].get("datapoints", []):
             if int(data_point[1]) > time:
                 time = data_point[1]
                 if data_point[0]:
-                    exchange_balance['balance'] = data_point[0]
+                    exchange_balance["balance"] = data_point[0]
 
         exchange_balances.append(exchange_balance)
 

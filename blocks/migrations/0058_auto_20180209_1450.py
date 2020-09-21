@@ -8,18 +8,18 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('blocks', '0057_exchangebalance'),
+        ("blocks", "0057_exchangebalance"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='motionvote',
-            name='block_percentage',
+            model_name="motionvote",
+            name="block_percentage",
             field=models.FloatField(default=0),
         ),
         migrations.AddField(
-            model_name='motionvote',
-            name='sdd_percentage',
+            model_name="motionvote",
+            name="sdd_percentage",
             field=models.FloatField(default=0),
         ),
     ]
