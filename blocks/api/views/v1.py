@@ -270,7 +270,7 @@ class GetValidHashes(View):
         # data arrives in request.body
         logger.debug("getvalidhashes")
         sent_hashes = codecs.encode(request.body, "hex")
-        hash_list = [sent_hashes[i:i + 64] for i in range(0, len(sent_hashes), 64)]
+        hash_list = [sent_hashes[i : i + 64] for i in range(0, len(sent_hashes), 64)]
         start_height = None
         return_hash = b""
 

@@ -8,13 +8,6 @@ repos:
         types: [python]
         entry: pipenv run black --force-exclude
 
-      - id: flake8
-        name: flake8
-        stages: [commit]
-        language: system
-        types: [python]
-        entry: pipenv run flake8
-
       - id: isort
         name: isort
         stages: [commit]
