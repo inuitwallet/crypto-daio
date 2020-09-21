@@ -5,10 +5,12 @@ from channels.generic.websockets import WebsocketDemultiplexer
 from tenant_schemas.utils import get_tenant_model
 
 from blocks.consumers.angular_consumers import get_host
-from blocks.consumers.angular_consumers.block import (BlockConsumer,
-                                                      LatestBlocksConsumer,
-                                                      MoreBlocksConsumer,
-                                                      TransactionConsumer)
+from blocks.consumers.angular_consumers.block import (
+    BlockConsumer,
+    LatestBlocksConsumer,
+    MoreBlocksConsumer,
+    TransactionConsumer,
+)
 
 logger = logging.getLogger(__name__)
 

@@ -2,7 +2,9 @@ from channels import route, route_class
 
 from blocks.consumers.address import parse_address
 from blocks.consumers.angular_consumers.demultiplexers import (
-    BlockDemultiplexer, LatestBlocksDemultiplexer)
+    BlockDemultiplexer,
+    LatestBlocksDemultiplexer,
+)
 from blocks.consumers.block import check_block_hash, parse_block, repair_block
 from blocks.consumers.info import display_info
 from blocks.consumers.transaction import repair_transaction
