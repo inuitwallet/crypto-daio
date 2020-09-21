@@ -202,6 +202,8 @@ class Block(CachingMixin, models.Model):
 
             return True
         except Block.DoesNotExist:
+            # return False to show that no alteration took place
+            logger.info(f'No blocks found with hash {self.hash}')
             return False
 
     def save(self, *args, **kwargs):
@@ -221,6 +223,7 @@ class Block(CachingMixin, models.Model):
             if self.set_existing_block_height_if_found():
                 return
 
+        logger.info(f'Saving {self}')
         super().save(*args, **kwargs)
 
         if validate:
@@ -231,35 +234,41 @@ class Block(CachingMixin, models.Model):
                 logger.info(f'Sending {self} for repair')
                 self.send_for_repair()
             else:
-                # block is valid. validate the transactions too
-                for tx in self.transactions.all():
-                    if not tx.is_valid:
-                        try:
-                            Channel('repair_transaction').send({
-                                'chain': connection.tenant.schema_name,
-                                'tx_id': tx.tx_id
-                            })
-                        except BaseChannelLayer.ChannelFull:
-                            logger.error('CHANNEL FULL!')
+                logger.info(f'{self} is valid')
 
-        Group(
-            '{}_block'.format(connection.tenant.schema_name)
-        ).send(
-            {
-                'text': json.dumps(
-                    {
-                        'stream': 'block_update',
-                        'payload': {
-                            'hash': self.hash,
-                            'block': self.serialize(),
-                            'next_block': self.next_block.height if self.next_block else None,
-                            'previous_block': self.previous_block.height if self.previous_block else None,
+            # validate the transactions too
+            logger.info(f'Validating transactions for {self}')
+            for tx in self.transactions.all():
+                if not tx.is_valid:
+                    try:
+                        Channel('repair_transaction').send({
+                            'chain': connection.tenant.schema_name,
+                            'tx_id': tx.tx_id
+                        })
+                    except BaseChannelLayer.ChannelFull:
+                        logger.error('CHANNEL FULL!')
+
+        try:
+            Group(
+                '{}_block'.format(connection.tenant.schema_name)
+            ).send(
+                {
+                    'text': json.dumps(
+                        {
+                            'stream': 'block_update',
+                            'payload': {
+                                'hash': self.hash,
+                                'block': self.serialize(),
+                                'next_block': self.next_block.height if self.next_block else None,
+                                'previous_block': self.previous_block.height if self.previous_block else None,
+                            }
                         }
-                    }
-                )
-            },
-            immediately=True
-        )
+                    )
+                },
+                immediately=True
+            )
+        except BaseChannelLayer.ChannelFull:
+            logger.error('CHANNEL FULL!')
 
     @property
     def class_type(self):
