@@ -242,6 +242,7 @@ class Block(CachingMixin, models.Model):
             logger.info(f'Validating transactions for {self}')
             for tx in self.transactions.all():
                 if not tx.is_valid:
+                    logger.warning(f'tx {tx} is not valid. Sending for repair')
                     try:
                         Channel('repair_transaction').send({
                             'chain': connection.tenant.schema_name,
@@ -250,27 +251,27 @@ class Block(CachingMixin, models.Model):
                     except BaseChannelLayer.ChannelFull:
                         logger.error('CHANNEL FULL!')
 
-        try:
-            Group(
-                '{}_block'.format(connection.tenant.schema_name)
-            ).send(
-                {
-                    'text': json.dumps(
-                        {
-                            'stream': 'block_update',
-                            'payload': {
-                                'hash': self.hash,
-                                'block': self.serialize(),
-                                'next_block': self.next_block.height if self.next_block else None,
-                                'previous_block': self.previous_block.height if self.previous_block else None,
-                            }
-                        }
-                    )
-                },
-                immediately=True
-            )
-        except BaseChannelLayer.ChannelFull:
-            logger.error('CHANNEL FULL!')
+        # try:
+        #     Group(
+        #         '{}_block'.format(connection.tenant.schema_name)
+        #     ).send(
+        #         {
+        #             'text': json.dumps(
+        #                 {
+        #                     'stream': 'block_update',
+        #                     'payload': {
+        #                         'hash': self.hash,
+        #                         'block': self.serialize(),
+        #                         'next_block': self.next_block.height if self.next_block else None,
+        #                         'previous_block': self.previous_block.height if self.previous_block else None,
+        #                     }
+        #                 }
+        #             )
+        #         },
+        #         immediately=True
+        #     )
+        # except BaseChannelLayer.ChannelFull:
+        #     logger.error('CHANNEL FULL!')
 
     @property
     def class_type(self):
