@@ -53,14 +53,17 @@ jobs:
       - name: create local_settings.py
         run: |
           echo "
+          from .settings import *
+
           DATABASES = {
             'default': {
-            'ENGINE': 'tenant_schemas.postgresql_backend',
-            'NAME': 'github_actions',
-            'USER': 'postgres',
-            'PASSWORD': 'postgres',
-            'HOST': '127.0.0.1',
-            'PORT': '5432',
+              'ENGINE': 'tenant_schemas.postgresql_backend',
+              'NAME': 'github_actions',
+              'USER': 'postgres',
+              'PASSWORD': 'postgres',
+              'HOST': '127.0.0.1',
+              'PORT': '5432',
+            }
           }
           " >> daio/local_settings.py
 
