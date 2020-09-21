@@ -227,7 +227,7 @@ class Block(CachingMixin, models.Model):
                 return
 
         logger.info(f'Saving {self}')
-        super().save(*args, **kwargs)
+        super().save()
 
         if validate:
             logger.info(f'Checking validity of {self}')
