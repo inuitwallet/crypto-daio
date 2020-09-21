@@ -120,7 +120,7 @@ class Command(BaseCommand):
             )
 
         if options["last"]:
-            blocks = blocks[blocks.count() - int(options["last"]) :]
+            blocks = blocks[blocks.count() - int(options["last"]):]
 
         if options["limit"]:
             blocks = blocks[: int(options["limit"])]
