@@ -183,19 +183,20 @@ class Block(CachingMixin, models.Model):
             return False
 
     def set_existing_block_height_if_found(self):
-        logger.info(f'Checking if block with this hash ({self.hash[:7]}) already exists')
+        logger.info(f'Checking if block with hash {self.hash[:7]} already exists')
 
         try:
             existing_block = Block.objects.get(hash=self.hash)
 
             if existing_block == self:
                 # if the found block is this block, do nothing
+                logger.info(f'No additional blocks with hash {self.hash[:7]} found')
                 return False
 
             logger.warning(f'Found existing block {existing_block} with hash {self.hash[:7]}')
             logger.info(f'Setting height of {existing_block} to {self.height}')
             existing_block.height = self.height
-            existing_block.save(checks=False)
+            existing_block.save()
 
             # if the hash exists as an orphan, remove it
             Orphan.objects.filter(hash=self.hash).delete()
