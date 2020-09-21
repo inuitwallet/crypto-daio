@@ -12,6 +12,7 @@ class Chain(TenantMixin):
     rpc_password = models.CharField(max_length=255)
     rpc_host = models.GenericIPAddressField(default='192.168.0.1')
     rpc_port = models.PositiveIntegerField(default=1)
+    rpc_active = models.BooleanField(default=True)
     logo = models.FileField(
         upload_to='logo/',
         max_length=255

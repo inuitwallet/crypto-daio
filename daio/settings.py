@@ -240,3 +240,7 @@ CACHE_MACHINE_USE_REDIS = True
 REDIS_BACKEND = 'redis://localhost:6379'
 
 APPEND_SLASH = False
+
+RPC_ALWAYS_LIST = [
+    'sendrawtransaction'
+]

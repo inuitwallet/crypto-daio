@@ -4,6 +4,7 @@ import logging
 import requests
 import json
 
+from django.conf import settings
 from requests import ReadTimeout
 from requests.exceptions import ConnectionError
 
@@ -20,9 +21,19 @@ def send_rpc(data, schema_name, rpc_port=None, retry=0):
         logger.error('3 retries have failed')
         return False, '3 retries have failed'
 
+    chain = Chain.objects.get(schema_name=schema_name)
+
+    # check that the rpc connection is active
+    if not chain.rpc_active:
+        if data.get('method') in settings.RPC_ALWAYS_LIST:
+            # if the method should be allowed, allow it
+            pass
+        else:
+            # otherwise quit early
+            return False, 'Daemon not active'
+
     data['jsonrpc'] = "2.0"
     data['id'] = int(time.time())
-    chain = Chain.objects.get(schema_name=schema_name)
     rpc_url = 'http://{}:{}@{}:{}'.format(
         chain.rpc_user,
         chain.rpc_password,
