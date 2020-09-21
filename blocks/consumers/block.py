@@ -1,7 +1,5 @@
-import json
 import logging
 
-from django.db import connection
 from tenant_schemas.utils import schema_context
 
 from blocks.models import Block, Transaction

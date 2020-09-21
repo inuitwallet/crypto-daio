@@ -36,4 +36,4 @@ def parse_address(message):
 
 def get_address_balance(message):
     with schema_context(message.get("chain")):
-        addr = message.get("address")
+        message.get("address")

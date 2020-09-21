@@ -1,18 +1,16 @@
 import codecs
 import hashlib
-import json
 import logging
 import time
 from datetime import datetime
 from decimal import Decimal
 
-import psycopg2
 from asgiref.base_layer import BaseChannelLayer
 from caching.base import CachingManager, CachingMixin
-from channels import Channel, Group
+from channels import Channel
 from django.contrib.postgres.fields import JSONField
 from django.core.cache import cache
-from django.db import connection, models, transaction
+from django.db import connection, models
 from django.db.models import Max, Sum
 from django.db.utils import IntegrityError
 from django.utils.timezone import make_aware
@@ -612,7 +610,7 @@ class Block(CachingMixin, models.Model):
             self.transactions.all().order_by("index").values_list("tx_id", flat=True)
         )
         merkle_root = self._calculate_merkle_root(transactions)
-        if type(merkle_root) == bytes:
+        if isinstance(merkle_root, bytes):
             merkle_root = merkle_root.decode()
         if merkle_root != self.merkle_root:
             return False, "merkle root incorrect"

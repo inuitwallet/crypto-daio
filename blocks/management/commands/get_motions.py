@@ -2,11 +2,9 @@ import logging
 
 from django.core.management import BaseCommand
 from django.core.paginator import Paginator
-from django.db import connection
 from django.db.models import Sum
 
 from blocks.models import Block, MotionVote
-from blocks.utils.rpc import send_rpc
 
 logger = logging.getLogger(__name__)
 
