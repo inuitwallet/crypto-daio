@@ -68,11 +68,7 @@ class Peer(models.Model):
 
 
 class Orphan(models.Model):
-    hash = models.CharField(
-        max_length=610,
-        unique=True,
-        db_index=True,
-    )
+    hash = models.CharField(max_length=610, unique=True, db_index=True,)
     date_time = models.DateTimeField(default=now, db_index=True)
 
 

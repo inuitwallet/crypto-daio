@@ -52,10 +52,7 @@ class BlockDetailView(View):
         return render(
             request,
             "explorer/block_detail.html",
-            {
-                "object": block,
-                "chain": connection.tenant,
-            },
+            {"object": block, "chain": connection.tenant,},
         )
 
     @staticmethod

@@ -39,9 +39,7 @@ class Migration(migrations.Migration):
                 ),
                 ("name", models.CharField(max_length=255)),
             ],
-            options={
-                "abstract": False,
-            },
+            options={"abstract": False,},
         ),
         migrations.CreateModel(
             name="Coin",

@@ -11,18 +11,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name="block",
-            name="transactions",
-        ),
-        migrations.RemoveField(
-            model_name="transaction",
-            name="inputs",
-        ),
-        migrations.RemoveField(
-            model_name="transaction",
-            name="outputs",
-        ),
+        migrations.RemoveField(model_name="block", name="transactions",),
+        migrations.RemoveField(model_name="transaction", name="inputs",),
+        migrations.RemoveField(model_name="transaction", name="outputs",),
         migrations.AddField(
             model_name="transaction",
             name="block",

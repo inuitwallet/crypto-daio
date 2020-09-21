@@ -21,9 +21,7 @@ def parse_address(message):
             logger.error("tx_output not found: {}".format(message.get("tx_output")))
             return
 
-        address, created = Address.objects.get_or_create(
-            address=addr,
-        )
+        address, created = Address.objects.get_or_create(address=addr,)
 
         if created:
             address.save()

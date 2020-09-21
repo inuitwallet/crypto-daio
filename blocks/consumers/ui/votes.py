@@ -34,8 +34,7 @@ def get_current_grants(message):
     for grant in grants:
         granted = None
         for grant_output in TxOutput.objects.filter(
-            address=grant.address,
-            value=grant.amount * 10000,
+            address=grant.address, value=grant.amount * 10000,
         ):
             if not grant_output.transaction.block:
                 continue

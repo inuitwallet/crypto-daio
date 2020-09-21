@@ -24,8 +24,6 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AlterField(
-            model_name="transaction",
-            name="index",
-            field=models.BigIntegerField(),
+            model_name="transaction", name="index", field=models.BigIntegerField(),
         ),
     ]

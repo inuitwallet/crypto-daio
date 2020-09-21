@@ -7,9 +7,15 @@ from tenant_schemas.utils import get_tenant_model, tenant_context
 from blocks.models import Address
 from daio.models import Chain
 
-from .ui import (get_address_balance, get_address_details, get_block_details,
-                 get_current_grants, get_current_motions, get_latest_blocks,
-                 get_next_blocks)
+from .ui import (
+    get_address_balance,
+    get_address_details,
+    get_block_details,
+    get_current_grants,
+    get_current_motions,
+    get_latest_blocks,
+    get_next_blocks,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -65,22 +71,6 @@ def ws_receive(message):
                 pass
 
             return
-
-        # if message['path'] == '/tx_browser/':
-        #     if message_dict.get('stream') == 'add_nodes':
-        #         add_onward_nodes(message_dict, message)
-        #
-        #     if message_dict.get('stream') == 'stop_nodes':
-        #         try:
-        #             user_socket = UserSocket.objects.get(
-        #                 reply_channel=message.reply_channel
-        #             )
-        #             user_socket.tx_browser_running = False
-        #             user_socket.save()
-        #         except UserSocket.DoesNotExist:
-        #             pass
-        #
-        #     return
 
         if message["path"] == "/get_current_grants/":
             get_current_grants(message)

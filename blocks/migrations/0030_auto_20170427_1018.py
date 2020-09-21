@@ -13,16 +13,11 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterModelOptions(
-            name="transaction",
-            options={"ordering": ["index"]},
+            name="transaction", options={"ordering": ["index"]},
         ),
+        migrations.AlterModelOptions(name="txinput", options={"ordering": ["-index"]},),
         migrations.AlterModelOptions(
-            name="txinput",
-            options={"ordering": ["-index"]},
-        ),
-        migrations.AlterModelOptions(
-            name="txoutput",
-            options={"ordering": ["-index"]},
+            name="txoutput", options={"ordering": ["-index"]},
         ),
         migrations.AlterField(
             model_name="transaction",
@@ -30,7 +25,6 @@ class Migration(migrations.Migration):
             field=models.CharField(max_length=610, unique=True),
         ),
         migrations.AlterUniqueTogether(
-            name="txoutput",
-            unique_together=set([("transaction", "index")]),
+            name="txoutput", unique_together=set([("transaction", "index")]),
         ),
     ]

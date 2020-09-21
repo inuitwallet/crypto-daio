@@ -177,11 +177,7 @@ def fix_next_block(block, chain):
 def fix_merkle_root(block, chain):
     logger.info("fixing merkle root on block {}".format(block))
     rpc, msg = send_rpc(
-        {
-            "method": "getblock",
-            "params": [block.hash],
-        },
-        schema_name=chain,
+        {"method": "getblock", "params": [block.hash],}, schema_name=chain,
     )
 
     if not rpc:
@@ -220,11 +216,7 @@ def fix_merkle_root(block, chain):
 def fix_block_votes(block, chain):
     logger.info("fixing votes on block {}".format(block))
     rpc, msg = send_rpc(
-        {
-            "method": "getblock",
-            "params": [block.hash],
-        },
-        schema_name=chain,
+        {"method": "getblock", "params": [block.hash],}, schema_name=chain,
     )
 
     if not rpc:
@@ -239,11 +231,7 @@ def fix_block_votes(block, chain):
 def fix_block_park_rates(block, chain):
     logger.info("fixing park rates on block {}".format(block))
     rpc, msg = send_rpc(
-        {
-            "method": "getblock",
-            "params": [block.hash],
-        },
-        schema_name=chain,
+        {"method": "getblock", "params": [block.hash],}, schema_name=chain,
     )
 
     if not rpc:

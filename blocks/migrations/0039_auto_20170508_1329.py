@@ -13,10 +13,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name="txoutput",
-            name="addresses",
-        ),
+        migrations.RemoveField(model_name="txoutput", name="addresses",),
         migrations.AddField(
             model_name="txoutput",
             name="address",

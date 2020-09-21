@@ -11,11 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class Address(CachingMixin, models.Model):
-    address = models.CharField(
-        max_length=610,
-        unique=True,
-        db_index=True,
-    )
+    address = models.CharField(max_length=610, unique=True, db_index=True,)
 
     # Addresses that are network owned are not counted in the
     # 'Circulating Currency' calculation
@@ -65,11 +61,7 @@ class WatchAddress(CachingMixin, models.Model):
         on_delete=models.CASCADE,
     )
     amount = models.DecimalField(max_digits=20, decimal_places=6)
-    call_back = models.URLField(
-        max_length=610,
-    )
-    complete = models.BooleanField(
-        default=False,
-    )
+    call_back = models.URLField(max_length=610,)
+    complete = models.BooleanField(default=False,)
 
     objects = CachingManager()

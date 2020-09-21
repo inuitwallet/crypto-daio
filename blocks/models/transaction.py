@@ -25,11 +25,7 @@ class Transaction(CachingMixin, models.Model):
     belongs to one block but can have multiple inputs and outputs
     """
 
-    tx_id = models.CharField(
-        max_length=610,
-        unique=True,
-        db_index=True,
-    )
+    tx_id = models.CharField(max_length=610, unique=True, db_index=True,)
     block = models.ForeignKey(
         "Block",
         blank=True,
@@ -39,10 +35,7 @@ class Transaction(CachingMixin, models.Model):
         on_delete=models.SET_NULL,
     )
     index = models.BigIntegerField(default=-1, db_index=True)
-    version = models.IntegerField(
-        blank=True,
-        null=True,
-    )
+    version = models.IntegerField(blank=True, null=True,)
     time = models.DateTimeField(blank=True, null=True, db_index=True)
     lock_time = models.IntegerField(blank=True, null=True, default=0)
     coin = models.ForeignKey(
@@ -149,10 +142,7 @@ class Transaction(CachingMixin, models.Model):
         script_sig = vin.get("scriptSig", {})
         try:
             try:
-                tx_input = TxInput.objects.get(
-                    transaction_id=self.id,
-                    index=vin_index,
-                )
+                tx_input = TxInput.objects.get(transaction_id=self.id, index=vin_index,)
                 tx_input.sequence = vin.get("sequence", "")
                 tx_input.coin_base = vin.get("coinbase", "")
                 tx_input.script_sig_asm = script_sig.get("asm", "")
@@ -203,8 +193,7 @@ class Transaction(CachingMixin, models.Model):
                         logger.error("CHANNEL FULL!")
 
                 previous_output, _ = TxOutput.objects.get_or_create(
-                    transaction_id=previous_transaction.id,
-                    index=vin.get("vout"),
+                    transaction_id=previous_transaction.id, index=vin.get("vout"),
                 )
 
                 tx_input.previous_output_id = previous_output.id
@@ -233,8 +222,7 @@ class Transaction(CachingMixin, models.Model):
         try:
             try:
                 tx_output = TxOutput.objects.get(
-                    transaction_id=self.id,
-                    index=vout.get("n"),
+                    transaction_id=self.id, index=vout.get("n"),
                 )
                 tx_output.value = convert_to_satoshis(vout.get("value", 0.0))
                 # convert to satoshis
@@ -506,22 +494,10 @@ class TxOutput(CachingMixin, models.Model):
     )
     value = models.BigIntegerField(default=0)
     index = models.IntegerField(db_index=True)
-    script_pub_key_asm = models.TextField(
-        blank=True,
-        default="",
-    )
-    script_pub_key_hex = models.TextField(
-        blank=True,
-        default="",
-    )
-    script_pub_key_type = models.TextField(
-        blank=True,
-        default="",
-    )
-    script_pub_key_req_sig = models.TextField(
-        blank=True,
-        default="",
-    )
+    script_pub_key_asm = models.TextField(blank=True, default="",)
+    script_pub_key_hex = models.TextField(blank=True, default="",)
+    script_pub_key_type = models.TextField(blank=True, default="",)
+    script_pub_key_req_sig = models.TextField(blank=True, default="",)
     address = models.ForeignKey(
         "Address",
         related_name="outputs",
@@ -530,10 +506,7 @@ class TxOutput(CachingMixin, models.Model):
         null=True,
         on_delete=models.SET_NULL,
     )
-    park_duration = models.BigIntegerField(
-        blank=True,
-        null=True,
-    )
+    park_duration = models.BigIntegerField(blank=True, null=True,)
 
     objects = CachingManager()
 
@@ -599,22 +572,10 @@ class TxInput(CachingMixin, models.Model):
         related_name="input",
         on_delete=models.SET_NULL,
     )
-    coin_base = models.CharField(
-        max_length=610,
-        blank=True,
-    )
-    sequence = models.BigIntegerField(
-        blank=True,
-        default=4294967295,
-    )
-    script_sig_asm = models.TextField(
-        blank=True,
-        default="",
-    )
-    script_sig_hex = models.TextField(
-        blank=True,
-        default="",
-    )
+    coin_base = models.CharField(max_length=610, blank=True,)
+    sequence = models.BigIntegerField(blank=True, default=4294967295,)
+    script_sig_asm = models.TextField(blank=True, default="",)
+    script_sig_hex = models.TextField(blank=True, default="",)
 
     objects = CachingManager()
 

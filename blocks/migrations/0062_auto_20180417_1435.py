@@ -13,7 +13,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterModelOptions(
-            name="parkrate",
-            options={"ordering": ["blocks"]},
+            name="parkrate", options={"ordering": ["blocks"]},
         ),
     ]

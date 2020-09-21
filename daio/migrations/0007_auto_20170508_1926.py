@@ -12,13 +12,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterModelOptions(
-            name="coin",
-            options={"ordering": ["index"]},
-        ),
+        migrations.AlterModelOptions(name="coin", options={"ordering": ["index"]},),
         migrations.AddField(
-            model_name="coin",
-            name="index",
-            field=models.IntegerField(default=0),
+            model_name="coin", name="index", field=models.IntegerField(default=0),
         ),
     ]

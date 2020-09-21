@@ -13,35 +13,13 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RenameField(
-            model_name="txoutput",
-            old_name="n",
-            new_name="index",
-        ),
-        migrations.RemoveField(
-            model_name="transaction",
-            name="is_coin_base",
-        ),
-        migrations.RemoveField(
-            model_name="transaction",
-            name="is_coin_stake",
-        ),
-        migrations.RemoveField(
-            model_name="txinput",
-            name="output_transaction",
-        ),
-        migrations.RemoveField(
-            model_name="txinput",
-            name="tx_id",
-        ),
-        migrations.RemoveField(
-            model_name="txinput",
-            name="v_out",
-        ),
-        migrations.RemoveField(
-            model_name="txoutput",
-            name="is_unspent",
-        ),
+        migrations.RenameField(model_name="txoutput", old_name="n", new_name="index",),
+        migrations.RemoveField(model_name="transaction", name="is_coin_base",),
+        migrations.RemoveField(model_name="transaction", name="is_coin_stake",),
+        migrations.RemoveField(model_name="txinput", name="output_transaction",),
+        migrations.RemoveField(model_name="txinput", name="tx_id",),
+        migrations.RemoveField(model_name="txinput", name="v_out",),
+        migrations.RemoveField(model_name="txoutput", name="is_unspent",),
         migrations.AddField(
             model_name="transaction",
             name="index",

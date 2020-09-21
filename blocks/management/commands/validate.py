@@ -26,10 +26,7 @@ class Command(BaseCommand):
             default=0,
         )
         parser.add_argument(
-            "-b",
-            "--block",
-            help="The block height to validate",
-            dest="block",
+            "-b", "--block", help="The block height to validate", dest="block",
         )
         parser.add_argument(
             "-l",
@@ -159,8 +156,7 @@ class Command(BaseCommand):
                 logger.info(
                     "({} blocks validated with {} "
                     "invalid blocks found this round)".format(
-                        total_blocks,
-                        len(page_invalid_blocks),
+                        total_blocks, len(page_invalid_blocks),
                     )
                 )
                 if len(page_invalid_blocks) > 0:

@@ -112,9 +112,7 @@ class Migration(migrations.Migration):
             field=models.CharField(blank=True, max_length=255, null=True),
         ),
         migrations.AddField(
-            model_name="parkrate",
-            name="blocks",
-            field=models.IntegerField(default=0),
+            model_name="parkrate", name="blocks", field=models.IntegerField(default=0),
         ),
         migrations.AddField(
             model_name="parkrate",

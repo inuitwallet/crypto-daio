@@ -12,10 +12,7 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name="transaction",
-            name="unit",
-        ),
+        migrations.RemoveField(model_name="transaction", name="unit",),
         migrations.AlterField(
             model_name="transaction",
             name="lock_time",

@@ -205,10 +205,8 @@ class Command(BaseCommand):
         line_chart = pygal.Bar(
             legend_at_bottom=True, x_title="Voting Profile", x_label_rotation=30
         )
-        line_chart.title = (
-            "Voting share distribution over {} blocks as of Block {}".format(
-                options["number"], options["start_height"]
-            )
+        line_chart.title = "Voting share distribution over {} blocks as of Block {}".format(
+            options["number"], options["start_height"]
         )
         line_chart.x_labels = x_labels
         line_chart.add("Number of Addresses", num_addresses)

@@ -27,14 +27,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AlterModelOptions(
-            name="txinput",
-            options={"ordering": ["index"]},
-        ),
-        migrations.AlterModelOptions(
-            name="txoutput",
-            options={"ordering": ["index"]},
-        ),
+        migrations.AlterModelOptions(name="txinput", options={"ordering": ["index"]},),
+        migrations.AlterModelOptions(name="txoutput", options={"ordering": ["index"]},),
         migrations.AddField(
             model_name="transaction",
             name="coin",

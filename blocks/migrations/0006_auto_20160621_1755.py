@@ -12,18 +12,9 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name="transaction",
-            name="block",
-        ),
-        migrations.RemoveField(
-            model_name="txinput",
-            name="transaction",
-        ),
-        migrations.RemoveField(
-            model_name="txoutput",
-            name="transaction",
-        ),
+        migrations.RemoveField(model_name="transaction", name="block",),
+        migrations.RemoveField(model_name="txinput", name="transaction",),
+        migrations.RemoveField(model_name="txoutput", name="transaction",),
         migrations.AddField(
             model_name="block",
             name="transactions",

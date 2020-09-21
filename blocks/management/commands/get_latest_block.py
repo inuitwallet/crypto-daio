@@ -52,8 +52,7 @@ class Command(BaseCommand):
     @staticmethod
     def get_peer_info(chain):
         rpc, msg = send_rpc(
-            {"method": "getpeerinfo", "params": []},
-            schema_name=chain.schema_name,
+            {"method": "getpeerinfo", "params": []}, schema_name=chain.schema_name,
         )
 
         if not rpc:

@@ -83,10 +83,7 @@ class TransactionBroadcast(View):
             return JsonResponse({"status": "failure", "data": "No raw Tx was sent"})
 
         rpc, message = send_rpc(
-            {
-                "method": "sendrawtransaction",
-                "params": [raw_tx, 1],
-            },
+            {"method": "sendrawtransaction", "params": [raw_tx, 1],},
             schema_name=connection.tenant.schema_name,
         )
 

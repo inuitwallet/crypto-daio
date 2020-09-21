@@ -42,8 +42,7 @@ def send_custodial_grant_votes(block, message):
     for grant in custodian_votes:
         granted = None
         for grant_output in TxOutput.objects.filter(
-            address=grant.address,
-            value=grant.amount * 10000,
+            address=grant.address, value=grant.amount * 10000,
         ):
             if not grant_output.transaction.block:
                 continue
@@ -90,11 +89,7 @@ def send_motion_votes(block, message):
                         "message_type": "block_motion",
                         "html": render_to_string(
                             "explorer/fragments/block_motion.html",
-                            {
-                                "motion": {
-                                    "hash": motion.hash,
-                                }
-                            },
+                            {"motion": {"hash": motion.hash,}},
                         ),
                     }
                 )
@@ -119,9 +114,7 @@ def send_park_rate_votes(block, message):
                         "message_type": "block_park_rate",
                         "html": render_to_string(
                             "explorer/fragments/block_park_rate.html",
-                            {
-                                "park_rate": park_rate_vote,
-                            },
+                            {"park_rate": park_rate_vote,},
                         ),
                     }
                 )

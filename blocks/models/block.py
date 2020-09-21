@@ -15,9 +15,19 @@ from django.db.models import Max, Sum
 from django.db.utils import IntegrityError
 from django.utils.timezone import make_aware
 
-from blocks.models import (ActiveParkRate, Address, CustodianVote, FeesVote,
-                           MotionVote, Orphan, ParkRate, ParkRateVote,
-                           Transaction, TxInput, TxOutput)
+from blocks.models import (
+    ActiveParkRate,
+    Address,
+    CustodianVote,
+    FeesVote,
+    MotionVote,
+    Orphan,
+    ParkRate,
+    ParkRateVote,
+    Transaction,
+    TxInput,
+    TxOutput,
+)
 from daio.models import Chain, Coin
 
 logger = logging.getLogger(__name__)
@@ -28,52 +38,16 @@ class Block(CachingMixin, models.Model):
     Object definition of a block
     """
 
-    hash = models.CharField(
-        max_length=610,
-        unique=True,
-        db_index=True,
-    )
-    size = models.BigIntegerField(
-        blank=True,
-        null=True,
-    )
-    height = models.BigIntegerField(
-        unique=True,
-        blank=True,
-        null=True,
-        db_index=True,
-    )
-    version = models.BigIntegerField(
-        blank=True,
-        null=True,
-    )
-    merkle_root = models.CharField(
-        max_length=610,
-        blank=True,
-        null=True,
-    )
-    time = models.DateTimeField(
-        blank=True,
-        null=True,
-        db_index=True,
-    )
-    nonce = models.BigIntegerField(
-        blank=True,
-        null=True,
-    )
-    bits = models.CharField(
-        max_length=610,
-        blank=True,
-        null=True,
-    )
-    difficulty = models.FloatField(
-        blank=True,
-        null=True,
-    )
-    mint = models.FloatField(
-        blank=True,
-        null=True,
-    )
+    hash = models.CharField(max_length=610, unique=True, db_index=True,)
+    size = models.BigIntegerField(blank=True, null=True,)
+    height = models.BigIntegerField(unique=True, blank=True, null=True, db_index=True,)
+    version = models.BigIntegerField(blank=True, null=True,)
+    merkle_root = models.CharField(max_length=610, blank=True, null=True,)
+    time = models.DateTimeField(blank=True, null=True, db_index=True,)
+    nonce = models.BigIntegerField(blank=True, null=True,)
+    bits = models.CharField(max_length=610, blank=True, null=True,)
+    difficulty = models.FloatField(blank=True, null=True,)
+    mint = models.FloatField(blank=True, null=True,)
     previous_block = models.ForeignKey(
         "Block",
         related_name="previous",
@@ -82,40 +56,14 @@ class Block(CachingMixin, models.Model):
         on_delete=models.SET_NULL,
     )
     next_block = models.ForeignKey(
-        "Block",
-        related_name="next",
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
+        "Block", related_name="next", blank=True, null=True, on_delete=models.SET_NULL,
     )
-    flags = models.CharField(
-        max_length=610,
-        blank=True,
-        null=True,
-    )
-    proof_hash = models.CharField(
-        max_length=610,
-        blank=True,
-        null=True,
-    )
-    entropy_bit = models.BigIntegerField(
-        blank=True,
-        null=True,
-    )
-    modifier = models.CharField(
-        max_length=610,
-        blank=True,
-        null=True,
-    )
-    modifier_checksum = models.CharField(
-        max_length=610,
-        blank=True,
-        null=True,
-    )
-    coinage_destroyed = models.BigIntegerField(
-        blank=True,
-        null=True,
-    )
+    flags = models.CharField(max_length=610, blank=True, null=True,)
+    proof_hash = models.CharField(max_length=610, blank=True, null=True,)
+    entropy_bit = models.BigIntegerField(blank=True, null=True,)
+    modifier = models.CharField(max_length=610, blank=True, null=True,)
+    modifier_checksum = models.CharField(max_length=610, blank=True, null=True,)
+    coinage_destroyed = models.BigIntegerField(blank=True, null=True,)
     amount_parked = JSONField(default=dict)
     vote = JSONField(default=dict, blank=True, null=True)
     park_rates = JSONField(default=list, blank=True, null=True)

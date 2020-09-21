@@ -26,10 +26,7 @@ class Command(BaseCommand):
             default=0,
         )
         parser.add_argument(
-            "-b",
-            "--block",
-            help="The block height to validate",
-            dest="block",
+            "-b", "--block", help="The block height to validate", dest="block",
         )
         parser.add_argument(
             "-l",

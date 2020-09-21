@@ -13,7 +13,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterUniqueTogether(
-            name="txinput",
-            unique_together=set([("transaction", "index")]),
+            name="txinput", unique_together=set([("transaction", "index")]),
         ),
     ]

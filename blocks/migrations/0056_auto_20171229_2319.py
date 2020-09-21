@@ -13,13 +13,9 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name="feesvote",
-            name="fee",
-            field=models.FloatField(default=0),
+            model_name="feesvote", name="fee", field=models.FloatField(default=0),
         ),
         migrations.AlterField(
-            model_name="parkrate",
-            name="rate",
-            field=models.FloatField(default=0),
+            model_name="parkrate", name="rate", field=models.FloatField(default=0),
         ),
     ]

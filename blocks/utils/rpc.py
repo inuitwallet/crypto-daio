@@ -42,10 +42,7 @@ def send_rpc(data, schema_name, rpc_port=None, retry=0):
     headers = {"Content-Type": "applications/json"}
     try:
         response = requests.post(
-            url=rpc_url,
-            headers=headers,
-            data=json.dumps(data),
-            timeout=60,
+            url=rpc_url, headers=headers, data=json.dumps(data), timeout=60,
         )
 
         try:

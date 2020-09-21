@@ -12,14 +12,8 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name="block",
-            name="next_block_hash",
-        ),
-        migrations.RemoveField(
-            model_name="block",
-            name="previous_block_hash",
-        ),
+        migrations.RemoveField(model_name="block", name="next_block_hash",),
+        migrations.RemoveField(model_name="block", name="previous_block_hash",),
         migrations.AddField(
             model_name="txoutput",
             name="is_unspent",

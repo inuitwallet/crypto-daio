@@ -13,8 +13,6 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RenameField(
-            model_name="chain",
-            old_name="rcp_user",
-            new_name="rpc_user",
+            model_name="chain", old_name="rcp_user", new_name="rpc_user",
         ),
     ]

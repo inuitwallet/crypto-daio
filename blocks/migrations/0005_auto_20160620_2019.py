@@ -29,10 +29,7 @@ class Migration(migrations.Migration):
                 ("call_back", models.URLField(max_length=255)),
             ],
         ),
-        migrations.RemoveField(
-            model_name="address",
-            name="output",
-        ),
+        migrations.RemoveField(model_name="address", name="output",),
         migrations.AddField(
             model_name="txoutput",
             name="addresses",

@@ -43,9 +43,7 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AlterField(
-            model_name="peer",
-            name="height",
-            field=models.IntegerField(db_index=True),
+            model_name="peer", name="height", field=models.IntegerField(db_index=True),
         ),
         migrations.AlterField(
             model_name="peer",
