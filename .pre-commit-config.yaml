@@ -9,3 +9,4 @@ repos:
     hooks:
       - id: trailing-whitespace
       - id: check-added-large-files
+      - id: check-yaml

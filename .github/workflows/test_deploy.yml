@@ -6,8 +6,8 @@ on:
       - master
 
 jobs:
-  lint:
-    name: lint all code
+  lint_test_deploy:
+    name: lint then test then deploy
     runs-on: ubuntu-20.04
     steps:
       - name: checkout
