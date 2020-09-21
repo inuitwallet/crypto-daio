@@ -213,6 +213,8 @@ class Block(CachingMixin, models.Model):
         # the block will be tested to see if other blocks with the same height/hash already exist if this is True
         checks = kwargs.pop('checks', True)
 
+        logger.info(f'Start Saving {self}: {validate=}, {checks=}')
+
         if checks:
             # check for an existing block at this blocks height and remove them if found
             self.validate_block_height()
@@ -227,10 +229,9 @@ class Block(CachingMixin, models.Model):
         super().save(*args, **kwargs)
 
         if validate:
-            valid, message = self.is_valid
+            logger.info(f'Checking validity of {self}')
 
-            if not valid:
-                logger.warning(message)
+            if not self.is_valid:
                 logger.info(f'Sending {self} for repair')
                 self.send_for_repair()
             else:
@@ -600,6 +601,10 @@ class Block(CachingMixin, models.Model):
     @property
     def is_valid(self):
         valid, message = self.validate()
+
+        if not valid:
+            logger.warning(f'Block {self} not valid: {message}')
+
         return valid
 
     def validate(self):
