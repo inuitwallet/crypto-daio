@@ -9,6 +9,27 @@ jobs:
   lint_test_deploy:
     name: lint then test then deploy
     runs-on: ubuntu-20.04
+
+    # Service containers to run with `container-job`
+    services:
+      # Label used to access the service container
+      postgres:
+        # Docker Hub image
+        image: postgres:12.1
+        # Provide the password for postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: github_actions
+        ports:
+          - 5432:5432
+        # Set health checks to wait until postgres has started
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: checkout
         uses: actions/checkout@v2
@@ -33,7 +54,7 @@ jobs:
         run: |
           pipenv run pytest
 
-      - name: executing remote ssh commands using password
+      - name: deploy code
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST }}
@@ -43,4 +64,6 @@ jobs:
           script: |
             cd /home/daio/crypto-daio
             git pull origin master
+            pipenv sync
+            pipenv run python manage.py migrate_schemas
             sudo supervisorctl restart daio:*
