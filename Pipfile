@@ -18,6 +18,7 @@ python-memcached = "*"
 redis = "*"
 asgi-redis = "*"
 hiredis = "*"
+django-nvd3 = "*"
 
 [dev-packages]
 pytest-django = "*"
