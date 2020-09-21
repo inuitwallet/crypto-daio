@@ -25,6 +25,6 @@ jobs:
         run: |
           pipenv sync --dev
 
-      - name: Analysing the code with pylint
+      - name: Run pre-commit
         run: |
-          pipenv run pre-commit --all
+          pipenv run pre-commit run -a --verbose
