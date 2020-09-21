@@ -1,10 +1,6 @@
 from channels import route, route_class
 
 from blocks.consumers.address import parse_address
-from blocks.consumers.angular_consumers.demultiplexers import (
-    BlockDemultiplexer,
-    LatestBlocksDemultiplexer,
-)
 from blocks.consumers.block import check_block_hash, parse_block, repair_block
 from blocks.consumers.info import display_info
 from blocks.consumers.transaction import repair_transaction
@@ -21,9 +17,6 @@ channel_routing = [
     route("parse_address", parse_address),
     # Info
     route("display_info", display_info),
-    # Demultiplexing
-    route_class(BlockDemultiplexer, path="^/block/$"),
-    route_class(LatestBlocksDemultiplexer, path="^/latest_blocks/$"),
     # Websockets
     route("websocket.connect", ws_connect),
     route("websocket.disconnect", ws_disconnect),

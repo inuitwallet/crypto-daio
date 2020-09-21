@@ -15,19 +15,11 @@ from django.db.models import Max, Sum
 from django.db.utils import IntegrityError
 from django.utils.timezone import make_aware
 
-from blocks.models import (
-    ActiveParkRate,
-    Address,
-    CustodianVote,
-    FeesVote,
-    MotionVote,
-    Orphan,
-    ParkRate,
-    ParkRateVote,
-    Transaction,
-    TxInput,
-    TxOutput,
-)
+from .address import Address
+from .network import ActiveParkRate, Orphan
+from .transaction import Transaction, TxInput, TxOutput
+from .votes import CustodianVote, FeesVote, MotionVote, ParkRate, ParkRateVote
+
 from daio.models import Chain, Coin
 
 logger = logging.getLogger(__name__)

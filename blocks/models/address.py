@@ -4,7 +4,7 @@ from caching.base import CachingManager, CachingMixin
 from django.db import models
 from django.db.models import Sum
 
-from blocks.models import Transaction, TxInput, TxOutput
+from .transaction import Transaction, TxInput, TxOutput
 from daio.models import Coin
 
 logger = logging.getLogger(__name__)
