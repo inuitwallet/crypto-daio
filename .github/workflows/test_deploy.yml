@@ -99,6 +99,6 @@ jobs:
             cd /home/daio/crypto-daio
             git pull origin master
             pipenv sync
-            echo "DJANGO_SETTINGS_MODULE = ${DJANGO_SETTINGS_MODULE}"
+            echo "DJANGO_SETTINGS_MODULE=${DJANGO_SETTINGS_MODULE}" > .env
             pipenv run python manage.py migrate_schemas
             sudo supervisorctl restart daio:*
