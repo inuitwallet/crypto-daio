@@ -144,76 +144,91 @@ class Block(CachingMixin, models.Model):
     def __str__(self):
         return '{}:{}'.format(self.height, self.hash[:8])
 
-    @transaction.non_atomic_requests
-    def save(self, *args, **kwargs):
-        validate = kwargs.pop('validate', True)
-
-        # check if a block with this hash already exists
+    def validate_block_height(self):
+        logger.info(f'Validating {self} height: {self.height}')
+        # height is unique so we will only have one existing block if any
         try:
-            block = Block.objects.get(hash=self.hash)
-            if block == self:
-                logger.info(
-                    'found existing block {}. setting height to None'.format(
-                        block
-                    )
-                )
-            block.height = None
+            existing_block = Block.objects.get(height=self.height)
+
+            if existing_block == self:
+                # If the existing block is this block, we don't want to alter anything
+                logger.info(f'No additional blocks at height {self.height} found')
+                return False
+
+            logger.warning(f'Found existing block {existing_block} at height {self.height}')
+            logger.info(f'Setting height of {existing_block} to None and removing from chain')
+            existing_block.height = None
+            existing_block.previous_block = None
+            existing_block.next_block = None
+            existing_block.save(checks=False, validate=False)
+
+            # make sure no blocks point to this one
+            for prev_block in Block.objects.filter(next_block=existing_block):
+                prev_block.next_block = None
+                prev_block.save()
+
+            for next_block in Block.objects.filter(previous_block=existing_block):
+                next_block.previous_block = None
+                next_block.save()
+
+            # register this block hash as an Orphan
+            Orphan.objects.get_or_create(hash=existing_block.hash)
+
+            # return True to indicate that an existing block was altered to allow this save
+            return True
+
         except Block.DoesNotExist:
-            # check if block at this height exists
-            if self.height is not None:
-                try:
-                    block = Block.objects.get(height=self.height)
-                except Block.DoesNotExist:
-                    logger.info('hello')
+            # return False to show that no alteration took place
+            logger.info(f'No blocks found at height {self.height}')
+            return False
 
-        fix_block = False
+    def set_existing_block_height_if_found(self):
+        logger.info(f'Checking if block with this hash ({self.hash[:7]}) already exists')
 
         try:
-            super().save(*args, **kwargs)
-        except IntegrityError as e:
-            logger.error('error saving {}: {}'.format(self, e))
-            validate = False
-            fix_block = True
+            existing_block = Block.objects.get(hash=self.hash)
 
-        if fix_block:
-            # most likely a block already exists at this height and we've been on a fork.
-            # get the block currently at this height
-            try:
-                height_block = Block.objects.get(height=self.height)
-                logger.info(
-                    'found existing block {}. setting height to None'.format(
-                        height_block
-                    )
-                )
-                height_block.height = None
-                height_block.save(validate=False)
-                # make sure no blocks point to this one
-                for prev_block in Block.objects.filter(next_block=height_block):
-                    prev_block.next_block = None
-                    prev_block.save(validate=False)
+            if existing_block == self:
+                # if the found block is this block, do nothing
+                return False
 
-                for next_block in Block.objects.filter(previous_block=height_block):
-                    next_block.previous_block = None
-                    next_block.save(validate=False)
+            logger.warning(f'Found existing block {existing_block} with hash {self.hash[:7]}')
+            logger.info(f'Setting height of {existing_block} to {self.height}')
+            existing_block.height = self.height
+            existing_block.save(checks=False)
 
-                # register this block hash as an Orphan
-                Orphan.objects.get_or_create(hash=height_block.hash)
+            # if the hash exists as an orphan, remove it
+            Orphan.objects.filter(hash=self.hash).delete()
 
+            return True
+        except Block.DoesNotExist:
+            return False
 
-                # see if a block with this hash already exists
-                try:
-                    hash_block = Block.objects.get(hash=self.hash)
-                    hash_block.height = self.height
-                except Block.DoesNotExist:
-                    hash_block = self
+    def save(self, *args, **kwargs):
+        # after saving the block will be tested for validity if this is True
+        validate = kwargs.pop('validate', True)
+        # before saving,
+        # the block will be tested to see if other blocks with the same height/hash already exist if this is True
+        checks = kwargs.pop('checks', True)
 
-                hash_block.save()
+        if checks:
+            # check for an existing block at this blocks height and remove them if found
+            self.validate_block_height()
 
-            except Block.DoesNotExist:
-                logger.info('no existing block at {}'.format(self.height))
+            # check for an existing block with this blocks hash.
+            # Set the height of the existing block to this blocks height
+            # existing block will be saved without checks
+            if self.set_existing_block_height_if_found():
+                return
+
+        super().save(*args, **kwargs)
 
         if validate:
-            if not self.is_valid:
+            valid, message = self.is_valid
+
+            if not valid:
+                logger.warning(message)
+                logger.info(f'Sending {self} for repair')
                 self.send_for_repair()
             else:
                 # block is valid. validate the transactions too

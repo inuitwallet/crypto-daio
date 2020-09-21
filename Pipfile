@@ -17,8 +17,10 @@ psycopg2-binary = "*"
 python-memcached = "*"
 redis = "*"
 asgi-redis = "*"
+hiredis = "*"
 
 [dev-packages]
+pytest-django = "*"
 
 [requires]
 python_version = "3.8"
