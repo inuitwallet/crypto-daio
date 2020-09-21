@@ -1,20 +1,9 @@
 from django.contrib import admin
 
-from blocks.models import (
-    ActiveParkRate,
-    Address,
-    Block,
-    CustodianVote,
-    ExchangeBalance,
-    FeesVote,
-    MotionVote,
-    NetworkFund,
-    ParkRateVote,
-    Transaction,
-    TxInput,
-    TxOutput,
-    WatchAddress,
-)
+from blocks.models import (ActiveParkRate, Address, Block, CustodianVote,
+                           ExchangeBalance, FeesVote, MotionVote, NetworkFund,
+                           ParkRateVote, Transaction, TxInput, TxOutput,
+                           WatchAddress)
 
 
 class BlockAdmin(admin.ModelAdmin):

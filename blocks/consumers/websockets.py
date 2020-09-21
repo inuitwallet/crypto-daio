@@ -7,15 +7,9 @@ from tenant_schemas.utils import get_tenant_model, tenant_context
 from blocks.models import Address
 from daio.models import Chain
 
-from .ui import (
-    get_address_balance,
-    get_address_details,
-    get_block_details,
-    get_current_grants,
-    get_current_motions,
-    get_latest_blocks,
-    get_next_blocks,
-)
+from .ui import (get_address_balance, get_address_details, get_block_details,
+                 get_current_grants, get_current_motions, get_latest_blocks,
+                 get_next_blocks)
 
 logger = logging.getLogger(__name__)
 
