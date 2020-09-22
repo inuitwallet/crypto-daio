@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.db import connection
 from django.shortcuts import get_object_or_404, render
 from django.views import View
@@ -89,7 +90,26 @@ class AllBlocks(ListView):
         blocks = Block.objects.exclude(height=None).order_by("-height")
 
         if "start-from" in self.kwargs["GET"]:
-            blocks = blocks.filter(height__lte=self.kwargs["GET"]["start-from"])
+            start_from = self.kwargs["GET"].get("start-from", None)
+            print(f'here >>>>> "{start_from}"')
+
+            if start_from:
+                try:
+                    start_height = int(start_from)
+                    blocks = blocks.filter(height__lte=start_height)
+                    messages.add_message(
+                        self.request,
+                        messages.SUCCESS,
+                        f"Showing blocks from {start_height}",
+                    )
+                except (ValueError, TypeError):
+                    messages.add_message(
+                        self.request, messages.ERROR, f"The search was invalid"
+                    )
+            else:
+                messages.add_message(
+                    self.request, messages.ERROR, f"The search can't be blank"
+                )
 
         return blocks
 

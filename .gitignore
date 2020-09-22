@@ -106,3 +106,4 @@ static_files/
 
 daio/components/
 *.out
+create_tenant.py
