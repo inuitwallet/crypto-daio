@@ -1,8 +1,6 @@
 [run]
 branch = True
 command_line = -m pytest
-plugins =
-    django_coverage_plugin
 source =
     blocks
     daio
@@ -18,5 +16,5 @@ omit =
 
 
 [report]
-fail_under = 13
+fail_under = 20
 show_missing = True
