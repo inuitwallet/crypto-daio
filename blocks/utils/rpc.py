@@ -29,6 +29,7 @@ def send_rpc(data, schema_name, rpc_port=None, retry=0):
             pass
         else:
             # otherwise quit early
+            logger.warning(f"Daemon not active for {chain.name}")
             return False, "Daemon not active"
 
     data["jsonrpc"] = "2.0"
