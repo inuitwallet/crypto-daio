@@ -1,7 +1,6 @@
 import logging
 import time
 
-from asgiref.base_layer import BaseChannelLayer
 from channels import Channel
 from django.core.management import BaseCommand
 from django.core.paginator import Paginator
@@ -36,7 +35,7 @@ class Command(BaseCommand):
             default=None,
         )
         parser.add_argument(
-            "-t", "--last", help="use the last x blocks", dest="last", default=None
+            "-la", "--last", help="use the last x blocks", dest="last", default=None
         )
 
     def handle(self, *args, **options):
