@@ -34,7 +34,11 @@ Block Detail: {{ object.height }}
     </div>
     <div class="row">
         <div class="col-md-10 col-md-offset-1 text-center">
-            <h3 class="block-title{% if object.is_valid %} valid{% else %} in-valid{% endif %}"><span class="block-height">Block {{ object.height }}</span> &ndash; <span id="block-hash">{{ object.hash }}</span></h3>
+            <h3 class="block-title{% if object.is_valid %} valid{% else %} in-valid{% endif %}">
+                <span class="block-height">Block {{ object.height }}</span>
+                <br />
+                <span id="block-hash"><small>{{ object.hash }}</small></span>
+            </h3>
         </div>
     </div>
 
