@@ -83,13 +83,12 @@ jobs:
       - name: run tests under coverage
         run: |
           pipenv run coverage run
-          pipenv run coverage html
+          pipenv run coverage xml
 
-      - name: Upload coverage result
-        uses: actions/upload-artifact@v2
+      - name: upload coverage report to codecov
+        uses: codecov/codecov-action@v1
         with:
-          name: coverage
-          path: htmlcov
+          file: ./coverage.xml
 
       - name: deploy code
         uses: appleboy/ssh-action@master
