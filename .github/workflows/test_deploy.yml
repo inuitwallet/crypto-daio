@@ -80,9 +80,16 @@ jobs:
           " >> daio/local_settings.py
 
 
-      - name: run tests
+      - name: run tests under coverage
         run: |
-          pipenv run pytest
+          pipenv run coverage run
+          pipenv run coverage html
+
+      - name: Upload coverage result
+        uses: actions/upload-artifact@v2
+        with:
+          name: coverage
+          path: htmlcov
 
       - name: deploy code
         uses: appleboy/ssh-action@master

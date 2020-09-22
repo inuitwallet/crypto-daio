@@ -1,0 +1,22 @@
+[run]
+branch = True
+command_line = -m pytest
+plugins =
+    django_coverage_plugin
+source =
+    blocks
+    daio
+omit =
+    */.local/*
+    */tests/*
+    */migrations/*
+    */wsgi.py
+    */asgi.py
+    */settings.py
+    */local_settings.py
+    */apps.py
+
+
+[report]
+fail_under = 13
+show_missing = True
