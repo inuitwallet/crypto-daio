@@ -31,7 +31,9 @@ Latest Blocks
                     </tbody>
                 </table>
             </div>
-            <h5><a href="{% url 'blocks' %}">All Blocks</a></h5>
+            <div class="col-md-12 text-center">
+                <a href="{% url 'blocks' %}" class="btn btn-default btn-lg text-center" role="button">All Blocks</a>
+            </div>
         </div>
         {% if active_park_rates %}
             <div class="col-md-5 col-md-offset-1">
