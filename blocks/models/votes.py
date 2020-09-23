@@ -61,7 +61,7 @@ class ParkRate(models.Model):
 
     @property
     def years(self):
-        return round(self.days / 365, 1)
+        return round(self.days / 365, 2)
 
     @property
     def daily_percentage(self):
