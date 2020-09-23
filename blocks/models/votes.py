@@ -52,6 +52,31 @@ class ParkRate(models.Model):
         unique_together = ("blocks", "rate")
         ordering = ["blocks"]
 
+    @property
+    def days(self):
+        """
+        Return the approximate number of days this block period covers
+        """
+        return round((self.blocks / 60) / 24, 1)
+
+    @property
+    def years(self):
+        return round(self.days / 365, 1)
+
+    @property
+    def daily_percentage(self):
+        """
+        Calculate the daily return from the rate (%APR)
+        """
+        return round(self.rate / 365, 8)
+
+    @property
+    def overall_return(self):
+        """
+        calculate the overall return if 1000 coin is parked at this rate for this length of time
+        """
+        return round((self.daily_percentage * self.days) * 1000, 8)
+
 
 class ParkRateVote(models.Model):
     block = models.ForeignKey("Block", blank=True, null=True, on_delete=models.CASCADE)

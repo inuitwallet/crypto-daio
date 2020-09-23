@@ -14,6 +14,7 @@ from blocks.models import (
     TxInput,
     TxOutput,
     WatchAddress,
+    ParkRate,
 )
 
 
@@ -112,6 +113,13 @@ class ParkRateVoteAdmin(admin.ModelAdmin):
 
 
 admin.site.register(ParkRateVote, ParkRateVoteAdmin)
+
+
+class ParkRateAdmin(admin.ModelAdmin):
+    list_display = ("blocks", "rate")
+
+
+admin.site.register(ParkRate, ParkRateAdmin)
 
 
 class ActiveParkRateAdmin(admin.ModelAdmin):
