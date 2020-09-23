@@ -23,7 +23,9 @@ class Command(BaseCommand):
     @staticmethod
     def get_info(chain):
         max_height = 0
+
         for coin in chain.coins.all():
+            logger.info(f"Fetching latest block for {coin}")
             rpc, message = send_rpc(
                 {"method": "getinfo", "params": []},
                 schema_name=chain.schema_name,
@@ -51,6 +53,7 @@ class Command(BaseCommand):
 
     @staticmethod
     def get_peer_info(chain):
+        logger.info("Fetching peer info")
         rpc, msg = send_rpc(
             {"method": "getpeerinfo", "params": []}, schema_name=chain.schema_name,
         )
@@ -105,10 +108,12 @@ class Command(BaseCommand):
 
         while max_height > current_highest_block:
             current_highest_block += 1
+            logger.info(f"Fetching block {current_highest_block}")
             rpc_hash, message = send_rpc(
                 {"method": "getblockhash", "params": [current_highest_block]},
                 schema_name=chain.schema_name,
             )
+
             if rpc_hash:
                 block, _ = Block.objects.get_or_create(hash=rpc_hash)
                 logger.info("saved block {}".format(block))
