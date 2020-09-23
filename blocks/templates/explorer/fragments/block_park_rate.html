@@ -2,13 +2,24 @@
 
 <div class="col-md-3">
     <div class="row text-center">
-        {{ park_rate.coin }}
+        <strong>{{ park_rate.coin }}</strong>
     </div>
-    <div class="row">
-    {% for rate in park_rate.rates.all %}
-        <div class="col-md-12 text-center">
-            {{ rate.blocks }} blocks: {{ rate.rate }}
-        </div>
-    {% endfor %}
-    </div>
+    <table id="{{ park_rate.coin }}_rates" class="table table-striped table-bordered table-hover table-condensed">
+        <thead>
+            <tr>
+                <td class="text-center">Period (approx)</td>
+                <td class="text-center">% APR</td>
+                <td class="text-center">Return on 1000 {{ park_rate.coin }}</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for rate in park_rate.rates.all %}
+                <tr>
+                    <td>{{ rate.days }} days ({{ rate.years }} years)</td>
+                    <td>{{ rate.rate }} %</td>
+                    <td>{{ rate.overall_return }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
