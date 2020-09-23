@@ -21,11 +21,10 @@ class LatestBlocksList(ListView):
         context["active_park_rates"] = []
 
         for coin in connection.tenant.coins.all():
-            park_rate = (
-                ActiveParkRate.objects.filter(coin=coin)
-                .order_by("-block__height")
-                .first()
-            )
+            park_rate = ActiveParkRate.objects.filter(
+                block=Block.objects.exclude(height=None).order_by("-height").first(),
+                coin=coin,
+            ).first()
 
             if park_rate:
                 context["active_park_rates"].append(park_rate)
