@@ -575,6 +575,8 @@ class Block(CachingMixin, models.Model):
 
         if not valid:
             logger.warning(f"Block {self} not valid: {message}")
+            logger.info(f"sending {self} for repair")
+            self.send_for_repair()
 
         return valid
 
