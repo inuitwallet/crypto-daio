@@ -68,6 +68,11 @@ class Block(CachingMixin, models.Model):
     def validate_block_height(self):
         logger.info(f"Validating {self} height: {self.height}")
         # height is unique so we will only have one existing block if any
+
+        if self.height is None:
+            logger.info(f"{self} Height is None. skipping validation")
+            return
+
         try:
             existing_block = Block.objects.get(height=self.height)
 
