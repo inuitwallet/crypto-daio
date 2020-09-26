@@ -70,7 +70,10 @@ class Block(CachingMixin, models.Model):
         # height is unique so we will only have one existing block if any
 
         if self.height is None:
-            logger.info(f"{self} Height is None. skipping validation")
+            logger.info(
+                f"{self} Height is None. skipping validation and sending for repair"
+            )
+            self.send_for_repair()
             return
 
         try:

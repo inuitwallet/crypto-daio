@@ -116,6 +116,7 @@ class Command(BaseCommand):
 
             if rpc_hash:
                 block, _ = Block.objects.get_or_create(hash=rpc_hash)
+                block.send_for_repair()
                 logger.info("saved block {}".format(block))
 
         # give a short amount of time for the block(s) to be saved
