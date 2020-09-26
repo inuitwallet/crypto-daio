@@ -99,23 +99,25 @@ class Command(BaseCommand):
 
     @staticmethod
     def get_highest_blocks(chain, max_height):
-        current_highest_block = (
+        highest_block_height = (
             Block.objects.all().aggregate(Max("height")).get("height__max")
         )
 
-        if not current_highest_block:
-            current_highest_block = -1
+        if not highest_block_height:
+            highest_block_height = -1
 
-        while max_height > current_highest_block:
-            current_highest_block += 1
-            logger.info(f"Fetching block {current_highest_block}")
+        while max_height > highest_block_height:
+            highest_block_height += 1
+            logger.info(f"Fetching block {highest_block_height}")
             rpc_hash, message = send_rpc(
-                {"method": "getblockhash", "params": [current_highest_block]},
+                {"method": "getblockhash", "params": [highest_block_height]},
                 schema_name=chain.schema_name,
             )
 
             if rpc_hash:
-                block, _ = Block.objects.get_or_create(hash=rpc_hash)
+                block, _ = Block.objects.get_or_create(
+                    hash=rpc_hash, height=highest_block_height
+                )
                 block.send_for_repair()
                 logger.info("saved block {}".format(block))
 
