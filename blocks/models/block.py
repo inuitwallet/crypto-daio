@@ -74,6 +74,7 @@ class Block(CachingMixin, models.Model):
             return
 
         try:
+            # TODO what if there are multiple blocks at height x?
             existing_block = Block.objects.get(height=self.height)
 
             if existing_block == self:
