@@ -132,7 +132,7 @@ class Block(CachingMixin, models.Model):
             )
             logger.info(f"Setting height of {existing_block} to {self.height}")
             existing_block.height = self.height
-            existing_block.save()
+            existing_block.save(checks=False)
 
             # if the hash exists as an orphan, remove it
             Orphan.objects.filter(hash=self.hash).delete()
@@ -168,23 +168,20 @@ class Block(CachingMixin, models.Model):
 
     def save(self, *args, **kwargs):
         # after saving the block will be tested for validity if this is True
-        # validate = kwargs.pop("validate", True)
-        # checks = kwargs.pop("checks", True)
-        #
-        # logger.info(f"Start Saving {self}: {validate=}, {checks=}")
+        validate = kwargs.pop("validate", True)
+        checks = kwargs.pop("checks", True)
 
-        # if not checks and not validate:
-        #     logger.info(f"no checks or validation for {self}. saving")
-        #     super().save(*args, **kwargs)
-        #
-        # # check for an existing block at this blocks height and remove them if found
-        # self.validate_block_height()
-        #
-        # # check for an existing block with this blocks hash.
-        # # Set the height of the existing block to this blocks height
-        # # existing block will be saved without checks
-        # if self.set_existing_block_height_if_found():
-        #     return
+        logger.info(f"Start Saving {self}: {validate=}, {checks=}")
+
+        if checks:
+            # check for an existing block at this blocks height and remove them if found
+            self.validate_block_height()
+
+            # check for an existing block with this blocks hash.
+            # Set the height of the existing block to this blocks height
+            # existing block will be saved without checks
+            if self.set_existing_block_height_if_found():
+                return
 
         logger.info(f"Saving {self}")
         super().save(*args, **kwargs)
