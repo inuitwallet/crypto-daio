@@ -258,7 +258,8 @@ class Block(CachingMixin, models.Model):
 
         if validate:
             if not self.is_valid:
-                self.send_for_repair()
+                # if not valid. the is_valid method will trigger send_for_repair()
+                pass
             else:
                 # block is valid. validate the transactions too
                 for tx in self.transactions.all():
