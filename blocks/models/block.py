@@ -174,7 +174,7 @@ class Block(CachingMixin, models.Model):
 
         if not checks and not validate:
             logger.info(f"no checks or validation for {self}. saving")
-            super().save()
+            super().save(*args, **kwargs)
 
         # check for an existing block at this blocks height and remove them if found
         self.validate_block_height()
@@ -186,7 +186,7 @@ class Block(CachingMixin, models.Model):
             return
 
         logger.info(f"Saving {self}")
-        super().save()
+        super().save(*args, **kwargs)
         logger.info(f"{self} saved")
 
         if validate:
