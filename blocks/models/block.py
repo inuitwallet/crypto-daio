@@ -149,6 +149,7 @@ class Block(CachingMixin, models.Model):
         if not self.is_valid:
             logger.info(f"Sending {self} for repair")
             self.send_for_repair()
+            return
         else:
             logger.info(f"{self} is valid")
 
