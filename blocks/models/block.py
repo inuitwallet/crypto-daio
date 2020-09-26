@@ -197,7 +197,7 @@ class Block(CachingMixin, models.Model):
         # check if a block with this hash already exists
         try:
             block = Block.objects.get(hash=self.hash)
-            if block == self:
+            if block != self:
                 logger.info(
                     f"found existing block {block} when checking hash. setting height to None"
                 )
