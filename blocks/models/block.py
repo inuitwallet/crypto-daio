@@ -94,7 +94,7 @@ class Block(CachingMixin, models.Model):
             existing_block.height = None
             existing_block.previous_block = None
             existing_block.next_block = None
-            existing_block.save(checks=False, validate=False)
+            existing_block.save()
 
             # make sure no blocks point to this one
             for prev_block in Block.objects.filter(next_block=existing_block):
@@ -132,7 +132,7 @@ class Block(CachingMixin, models.Model):
             )
             logger.info(f"Setting height of {existing_block} to {self.height}")
             existing_block.height = self.height
-            existing_block.save(checks=False)
+            existing_block.save()
 
             # if the hash exists as an orphan, remove it
             Orphan.objects.filter(hash=self.hash).delete()
@@ -379,7 +379,7 @@ class Block(CachingMixin, models.Model):
             next_block.save()
 
         # save triggers the validation
-        self.save(checks=False)
+        self.save()
 
         # now we do the transactions
         self.parse_rpc_transactions(rpc_block.get("tx", []))
