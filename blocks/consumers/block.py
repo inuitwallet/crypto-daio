@@ -30,7 +30,8 @@ def parse_block(message):
 
         if not created:
             logger.info("existing block {} found".format(block))
-            # save prompts for block validation
+
+        # save prompts for block validation
         block.save()
 
 
@@ -60,6 +61,17 @@ def repair_block(message):
             return
 
         logger.info("repairing block {}: {}".format(block, error_message))
+
+        if error_message == "height is None":
+            rpc, msg = send_rpc(
+                {"method": "getblock", "params": [block_hash, True, True]},
+                schema_name=message.get("chain"),
+            )
+            if not rpc:
+                return False
+            # parse the block to save it
+            block.parse_rpc_block(rpc)
+            return
 
         # merkle root error means missing, extra or duplicate transactions
         if error_message == "merkle root incorrect":

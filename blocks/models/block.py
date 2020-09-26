@@ -154,6 +154,7 @@ class Block(CachingMixin, models.Model):
 
         # validate the transactions too
         logger.info(f"Validating transactions for {self}")
+
         for tx in self.transactions.all():
             if not tx.is_valid:
                 logger.warning(f"tx {tx} is not valid. Sending for repair")
@@ -186,6 +187,7 @@ class Block(CachingMixin, models.Model):
 
         logger.info(f"Saving {self}")
         super().save()
+        logger.info(f"{self} saved")
 
         if validate:
             self.check_validity()
@@ -513,6 +515,10 @@ class Block(CachingMixin, models.Model):
         ]:
             if eval(attribute) is None:
                 return False, "missing attribute: {}".format(attribute)
+
+        # check if height is None
+        if self.height is None:
+            return False, "height is None"
 
         # check the previous block has a hash
         if not self.previous_block.hash:
