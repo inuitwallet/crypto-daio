@@ -224,11 +224,14 @@ class Block(CachingMixin, models.Model):
             # get the block currently at this height
             try:
                 height_block = Block.objects.get(height=self.height)
-                logger.info(
-                    f"found existing block {height_block} when checking height. setting height to None"
-                )
-                height_block.height = None
-                height_block.save(validate=False)
+
+                if height_block != self:
+                    logger.info(
+                        f"found existing block {height_block} when checking height. setting height to None"
+                    )
+                    height_block.height = None
+                    height_block.save(validate=False)
+
                 # make sure no blocks point to this one
                 for prev_block in Block.objects.filter(next_block=height_block):
                     prev_block.next_block = None
