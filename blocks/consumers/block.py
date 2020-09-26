@@ -56,6 +56,7 @@ def repair_block(message):
             return
 
         valid, error_message = block.validate()
+
         if valid:
             logger.info("block {} is valid".format(block))
             return

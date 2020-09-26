@@ -10,7 +10,7 @@ from caching.base import CachingManager, CachingMixin
 from channels import Channel
 from django.contrib.postgres.fields import JSONField
 from django.core.cache import cache
-from django.db import connection, models
+from django.db import connection, models, transaction
 from django.db.models import Max, Sum
 from django.db.utils import IntegrityError
 from django.utils.timezone import make_aware
@@ -166,29 +166,109 @@ class Block(CachingMixin, models.Model):
                 except BaseChannelLayer.ChannelFull:
                     logger.error("CHANNEL FULL!")
 
+    # def save(self, *args, **kwargs):
+    #     # after saving the block will be tested for validity if this is True
+    #     validate = kwargs.pop("validate", True)
+    #     checks = kwargs.pop("checks", True)
+    #
+    #     logger.info(f"Start Saving {self}: {validate=}, {checks=}")
+    #
+    #     if checks:
+    #         # check for an existing block at this blocks height and remove them if found
+    #         self.validate_block_height()
+    #
+    #         # check for an existing block with this blocks hash.
+    #         # Set the height of the existing block to this blocks height
+    #         # existing block will be saved without checks
+    #         if self.set_existing_block_height_if_found():
+    #             return
+    #
+    #     logger.info(f"Saving {self}")
+    #     super().save(*args, **kwargs)
+    #
+    #     logger.info(f"{self} saved. Checking validity")
+    #
+    #     self.check_validity()
+
+    @transaction.non_atomic_requests
     def save(self, *args, **kwargs):
-        # after saving the block will be tested for validity if this is True
         validate = kwargs.pop("validate", True)
-        checks = kwargs.pop("checks", True)
 
-        logger.info(f"Start Saving {self}: {validate=}, {checks=}")
+        # check if a block with this hash already exists
+        try:
+            block = Block.objects.get(hash=self.hash)
+            if block == self:
+                logger.info(
+                    f"found existing block {block} when checking hash. setting height to None"
+                )
+            block.height = None
+        except Block.DoesNotExist:
+            # check if block at this height exists
+            if self.height is not None:
+                try:
+                    Block.objects.get(height=self.height)
+                except Block.DoesNotExist:
+                    logger.info("hello")
 
-        if checks:
-            # check for an existing block at this blocks height and remove them if found
-            self.validate_block_height()
+        fix_block = False
 
-            # check for an existing block with this blocks hash.
-            # Set the height of the existing block to this blocks height
-            # existing block will be saved without checks
-            if self.set_existing_block_height_if_found():
-                return
+        try:
+            super().save(*args, **kwargs)
+        except IntegrityError as e:
+            logger.error("error saving {}: {}".format(self, e))
+            validate = False
+            fix_block = True
 
-        logger.info(f"Saving {self}")
-        super().save(*args, **kwargs)
+        if fix_block:
+            # most likely a block already exists at this height and we've been on a fork.
+            # get the block currently at this height
+            try:
+                height_block = Block.objects.get(height=self.height)
+                logger.info(
+                    f"found existing block {height_block} when checking height. setting height to None"
+                )
+                height_block.height = None
+                height_block.save(validate=False)
+                # make sure no blocks point to this one
+                for prev_block in Block.objects.filter(next_block=height_block):
+                    prev_block.next_block = None
+                    prev_block.save(validate=False)
 
-        logger.info(f"{self} saved. Checking validity")
+                for next_block in Block.objects.filter(previous_block=height_block):
+                    next_block.previous_block = None
+                    next_block.save(validate=False)
 
-        self.check_validity()
+                # register this block hash as an Orphan
+                Orphan.objects.get_or_create(hash=height_block.hash)
+
+                # see if a block with this hash already exists
+                try:
+                    hash_block = Block.objects.get(hash=self.hash)
+                    hash_block.height = self.height
+                except Block.DoesNotExist:
+                    hash_block = self
+
+                hash_block.save()
+
+            except Block.DoesNotExist:
+                logger.info(f"no existing block at {self.height}")
+
+        if validate:
+            if not self.is_valid:
+                self.send_for_repair()
+            else:
+                # block is valid. validate the transactions too
+                for tx in self.transactions.all():
+                    if not tx.is_valid:
+                        try:
+                            Channel("repair_transaction").send(
+                                {
+                                    "chain": connection.tenant.schema_name,
+                                    "tx_id": tx.tx_id,
+                                }
+                            )
+                        except BaseChannelLayer.ChannelFull:
+                            logger.error("CHANNEL FULL!")
 
     @property
     def class_type(self):
@@ -296,7 +376,7 @@ class Block(CachingMixin, models.Model):
             next_block.save()
 
         # save triggers the validation
-        self.save()
+        self.save(checks=False)
 
         # now we do the transactions
         self.parse_rpc_transactions(rpc_block.get("tx", []))
@@ -492,8 +572,6 @@ class Block(CachingMixin, models.Model):
 
         if not valid:
             logger.warning(f"Block {self} not valid: {message}")
-            logger.info(f"sending {self} for repair")
-            self.send_for_repair()
 
         return valid
 
