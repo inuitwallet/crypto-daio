@@ -1,9 +1,9 @@
-import datetime
 import json
 import logging
 from time import sleep
 
-from channels import Channel, Group
+import datetime
+from channels import Group, Channel
 from django.core.management import BaseCommand
 from django.db import connection
 from django.db.models import Max
@@ -11,7 +11,7 @@ from django.template.loader import render_to_string
 from django.utils import timezone
 from django.utils.timezone import make_aware
 
-from blocks.models import Block, Info, Peer
+from blocks.models import Info, Block, Peer
 from blocks.utils.rpc import send_rpc
 
 logger = logging.getLogger(__name__)
@@ -23,9 +23,7 @@ class Command(BaseCommand):
     @staticmethod
     def get_info(chain):
         max_height = 0
-
         for coin in chain.coins.all():
-            logger.info(f"Fetching latest block for {coin}")
             rpc, message = send_rpc(
                 {"method": "getinfo", "params": []},
                 schema_name=chain.schema_name,
@@ -53,7 +51,6 @@ class Command(BaseCommand):
 
     @staticmethod
     def get_peer_info(chain):
-        logger.info("Fetching peer info")
         rpc, msg = send_rpc(
             {"method": "getpeerinfo", "params": []}, schema_name=chain.schema_name,
         )
@@ -99,26 +96,21 @@ class Command(BaseCommand):
 
     @staticmethod
     def get_highest_blocks(chain, max_height):
-        highest_block_height = (
+        current_highest_block = (
             Block.objects.all().aggregate(Max("height")).get("height__max")
         )
 
-        if not highest_block_height:
-            highest_block_height = -1
+        if not current_highest_block:
+            current_highest_block = -1
 
-        while max_height > highest_block_height:
-            highest_block_height += 1
-            logger.info(f"Fetching block {highest_block_height}")
+        while max_height > current_highest_block:
+            current_highest_block += 1
             rpc_hash, message = send_rpc(
-                {"method": "getblockhash", "params": [highest_block_height]},
+                {"method": "getblockhash", "params": [current_highest_block]},
                 schema_name=chain.schema_name,
             )
-
             if rpc_hash:
-                block, _ = Block.objects.get_or_create(
-                    hash=rpc_hash, height=highest_block_height
-                )
-                block.send_for_repair()
+                block, _ = Block.objects.get_or_create(hash=rpc_hash)
                 logger.info("saved block {}".format(block))
 
         # give a short amount of time for the block(s) to be saved
