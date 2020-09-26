@@ -168,30 +168,30 @@ class Block(CachingMixin, models.Model):
 
     def save(self, *args, **kwargs):
         # after saving the block will be tested for validity if this is True
-        validate = kwargs.pop("validate", True)
-        checks = kwargs.pop("checks", True)
+        # validate = kwargs.pop("validate", True)
+        # checks = kwargs.pop("checks", True)
+        #
+        # logger.info(f"Start Saving {self}: {validate=}, {checks=}")
 
-        logger.info(f"Start Saving {self}: {validate=}, {checks=}")
-
-        if not checks and not validate:
-            logger.info(f"no checks or validation for {self}. saving")
-            super().save(*args, **kwargs)
-
-        # check for an existing block at this blocks height and remove them if found
-        self.validate_block_height()
-
-        # check for an existing block with this blocks hash.
-        # Set the height of the existing block to this blocks height
-        # existing block will be saved without checks
-        if self.set_existing_block_height_if_found():
-            return
+        # if not checks and not validate:
+        #     logger.info(f"no checks or validation for {self}. saving")
+        #     super().save(*args, **kwargs)
+        #
+        # # check for an existing block at this blocks height and remove them if found
+        # self.validate_block_height()
+        #
+        # # check for an existing block with this blocks hash.
+        # # Set the height of the existing block to this blocks height
+        # # existing block will be saved without checks
+        # if self.set_existing_block_height_if_found():
+        #     return
 
         logger.info(f"Saving {self}")
         super().save(*args, **kwargs)
-        logger.info(f"{self} saved")
 
-        if validate:
-            self.check_validity()
+        logger.info(f"{self} saved. Checking validity")
+
+        self.check_validity()
 
     @property
     def class_type(self):
@@ -495,6 +495,8 @@ class Block(CachingMixin, models.Model):
 
         if not valid:
             logger.warning(f"Block {self} not valid: {message}")
+            logger.info(f"sending {self} for repair")
+            self.send_for_repair()
 
         return valid
 
