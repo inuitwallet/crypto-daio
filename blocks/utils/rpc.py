@@ -75,3 +75,16 @@ def get_block_hash(height, schema_name):
         {"method": "getblockhash", "params": [int(height)]}, schema_name=schema_name
     )
     return rpc
+
+
+def get_rpc_block(block_hash, schema_name):
+    rpc, msg = send_rpc(
+        {"method": "getblock", "params": [block_hash, True, True]},
+        schema_name=schema_name,
+    )
+    return rpc
+
+
+def get_block(height, schema_name):
+    block_hash = get_block_hash(height, schema_name)
+    return get_rpc_block(block_hash, schema_name)

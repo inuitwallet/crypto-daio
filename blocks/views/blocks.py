@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView
-
+from blocks.tasks import get_block
 from blocks.models import ActiveParkRate, Block, Transaction
 
 
@@ -13,6 +13,7 @@ class LatestBlocksList(ListView):
     template_name = "explorer/latest_blocks_list.html"
 
     def get_queryset(self):
+        get_block.delay(3163815)
         return Block.objects.exclude(height=None).order_by("-height")[:50]
 
     def get_context_data(self, **kwargs):
@@ -40,7 +41,6 @@ class BlockDetailView(View):
     @staticmethod
     def get(request, block_height):
         block = get_object_or_404(Block, height=block_height)
-        block.send_for_repair()
         return render(
             request,
             "explorer/block_detail.html",

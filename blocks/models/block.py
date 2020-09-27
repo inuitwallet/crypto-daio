@@ -5,12 +5,9 @@ import time
 from datetime import datetime
 from decimal import Decimal
 
-from asgiref.base_layer import BaseChannelLayer
-from caching.base import CachingManager, CachingMixin
-from channels import Channel
-from django.contrib.postgres.fields import JSONField
+from django.contrib.postgres.fields import JSONField, ArrayField
 from django.core.cache import cache
-from django.db import connection, models, transaction
+from django.db import connection, models
 from django.db.models import Max, Sum
 from django.db.utils import IntegrityError
 from django.utils.timezone import make_aware
@@ -25,7 +22,7 @@ from daio.models import Chain, Coin
 logger = logging.getLogger(__name__)
 
 
-class Block(CachingMixin, models.Model):
+class Block(models.Model):
     """
     Object definition of a block
     """
@@ -35,7 +32,7 @@ class Block(CachingMixin, models.Model):
     height = models.BigIntegerField(unique=True, blank=True, null=True, db_index=True,)
     version = models.BigIntegerField(blank=True, null=True,)
     merkle_root = models.CharField(max_length=610, blank=True, null=True,)
-    time = models.DateTimeField(blank=True, null=True, db_index=True,)
+    time = models.DateTimeField(blank=True, null=True,)
     nonce = models.BigIntegerField(blank=True, null=True,)
     bits = models.CharField(max_length=610, blank=True, null=True,)
     difficulty = models.FloatField(blank=True, null=True,)
@@ -46,9 +43,15 @@ class Block(CachingMixin, models.Model):
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
+        db_index=False,
     )
     next_block = models.ForeignKey(
-        "Block", related_name="next", blank=True, null=True, on_delete=models.SET_NULL,
+        "Block",
+        related_name="next",
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL,
+        db_index=False,
     )
     flags = models.CharField(max_length=610, blank=True, null=True,)
     proof_hash = models.CharField(max_length=610, blank=True, null=True,)
@@ -59,231 +62,17 @@ class Block(CachingMixin, models.Model):
     amount_parked = JSONField(default=dict)
     vote = JSONField(default=dict, blank=True, null=True)
     park_rates = JSONField(default=list, blank=True, null=True)
-
-    objects = CachingManager()
+    is_valid = models.BooleanField(default=False)
+    validity_errors = ArrayField(
+        base_field=models.CharField(max_length=150), blank=True, null=True
+    )
 
     def __str__(self):
         return "{}:{}".format(self.height, self.hash[:8])
 
-    def validate_block_height(self):
-        logger.info(f"Validating {self} height: {self.height}")
-        # height is unique so we will only have one existing block if any
-
-        if self.height is None:
-            logger.info(
-                f"{self} Height is None. skipping validation and sending for repair"
-            )
-            self.send_for_repair()
-            return
-
-        try:
-            # TODO what if there are multiple blocks at height x?
-            existing_block = Block.objects.get(height=self.height)
-
-            if existing_block == self:
-                # If the existing block is this block, we don't want to alter anything
-                logger.info(f"No additional blocks at height {self.height} found")
-                return False
-
-            logger.warning(
-                f"Found existing block {existing_block} at height {self.height}"
-            )
-            logger.info(
-                f"Setting height of {existing_block} to None and removing from chain"
-            )
-            existing_block.height = None
-            existing_block.previous_block = None
-            existing_block.next_block = None
-            existing_block.save()
-
-            # make sure no blocks point to this one
-            for prev_block in Block.objects.filter(next_block=existing_block):
-                prev_block.next_block = None
-                prev_block.save()
-
-            for next_block in Block.objects.filter(previous_block=existing_block):
-                next_block.previous_block = None
-                next_block.save()
-
-            # register this block hash as an Orphan
-            Orphan.objects.get_or_create(hash=existing_block.hash)
-
-            # return True to indicate that an existing block was altered to allow this save
-            return True
-
-        except Block.DoesNotExist:
-            # return False to show that no alteration took place
-            logger.info(f"No blocks found at height {self.height}")
-            return False
-
-    def set_existing_block_height_if_found(self):
-        logger.info(f"Checking if block with hash {self.hash[:7]} already exists")
-
-        try:
-            existing_block = Block.objects.get(hash=self.hash)
-
-            if existing_block == self:
-                # if the found block is this block, do nothing
-                logger.info(f"No additional blocks with hash {self.hash[:7]} found")
-                return False
-
-            logger.warning(
-                f"Found existing block {existing_block} with hash {self.hash[:7]}"
-            )
-            logger.info(f"Setting height of {existing_block} to {self.height}")
-            existing_block.height = self.height
-            existing_block.save()
-
-            # if the hash exists as an orphan, remove it
-            Orphan.objects.filter(hash=self.hash).delete()
-
-            return existing_block
-        except Block.DoesNotExist:
-            # return False to show that no alteration took place
-            logger.info(f"No blocks found with hash {self.hash}")
-            return False
-
-    def check_validity(self):
-        logger.info(f"Checking validity of {self}")
-
-        if not self.is_valid:
-            logger.info(f"Sending {self} for repair")
-            self.send_for_repair()
-            return
-        else:
-            logger.info(f"{self} is valid")
-
-        # validate the transactions too
-        logger.info(f"Validating transactions for {self}")
-
-        for tx in self.transactions.all():
-            if not tx.is_valid:
-                logger.warning(f"tx {tx} is not valid. Sending for repair")
-                try:
-                    Channel("repair_transaction").send(
-                        {"chain": connection.tenant.schema_name, "tx_id": tx.tx_id}
-                    )
-                except BaseChannelLayer.ChannelFull:
-                    logger.error("CHANNEL FULL!")
-
-    # def save(self, *args, **kwargs):
-    #     # after saving the block will be tested for validity if this is True
-    #     validate = kwargs.pop("validate", True)
-    #     checks = kwargs.pop("checks", True)
-    #
-    #     logger.info(f"Start Saving {self}: {validate=}, {checks=}")
-    #
-    #     if checks:
-    #         # check for an existing block at this blocks height and remove them if found
-    #         self.validate_block_height()
-    #
-    #         # check for an existing block with this blocks hash.
-    #         # Set the height of the existing block to this blocks height
-    #         # existing block will be saved without checks
-    #         if self.set_existing_block_height_if_found():
-    #             return
-    #
-    #     logger.info(f"Saving {self}")
-    #     super().save(*args, **kwargs)
-    #
-    #     logger.info(f"{self} saved. Checking validity")
-    #
-    #     self.check_validity()
-
-    @transaction.non_atomic_requests
-    def save(self, *args, **kwargs):
-        validate = kwargs.pop("validate", True)
-
-        # check if a block with this hash already exists
-        try:
-            block = Block.objects.get(hash=self.hash)
-            if block != self:
-                logger.info(
-                    f"found existing block {block} when checking hash. setting height to None"
-                )
-            block.height = None
-        except Block.DoesNotExist:
-            # check if block at this height exists
-            if self.height is not None:
-                try:
-                    Block.objects.get(height=self.height)
-                except Block.DoesNotExist:
-                    logger.info("hello")
-
-        fix_block = False
-
-        try:
-            super().save(*args, **kwargs)
-        except IntegrityError as e:
-            logger.error("error saving {}: {}".format(self, e))
-            validate = False
-            fix_block = True
-
-        if fix_block:
-            # most likely a block already exists at this height and we've been on a fork.
-            # get the block currently at this height
-            try:
-                height_block = Block.objects.get(height=self.height)
-
-                if height_block != self:
-                    logger.info(
-                        f"found existing block {height_block} when checking height. setting height to None"
-                    )
-                    height_block.height = None
-                    height_block.save(validate=False)
-
-                # make sure no blocks point to this one
-                for prev_block in Block.objects.filter(next_block=height_block):
-                    prev_block.next_block = None
-                    prev_block.save(validate=False)
-
-                for next_block in Block.objects.filter(previous_block=height_block):
-                    next_block.previous_block = None
-                    next_block.save(validate=False)
-
-                # register this block hash as an Orphan
-                Orphan.objects.get_or_create(hash=height_block.hash)
-
-                # see if a block with this hash already exists
-                try:
-                    hash_block = Block.objects.get(hash=self.hash)
-                    hash_block.height = self.height
-                except Block.DoesNotExist:
-                    hash_block = self
-
-                hash_block.save()
-
-            except Block.DoesNotExist:
-                logger.info(f"no existing block at {self.height}")
-
-        if validate:
-            if not self.is_valid:
-                self.send_for_repair()
-            else:
-                # block is valid. validate the transactions too
-                for tx in self.transactions.all():
-                    if not tx.is_valid:
-                        try:
-                            Channel("repair_transaction").send(
-                                {
-                                    "chain": connection.tenant.schema_name,
-                                    "tx_id": tx.tx_id,
-                                }
-                            )
-                        except BaseChannelLayer.ChannelFull:
-                            logger.error("CHANNEL FULL!")
-
     @property
     def class_type(self):
         return "Block"
-
-    def send_for_repair(self):
-        try:
-            Channel("repair_block").send(
-                {"chain": connection.tenant.schema_name, "block_hash": self.hash}
-            )
-        except BaseChannelLayer.ChannelFull:
-            logger.error("CHANNEL FULL!")
 
     def serialize(self):
         serialized_block = None
@@ -293,8 +82,6 @@ class Block(CachingMixin, models.Model):
             serialized_block = cache.get(
                 "{}_{}".format(connection.tenant.schema_name, self.hash)
             )
-        else:
-            self.send_for_repair()
 
         if serialized_block is None:
             serialized_block = {
@@ -337,16 +124,18 @@ class Block(CachingMixin, models.Model):
 
     def parse_rpc_block(self, rpc_block):
         self.height = rpc_block.get("height")
-        logger.info("parsing block {}".format(self))
+        logger.info(f"parsing block {self}")
         # parse the json and apply to the block we just fetched
         self.size = rpc_block.get("size")
         self.version = rpc_block.get("version")
         self.merkle_root = rpc_block.get("merkleroot")
         block_time = rpc_block.get("time")
+
         if block_time:
             self.time = make_aware(
                 datetime.strptime(block_time, "%Y-%m-%d %H:%M:%S %Z")
             )
+
         self.nonce = rpc_block.get("nonce")
         self.bits = rpc_block.get("bits")
         self.difficulty = rpc_block.get("difficulty")
@@ -362,9 +151,10 @@ class Block(CachingMixin, models.Model):
 
         # using the previousblockhash, get the block object to connect
         prev_block_hash = rpc_block.get("previousblockhash")
+
         # genesis block has no previous block
         if prev_block_hash:
-            previous_block, created = Block.objects.get_or_create(hash=prev_block_hash)
+            previous_block, _ = Block.objects.get_or_create(hash=prev_block_hash)
             self.previous_block = previous_block
             previous_block.next_block = self
             previous_block.save()
@@ -393,21 +183,22 @@ class Block(CachingMixin, models.Model):
         logger.info("saved block {}".format(self))
 
     def parse_rpc_transactions(self, txs):
-        tx_index = 0
-        for rpc_tx in txs:
-            try:
-                tx = Transaction.objects.get(tx_id=rpc_tx.get("txid"))
-            except Transaction.DoesNotExist:
-                tx = Transaction(tx_id=rpc_tx.get("txid"))
+        logger.info(f"Parsing rpc transactions for block {self}")
 
-            tx.block_id = self.id
+        tx_index = 0
+
+        for rpc_tx in txs:
+            tx, _ = Transaction.objects.get_or_create(tx_id=rpc_tx.get("txid"))
+
+            tx.block = self
             tx.index = tx_index
             tx.version = rpc_tx.get("version")
             tx.lock_time = rpc_tx.get("lock_time")
 
-            tx.save(validate=False)
+            tx.save()
 
             input_index = 0
+
             for rpc_input in rpc_tx.get("vin", []):
                 tx.parse_input(rpc_input, input_index)
                 input_index += 1
@@ -418,6 +209,7 @@ class Block(CachingMixin, models.Model):
             tx.save()
 
     def parse_rpc_votes(self, votes):
+        logger.info(f"Parsing rpc votes for block {self}")
         # custodian votes
         for custodian_vote in votes.get("custodians", []):
             custodian_address = custodian_vote.get("address")
@@ -538,6 +330,7 @@ class Block(CachingMixin, models.Model):
                     logger.warning(e)
 
     def parse_rpc_parkrates(self, rates):
+        logger.info(f"Parsing rpc park rates for block {self}")
         for park_rate in rates:
             try:
                 coin = Coin.objects.get(
@@ -569,21 +362,19 @@ class Block(CachingMixin, models.Model):
                 except IntegrityError as e:
                     logger.warning(e)
 
-    @property
-    def is_valid(self):
-        valid, message = self.validate()
-
-        if not valid:
-            logger.warning(f"Block {self} not valid: {message}")
-
-        return valid
-
     def validate(self):
+        logger.info(f"Validating block {self}")
+
         if self.height == 0:
-            return True, "Genesis Block"
+            self.is_valid = True
+            self.validity_errors = None
+            self.save()
+            return
+
+        validation_errors = []
+        check_header = True
 
         # first check the header attributes
-
         for attribute in [
             "self.height",
             "self.version",
@@ -594,52 +385,55 @@ class Block(CachingMixin, models.Model):
             "self.nonce",
         ]:
             if eval(attribute) is None:
-                return False, "missing attribute: {}".format(attribute)
+                validation_errors.append(f"missing attribute: {attribute}")
+                check_header = False
 
         # check if height is None
         if self.height is None:
-            return False, "height is None"
+            validation_errors.append("height is None")
 
         # check the previous block has a hash
         if not self.previous_block.hash:
-            return False, "no previous block hash"
+            validation_errors.append("no previous block hash")
 
         # calculate the header in bytes (little endian)
-        header_bytes = (
-            self.version.to_bytes(4, "little")
-            + codecs.decode(self.previous_block.hash, "hex")[::-1]
-            + codecs.decode(self.merkle_root, "hex")[::-1]
-            + int(time.mktime(self.time.timetuple())).to_bytes(4, "little")
-            + codecs.decode(self.bits, "hex")[::-1]
-            + self.nonce.to_bytes(4, "little")
-        )
+        if check_header:
+            header_bytes = (
+                self.version.to_bytes(4, "little")
+                + codecs.decode(self.previous_block.hash, "hex")[::-1]
+                + codecs.decode(self.merkle_root, "hex")[::-1]
+                + int(time.mktime(self.time.timetuple())).to_bytes(4, "little")
+                + codecs.decode(self.bits, "hex")[::-1]
+                + self.nonce.to_bytes(4, "little")
+            )
 
-        # hash the header and fail if it doesn't match the one on record
-        header_hash = hashlib.sha256(hashlib.sha256(header_bytes).digest()).digest()
-        calc_hash = codecs.encode(header_hash[::-1], "hex")
-        if str.encode(self.hash) != calc_hash:
-            return False, "incorrect hash"
+            # hash the header and fail if it doesn't match the one on record
+            header_hash = hashlib.sha256(hashlib.sha256(header_bytes).digest()).digest()
+            calc_hash = codecs.encode(header_hash[::-1], "hex")
+
+            if str.encode(self.hash) != calc_hash:
+                validation_errors.append("incorrect block hash")
 
         # check that previous block height is this height - 1
         if self.previous_block.height != (self.height - 1):
-            return False, "incorrect previous height"
+            validation_errors.append("incorrect previous height")
 
         # check the previous block next block is this block
         if self.previous_block.next_block != self:
-            return False, "previous block does not point to this block"
+            validation_errors.append("previous block does not point to this block")
 
         # check the next block height is this height + 1
         if self.next_block:
             if self.next_block.height != (self.height + 1):
-                return False, "incorrect next height"
+                validation_errors.append("incorrect next height")
 
             # check the next block has this block as it's previous block
             if self.next_block.previous_block != self:
-                return False, "next block does not lead on from this block"
+                validation_errors.append("next block does not lead on from this block")
 
         top_height = Block.objects.all().aggregate(Max("height"))
         if (top_height["height__max"] > self.height) and not self.next_block:
-            return False, "missing next block"
+            validation_errors.append("missing next block")
 
         # calculate merkle root of transactions
         transactions = list(
@@ -649,12 +443,12 @@ class Block(CachingMixin, models.Model):
         if isinstance(merkle_root, bytes):
             merkle_root = merkle_root.decode()
         if merkle_root != self.merkle_root:
-            return False, "merkle root incorrect"
+            validation_errors.append("merkle root incorrect")
 
         # check the indexes on transactions are incremental
         for x in range(self.transactions.all().count()):
             if self.transactions.filter(index=x).count() != 1:
-                return False, "incorrect tx indexing"
+                validation_errors.append("incorrect tx indexing")
 
         # check that the serialized votes match the saved raw votes
         # custodian votes
@@ -671,7 +465,7 @@ class Block(CachingMixin, models.Model):
         if sorted(custodians, key=lambda c: c["address"]) != sorted(
             self.vote.get("custodians", []), key=lambda c: c["address"]
         ):
-            return False, "custodian votes do not match"
+            validation_errors.append("custodian votes do not match")
 
         # park rate votes
         park_rate_votes = []
@@ -694,7 +488,7 @@ class Block(CachingMixin, models.Model):
             if sorted(rate_vote.get("rates", []), key=lambda r: r["blocks"]) != sorted(
                 raw_rate_vote.get("rates", []), key=lambda r: r["blocks"]
             ):
-                return False, "park rate votes do not match"
+                validation_errors.append("park rate votes do not match")
 
         # motion votes
         motions = []
@@ -703,7 +497,7 @@ class Block(CachingMixin, models.Model):
             motions.append(motion.hash)
 
         if sorted(set(motions)) != sorted(set(self.vote.get("motions", []))):
-            return False, "motion votes do not match"
+            validation_errors.append("motion votes do not match")
 
         # fee votes
         fees = {}
@@ -712,7 +506,7 @@ class Block(CachingMixin, models.Model):
             fees[fee_vote.coin.unit_code] = fee_vote.fee
 
         if sorted(fees) != sorted(self.vote.get("fees", {})):
-            return False, "fee votes do not match"
+            validation_errors.append("fee votes do not match")
 
         # check active park rates against raw
         active_park_rates = []
@@ -735,9 +529,12 @@ class Block(CachingMixin, models.Model):
             if sorted(park_rate.get("rates", []), key=lambda r: r["blocks"]) != sorted(
                 raw_rate.get("rates", []), key=lambda r: r["blocks"]
             ):
-                return False, "active park rates do not match"
+                validation_errors.append("active park rates do not match")
 
-        return True, "Block is valid"
+        if validation_errors:
+            self.is_valid = False
+            self.validity_errors = validation_errors
+            self.save()
 
     def _calculate_merkle_root(self, hash_list):
         def merkle_hash(a, b):
@@ -880,6 +677,3 @@ class Block(CachingMixin, models.Model):
             ) / coin.decimal_places
 
         return parked_totals
-
-        # self.amount_parked = parked_totals
-        # self.save()

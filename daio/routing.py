@@ -8,11 +8,11 @@ from blocks.consumers.websockets import ws_connect, ws_disconnect, ws_receive
 
 channel_routing = [
     # Blocks
-    route("parse_block", parse_block),
-    route("repair_block", repair_block),
-    route("check_block_hash", check_block_hash),
+    # route("parse_block", parse_block),
+    # route("repair_block", repair_block),
+    # route("check_block_hash", check_block_hash),
     # Transactions
-    route("repair_transaction", repair_transaction),
+    # route("repair_transaction", repair_transaction),
     # Addresses
     route("parse_address", parse_address),
     # Info
