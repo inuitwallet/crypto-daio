@@ -42,6 +42,7 @@ SHARED_APPS = [
     "django.contrib.sessions",
     "storages",
     "daio",
+    "cacheops",
 ]
 
 TENANT_APPS = [
