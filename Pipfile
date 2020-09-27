@@ -5,10 +5,9 @@ name = "pypi"
 
 [packages]
 channels = "~=1.1"
-django = "~=2.2"
+Django = "~=2.2"
 boto3 = "*"
 bpython = "*"
-django-cache-machine = "*"
 django-cors-headers = "*"
 django-jet = "*"
 django-storages = "*"
@@ -16,9 +15,10 @@ django-tenant-schemas = "==1.9.0"
 psycopg2-binary = "*"
 python-memcached = "*"
 redis = "*"
-asgi-redis = "*"
+asgi_redis = "*"
 hiredis = "*"
 django-nvd3 = "*"
+django-cacheops = "*"
 
 [dev-packages]
 pytest-django = "*"

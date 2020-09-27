@@ -6,7 +6,6 @@ from datetime import datetime
 from decimal import Decimal
 
 from asgiref.base_layer import BaseChannelLayer
-from caching.base import CachingManager, CachingMixin
 from channels import Channel
 from django.contrib.postgres.fields import JSONField
 from django.core.cache import cache
@@ -25,7 +24,7 @@ from daio.models import Chain, Coin
 logger = logging.getLogger(__name__)
 
 
-class Block(CachingMixin, models.Model):
+class Block(models.Model):
     """
     Object definition of a block
     """
@@ -59,8 +58,6 @@ class Block(CachingMixin, models.Model):
     amount_parked = JSONField(default=dict)
     vote = JSONField(default=dict, blank=True, null=True)
     park_rates = JSONField(default=list, blank=True, null=True)
-
-    objects = CachingManager()
 
     def __str__(self):
         return "{}:{}".format(self.height, self.hash[:8])

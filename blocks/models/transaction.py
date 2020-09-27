@@ -6,7 +6,6 @@ import time
 from datetime import datetime
 
 from asgiref.base_layer import BaseChannelLayer
-from caching.base import CachingManager, CachingMixin
 from channels import Channel, Group
 from django.core.cache import cache
 from django.db import IntegrityError, connection, models
@@ -19,7 +18,7 @@ from daio.models import Chain, Coin
 logger = logging.getLogger(__name__)
 
 
-class Transaction(CachingMixin, models.Model):
+class Transaction(models.Model):
     """
     A transaction within a block
     belongs to one block but can have multiple inputs and outputs
@@ -46,8 +45,6 @@ class Transaction(CachingMixin, models.Model):
         related_name="coin",
         related_query_name="coins",
     )
-
-    objects = CachingManager()
 
     def __str__(self):
         return "{}:{}@{}".format(self.index, self.tx_id[:8], self.block)
@@ -485,7 +482,7 @@ class Transaction(CachingMixin, models.Model):
         return False
 
 
-class TxOutput(CachingMixin, models.Model):
+class TxOutput(models.Model):
     transaction = models.ForeignKey(
         Transaction,
         related_name="outputs",
@@ -507,8 +504,6 @@ class TxOutput(CachingMixin, models.Model):
         on_delete=models.SET_NULL,
     )
     park_duration = models.BigIntegerField(blank=True, null=True,)
-
-    objects = CachingManager()
 
     def __str__(self):
         return "{}:{}@{}".format(self.index, self.value, self.transaction)
@@ -552,7 +547,7 @@ class TxOutput(CachingMixin, models.Model):
         }
 
 
-class TxInput(CachingMixin, models.Model):
+class TxInput(models.Model):
     """
     A transaction input.
     Belongs to a single transaction
@@ -576,8 +571,6 @@ class TxInput(CachingMixin, models.Model):
     sequence = models.BigIntegerField(blank=True, default=4294967295,)
     script_sig_asm = models.TextField(blank=True, default="",)
     script_sig_hex = models.TextField(blank=True, default="",)
-
-    objects = CachingManager()
 
     def __str__(self):
         return "{}@{}".format(self.index, self.transaction)

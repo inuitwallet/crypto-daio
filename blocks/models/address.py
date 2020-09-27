@@ -1,6 +1,5 @@
 import logging
 
-from caching.base import CachingManager, CachingMixin
 from django.db import models
 from django.db.models import Sum
 
@@ -10,15 +9,13 @@ from daio.models import Coin
 logger = logging.getLogger(__name__)
 
 
-class Address(CachingMixin, models.Model):
+class Address(models.Model):
     address = models.CharField(max_length=610, unique=True, db_index=True,)
 
     # Addresses that are network owned are not counted in the
     # 'Circulating Currency' calculation
     network_owned = models.BooleanField(default=False)
     coin = models.ForeignKey(Coin, blank=True, null=True, on_delete=models.CASCADE)
-
-    objects = CachingManager()
 
     def __str__(self):
         return self.address
@@ -53,7 +50,7 @@ class Address(CachingMixin, models.Model):
         return Transaction.objects.filter(id__in=tx_ids).order_by("-time")
 
 
-class WatchAddress(CachingMixin, models.Model):
+class WatchAddress(models.Model):
     address = models.ForeignKey(
         Address,
         related_name="watch_addresses",
@@ -63,5 +60,3 @@ class WatchAddress(CachingMixin, models.Model):
     amount = models.DecimalField(max_digits=20, decimal_places=6)
     call_back = models.URLField(max_length=610,)
     complete = models.BooleanField(default=False,)
-
-    objects = CachingManager()
