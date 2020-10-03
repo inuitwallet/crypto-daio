@@ -65,6 +65,8 @@ def get_latest_blocks(chain):
         top_blocks = Block.objects.exclude(height=None).order_by("-height")[:50]
 
         for block in top_blocks:
+            block.validate()
+
             Group("{}_latest_blocks_list".format(connection.schema_name)).send(
                 {
                     "text": json.dumps(
@@ -80,6 +82,9 @@ def get_latest_blocks(chain):
                 }
             )
             index += 1
+
+            if not block.is_valid:
+                repair_block.delay(block.hash)
 
 
 @app.task
