@@ -1,6 +1,5 @@
-from blocks.models.address import Address, WatchAddress
-from blocks.models.block import Block
-from blocks.models.network import (
+from .block import Block
+from .network import (
     ActiveParkRate,
     ExchangeBalance,
     Info,
@@ -8,8 +7,8 @@ from blocks.models.network import (
     Orphan,
     Peer,
 )
-from blocks.models.transaction import Transaction, TxInput, TxOutput
-from blocks.models.votes import (
+from .transaction import Transaction, TxInput, TxOutput, Address, WatchAddress
+from .votes import (
     CustodianVote,
     FeesVote,
     MotionVote,
