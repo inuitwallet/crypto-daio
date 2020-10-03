@@ -32,20 +32,47 @@ def get_block(height):
         db_height_block.height = None
         db_height_block.save()
 
-    rpc_block = get_rpc_block(db_hash_block.hash, connection.schema_name)
+    db_hash_block.height = height
+    db_hash_block.save()
+
+    parse_block.apply(kwargs={"block_hash": db_hash_block.hash})
+    validate_block.apply(kwargs={"block_hash": db_hash_block.hash})
+    return
+
+
+@app.task
+def parse_block(block_hash):
+    try:
+        block = Block.objects.get(hash=block_hash)
+    except Block.DoesNotExist:
+        logger.error(f"No block found with hash {block_hash}")
+        return
+
+    rpc_block = get_rpc_block(block.hash, connection.schema_name)
 
     if not rpc_block:
         logger.warning("No RPC Block returned from Daemon")
         return
 
-    db_hash_block.parse_rpc_block(rpc_block)
-    db_hash_block.validate()
+    block.parse_rpc_block(rpc_block)
 
-    if not db_hash_block.is_valid:
-        logger.warning(f"Block {db_hash_block} is not valid. Sending for repair")
-        repair_block.delay(db_hash_block.hash)
 
-    return
+@app.task
+def validate_block(block_hash):
+    block, _ = Block.objects.get_or_create(hash=block_hash)
+
+    block.validate()
+
+    if not block.is_valid:
+        logger.warning(f"Block {block} is not valid. Sending for repair")
+        repair_block.apply(kwargs={"block_hash": block.hash})
+    else:
+        logger.info(f"Block {block} is valid")
+
+    for tx in block.transactions.all():
+        app.send_task(
+            "blocks.tasks.transactions.validate_transaction", kwargs={"tx_id": tx.tx_id}
+        )
 
 
 @app.task
@@ -64,26 +91,39 @@ def repair_block(block_hash):
 
     logger.info(f"repairing block {block}:\n{', '.join(block.validity_errors)}")
 
+    if {"missing header attribute", "incorrect block hash"}.intersection(
+        set(block.validity_errors)
+    ):
+        parse_block.apply(kwargs={"block_hash": block.hash})
+        validate_block.apply(kwargs={"block_hash": block.hash})
+        return
+
     # merkle root error means missing, extra or duplicate transactions
     if {"merkle root incorrect", "incorrect tx indexing"}.intersection(
         set(block.validity_errors)
     ):
-        fix_merkle_root.delay(block.hash)
+        fix_merkle_root.apply(kwargs={"block_hash": block.hash})
+
+    if "previous block has no previous block" in block.validity_errors:
+        get_block.delay(block.height - 2)
 
     if {
         "missing attribute: self.previous_block",
         "no previous block hash",
         "incorrect previous height",
+        "Previous block height is None",
+        "no previous block",
         "no previous block hash",
+        "previous blocks previous block height is None",
     }.intersection(set(block.validity_errors)):
-        fix_adjoining_block.delay(block.hash, -1)
+        fix_adjoining_block.apply(kwargs={"block_hash": block.hash, "height_diff": -1})
 
     if {
         "incorrect next height",
         "next block does not lead on from this block",
         "missing next block",
     }.intersection(set(block.validity_errors)):
-        fix_adjoining_block.delay(block.hash, 1)
+        fix_adjoining_block.apply(kwargs={"block_hash": block.hash, "height_diff": 1})
 
     if {
         "custodian votes do not match",
@@ -91,20 +131,34 @@ def repair_block(block_hash):
         "motion votes do not match",
         "fee votes do not match",
     }.intersection(set(block.validity_errors)):
-        fix_block_votes.delay(block.hash)
+        fix_block_votes.apply(kwargs={"block_hash": block.hash})
 
     if "active park rates do not match" in block.validity_errors:
-        fix_block_park_rates.delay(block.hash)
+        fix_block_park_rates.apply(kwargs={"block_hash": block.hash})
 
-    # all other errors with the block can be solved by re-parsing it
-    logger.info("re-parsing {}".format(block))
-    rpc_block = get_rpc_block(block.hash, connection.schema_name)
+    for tx in block.transactions.all():
+        tx.validate()
 
-    if not rpc_block:
-        logger.warning("No RPC Block returned from Daemon")
-        return
+        if not tx.is_valid:
+            app.send_task(
+                "blocks.tasks.transactions.validate_transaction",
+                kwargs={"tx_id": tx.tx_id},
+            )
 
-    block.parse_rpc_block(rpc_block)
+        for tx_input in tx.inputs.all():
+            if tx_input.previous_output:
+                app.send_task(
+                    "blocks.tasks.transactions.validate_transaction",
+                    kwargs={"tx_id": tx_input.previous_output.transaction.tx_id},
+                )
+
+                if tx_input.previous_output.transaction.block:
+                    validate_block.delay(
+                        tx_input.previous_output.transaction.block.hash
+                    )
+
+    # run validate() once more to clear any existing validation errors
+    block.validate()
 
 
 @app.task
@@ -139,7 +193,8 @@ def fix_merkle_root(block_hash):
     for tx in block.transactions.all():
         if tx.tx_id not in transactions:
             logger.error(f"tx {tx} does not belong to block {block}")
-            tx.delete()
+            tx.block = None
+            tx.save()
             continue
 
         # fix index
@@ -195,7 +250,7 @@ def fix_adjoining_block(block_hash, height_diff):
     adjoining_hash_block.height = block.height + height_diff
     adjoining_hash_block.save()
 
-    adjoining_hash_block.validate()
+    validate_block.delay(adjoining_hash_block.hash)
 
     if not adjoining_hash_block.is_valid:
         logger.warning(f"Block {adjoining_hash_block} is not valid. Sending for repair")

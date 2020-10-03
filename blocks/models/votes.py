@@ -2,7 +2,6 @@ import logging
 
 from django.db import models
 
-from blocks.models import Address
 from daio.models import Coin
 
 logger = logging.getLogger(__name__)
@@ -11,7 +10,7 @@ logger = logging.getLogger(__name__)
 class CustodianVote(models.Model):
     block = models.ForeignKey("Block", blank=True, null=True, on_delete=models.CASCADE)
     address = models.ForeignKey(
-        Address, blank=True, null=True, on_delete=models.SET_NULL
+        "Address", blank=True, null=True, on_delete=models.SET_NULL
     )
     amount = models.DecimalField(max_digits=25, decimal_places=8, default=0)
 

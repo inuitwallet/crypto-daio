@@ -12,10 +12,10 @@ from django.db.models import Max, Sum
 from django.db.utils import IntegrityError
 from django.utils.timezone import make_aware
 
-from .address import Address
 from .network import ActiveParkRate, Orphan
-from .transaction import Transaction, TxInput, TxOutput
+from .transaction import Transaction, TxInput, TxOutput, Address
 from .votes import CustodianVote, FeesVote, MotionVote, ParkRate, ParkRateVote
+from daio.celery import app
 
 from daio.models import Chain, Coin
 
@@ -32,7 +32,7 @@ class Block(models.Model):
     height = models.BigIntegerField(unique=True, blank=True, null=True, db_index=True,)
     version = models.BigIntegerField(blank=True, null=True,)
     merkle_root = models.CharField(max_length=610, blank=True, null=True,)
-    time = models.DateTimeField(blank=True, null=True,)
+    time = models.DateTimeField(blank=True, null=True, db_index=True)
     nonce = models.BigIntegerField(blank=True, null=True,)
     bits = models.CharField(max_length=610, blank=True, null=True,)
     difficulty = models.FloatField(blank=True, null=True,)
@@ -43,15 +43,9 @@ class Block(models.Model):
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
-        db_index=False,
     )
     next_block = models.ForeignKey(
-        "Block",
-        related_name="next",
-        blank=True,
-        null=True,
-        on_delete=models.SET_NULL,
-        db_index=False,
+        "Block", related_name="next", blank=True, null=True, on_delete=models.SET_NULL,
     )
     flags = models.CharField(max_length=610, blank=True, null=True,)
     proof_hash = models.CharField(max_length=610, blank=True, null=True,)
@@ -74,14 +68,23 @@ class Block(models.Model):
     def class_type(self):
         return "Block"
 
+    def send_for_repair(self):
+        app.send_task(
+            "blocks.tasks.blocks.validate_block",
+            kwargs={"block_hash": self.hash},
+            queue="high_priority",
+        )
+
     def serialize(self):
         serialized_block = None
-        is_valid = self.is_valid
+        self.validate()
 
-        if is_valid:
+        if self.is_valid:
             serialized_block = cache.get(
                 "{}_{}".format(connection.tenant.schema_name, self.hash)
             )
+        else:
+            self.send_for_repair()
 
         if serialized_block is None:
             serialized_block = {
@@ -114,7 +117,9 @@ class Block(models.Model):
                 "solved_by": self.solved_by if self.solved_by else "",
             }
 
-            if is_valid:
+            self.validate()
+
+            if self.is_valid:
                 cache.set(
                     "{}_{}".format(connection.tenant.schema_name, self.hash),
                     serialized_block,
@@ -123,6 +128,24 @@ class Block(models.Model):
         return serialized_block
 
     def parse_rpc_block(self, rpc_block):
+        # check if there is a different block at this height
+        try:
+            existing_height_block = Block.objects.get(height=self.height)
+        except Block.DoesNotExist:
+            existing_height_block = self
+        except Block.MultipleObjectsReturned:
+            # self.height is likely None
+            existing_height_block = self
+
+        if existing_height_block != self:
+            logger.warning(f"Found existing block {existing_height_block}.")
+            logger.info("Setting height to None and removing from chain")
+            existing_height_block.height = None
+            existing_height_block.previous_block = None
+            existing_height_block.next_block = None
+            existing_height_block.save()
+
+        # we can safely set this blocks height now
         self.height = rpc_block.get("height")
         logger.info(f"parsing block {self}")
         # parse the json and apply to the block we just fetched
@@ -168,7 +191,6 @@ class Block(models.Model):
             next_block.previous_block = self
             next_block.save()
 
-        # save triggers the validation
         self.save()
 
         # now we do the transactions
@@ -385,16 +407,16 @@ class Block(models.Model):
             "self.nonce",
         ]:
             if eval(attribute) is None:
-                validation_errors.append(f"missing attribute: {attribute}")
                 check_header = False
 
         # check if height is None
         if self.height is None:
             validation_errors.append("height is None")
+        else:
+            top_height = Block.objects.all().aggregate(Max("height"))
 
-        # check the previous block has a hash
-        if not self.previous_block.hash:
-            validation_errors.append("no previous block hash")
+            if (top_height["height__max"] > self.height) and not self.next_block:
+                validation_errors.append("missing next block")
 
         # calculate the header in bytes (little endian)
         if check_header:
@@ -413,35 +435,55 @@ class Block(models.Model):
 
             if str.encode(self.hash) != calc_hash:
                 validation_errors.append("incorrect block hash")
+        else:
+            validation_errors.append(f"missing header attribute")
 
-        # check that previous block height is this height - 1
-        if self.previous_block.height != (self.height - 1):
-            validation_errors.append("incorrect previous height")
+        # check the previous block
+        if not self.previous_block:
+            validation_errors.append("no previous block")
+        else:
+            if not self.previous_block.hash:
+                validation_errors.append("no previous block hash")
+            # check that previous block height has height and is this height - 1
+            if self.previous_block.height is None:
+                validation_errors.append("Previous block height is None")
+            else:
+                if self.height:
+                    if self.previous_block.height != (self.height - 1):
+                        validation_errors.append("incorrect previous height")
 
-        # check the previous block next block is this block
-        if self.previous_block.next_block != self:
-            validation_errors.append("previous block does not point to this block")
+                if self.height > 2:
+                    if self.previous_block.previous_block is None:
+                        validation_errors.append("previous block has no previous block")
+                    else:
+                        if self.previous_block.previous_block.height is None:
+                            validation_errors.append(
+                                "previous blocks previous block height is None"
+                            )
 
-        # check the next block height is this height + 1
+            # check the previous block next block is this block
+            if self.previous_block.next_block != self:
+                validation_errors.append("previous block does not point to this block")
+
+        # check the next block
         if self.next_block:
-            if self.next_block.height != (self.height + 1):
-                validation_errors.append("incorrect next height")
+            if self.height:
+                if self.next_block.height != (self.height + 1):
+                    validation_errors.append("incorrect next height")
 
             # check the next block has this block as it's previous block
             if self.next_block.previous_block != self:
                 validation_errors.append("next block does not lead on from this block")
-
-        top_height = Block.objects.all().aggregate(Max("height"))
-        if (top_height["height__max"] > self.height) and not self.next_block:
-            validation_errors.append("missing next block")
 
         # calculate merkle root of transactions
         transactions = list(
             self.transactions.all().order_by("index").values_list("tx_id", flat=True)
         )
         merkle_root = self._calculate_merkle_root(transactions)
+
         if isinstance(merkle_root, bytes):
             merkle_root = merkle_root.decode()
+
         if merkle_root != self.merkle_root:
             validation_errors.append("merkle root incorrect")
 
@@ -513,6 +555,7 @@ class Block(models.Model):
 
         for apr in self.activeparkrate_set.all().distinct("coin"):
             coin_park_rates = {"unit": apr.coin.unit_code, "rates": []}
+
             for park_rate in self.activeparkrate_set.filter(coin=apr.coin):
                 for rate in park_rate.rates.all():
                     coin_park_rates["rates"].append(
@@ -532,8 +575,14 @@ class Block(models.Model):
                 validation_errors.append("active park rates do not match")
 
         if validation_errors:
+            logger.warning(f"Found validation errors: {', '.join(validation_errors)}")
+            logger.info(f"Setting {self}.is_valid to False")
             self.is_valid = False
-            self.validity_errors = validation_errors
+            self.validity_errors = list(set(validation_errors))
+            self.save()
+        else:
+            self.is_valid = True
+            self.validity_errors = None
             self.save()
 
     def _calculate_merkle_root(self, hash_list):

@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404, render
 from django.views import View
 from django.views.decorators.csrf import csrf_exempt
 from django.views.generic import ListView
-from blocks.tasks import get_block
+from blocks.tasks import repair_transaction, repair_block
 from blocks.models import ActiveParkRate, Block, Transaction
 
 
@@ -13,8 +13,14 @@ class LatestBlocksList(ListView):
     template_name = "explorer/latest_blocks_list.html"
 
     def get_queryset(self):
-        get_block.delay(3163815)
-        return Block.objects.exclude(height=None).order_by("-height")[:50]
+        blocks = Block.objects.exclude(height=None).order_by("-height")[:50]
+
+        for block in blocks:
+            repair_block.apply_async(
+                kwargs={"block_hash": block.hash}, queue="high_priority"
+            )
+
+        return blocks
 
     def get_context_data(self, **kwargs):
         context = super(LatestBlocksList, self).get_context_data(**kwargs)
@@ -41,6 +47,15 @@ class BlockDetailView(View):
     @staticmethod
     def get(request, block_height):
         block = get_object_or_404(Block, height=block_height)
+        repair_block.apply_async(
+            kwargs={"block_hash": block.hash}, queue="high_priority"
+        )
+
+        for tx in block.transactions.all():
+            repair_transaction.apply_async(
+                kwargs={"tx_id": tx.tx_id}, queue="high_priority"
+            )
+
         return render(
             request,
             "explorer/block_detail.html",
@@ -78,11 +93,13 @@ class AllBlocks(ListView):
         return super().get(request, *args, **kwargs)
 
     def get_queryset(self):
+        print("getting queryset")
         blocks = Block.objects.exclude(height=None).order_by("-height")
 
+        print(f"Got blocks: {blocks}")
         if "start-from" in self.kwargs["GET"]:
-            start_from = self.kwargs["GET"].get("start-from", None)
-            print(f'here >>>>> "{start_from}"')
+            print("calculating start from")
+            start_from = self.kwargs["GET"]["start-from"]
 
             if start_from:
                 try:
@@ -102,6 +119,7 @@ class AllBlocks(ListView):
                     self.request, messages.ERROR, f"The search can't be blank"
                 )
 
+        print("returning blocks")
         return blocks
 
     def get_context_data(self, **kwargs):

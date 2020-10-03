@@ -10,13 +10,13 @@ Block Detail: {{ object.height }}
     {% if not object.is_valid %}
         <script>
             $(function() {
-                console.log('Block {{ object.height }} is invalid: {{ object.validate.1|safe }}');
+                console.log('Block {{ object.height }} is invalid: {{ object.validity_errors|join:", "|safe }}');
             });
         </script>
     {% endif %}
     <div class="row block-navigation">
         <div class="col-md-4 col-md-offset-2 text-left">
-            {% if object.previous_block.height %}
+            {% if object.previous_block.height != None %}
                 <a href="{% url 'block' object.previous_block.height %}" class="btn btn-default">
                     <span class="glyphicon glyphicon glyphicon-backward" aria-hidden="true"></span>
                     Previous
@@ -24,7 +24,7 @@ Block Detail: {{ object.height }}
             {% endif %}
         </div>
         <div class="col-md-4 text-right">
-            {% if object.next_block.height %}
+            {% if object.next_block.height != None %}
                 <a href="{% url 'block' object.next_block.height %}" class="btn btn-default">
                     Next
                     <span class="glyphicon glyphicon glyphicon-forward" aria-hidden="true"></span>

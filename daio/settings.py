@@ -43,6 +43,7 @@ SHARED_APPS = [
     "storages",
     "daio",
     "cacheops",
+    "django_celery_beat",
 ]
 
 TENANT_APPS = [
@@ -191,17 +192,15 @@ LOGGING = {
         },
     },
     "loggers": {
-        "alerts": {
+        "daio": {
             "handlers": ["console"],
             "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
+            "propagate": False,
         },
         "blocks": {
             "handlers": ["console"],
             "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
-        },
-        "charts": {
-            "handlers": ["console"],
-            "level": os.getenv("DJANGO_LOG_LEVEL", "INFO"),
+            "propagate": False,
         },
     },
 }
@@ -234,3 +233,9 @@ CACHEOPS_DEGRADE_ON_FAILURE = True
 APPEND_SLASH = False
 
 RPC_ALWAYS_LIST = ["sendrawtransaction"]
+
+CELERY_TASK_ROUTES = {
+    "blocks.tasks.network.*": {"queue": "network"},
+    "blocks.tasks.blocks.*": {"queue": "blocks"},
+    "blocks.tasks.transactions.*": {"queue": "transactions"},
+}

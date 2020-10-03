@@ -10,78 +10,9 @@ from blocks.models import Block, Transaction, TxOutput, Address
 
 
 class TestBlock(TenantTestCase):
-    # def test_block_save_height_validation(self):
-    #     height = 100
-    #     # create a block at height 100
-    #     Block.objects.create(
-    #         height=height, hash=hashlib.sha256(b"Test Hash").hexdigest()
-    #     )
-    #     # create a new block at height 100
-    #     new_block = Block.objects.create(
-    #         height=height, hash=hashlib.sha256(b"Test Hash 2").hexdigest()
-    #     )
-    #
-    #     # we would expect the validation to replace the first block with new_block
-    #     db_block = Block.objects.get(height=height)
-    #     self.assertEqual(db_block, new_block)
-    #
-    # def test_block_save_height_validation_in_chain(self):
-    #     height = 1000
-    #     # create a bit of a chain at height
-    #     first_block = Block.objects.create(
-    #         height=height, hash=hashlib.sha256(b"In Chain 1").hexdigest()
-    #     )
-    #     prev_block = Block.objects.create(
-    #         height=height - 1, hash=hashlib.sha256(b"Prev Block").hexdigest()
-    #     )
-    #     next_block = Block.objects.create(
-    #         height=height + 1, hash=hashlib.sha256(b"Next Block").hexdigest()
-    #     )
-    #     # create a new block at height
-    #     new_block = Block.objects.create(
-    #         height=height, hash=hashlib.sha256(b"In Chain 2").hexdigest()
-    #     )
-    #
-    #     # we would expect the validation to replace the first block with new_block
-    #     db_block = Block.objects.get(height=height)
-    #     self.assertEqual(db_block, new_block)
-    #
-    #     # also ensure block is removed from chain
-    #     self.assertIsNone(first_block.previous_block)
-    #     self.assertIsNone(first_block.next_block)
-    #     self.assertIsNone(prev_block.next_block)
-    #     self.assertIsNone(next_block.previous_block)
-
-    def test_block_height_validation_with_self(self):
-        new_block = Block.objects.create(
-            height=101, hash=hashlib.sha256(b"Test Hash 3").hexdigest()
-        )
-        altered = new_block.validate_block_height()
-        # we want 'altered' to be False to show that no alteration of the block took place
-        self.assertFalse(altered)
-
-    # def test_block_save_hash_validation(self):
-    #     block_hash = hashlib.sha256(b"Same Test Hash").hexdigest()
-    #     # create a block with hash
-    #     first_block = Block.objects.create(height=102, hash=block_hash)
-    #     # create a new block with same hash but different height
-    #     second_block = Block.objects.create(height=103, hash=block_hash)
-    #
-    #     # we would expect the validation to update the first_block with the height of the second_block
-    #     db_block = Block.objects.get(hash=block_hash)
-    #     self.assertEqual(db_block, first_block)
-    #     self.assertEqual(db_block.height, second_block.height)
-
-    def test_block_hash_validation_with_self(self):
-        block_hash = hashlib.sha256(b"Same Test Hash 2").hexdigest()
-        new_block = Block.objects.create(height=104, hash=block_hash)
-        altered = new_block.validate_block_height()
-        # we want 'altered' to be False to show that no alteration of the block took place
-        self.assertFalse(altered)
-
     def test_serialize(self):
         # create block parameters
-        height = randint(1000, 2000)
+        height = randint(1500, 2000)
         hash = hashlib.sha256(b"Serialize Block").hexdigest()
         size = randint(1, 5000)
         version = randint(1, 1000)
@@ -166,3 +97,91 @@ class TestBlock(TenantTestCase):
         }
 
         self.assertEqual(serialized_block, expected)
+
+    def test_validate(self):
+        height = 1000
+        block_hash = hashlib.sha256(b"Validate Block").hexdigest()
+
+        block = Block.objects.create(height=height, hash=block_hash)
+        block.validate()
+
+        self.assertFalse(block.is_valid)
+        self.assertEqual(
+            set(block.validity_errors),
+            {"merkle root incorrect", "missing header attribute", "no previous block"},
+        )
+
+        previous_block = Block.objects.create(
+            height=height - 1,
+            hash=hashlib.sha256(b"Previous Validate Block").hexdigest(),
+        )
+        block.previous_block = previous_block
+        block.version = 1
+        block.merkle_root = (
+            "d11c7d89ab966802bbd4d738ffffae2aa7e8486a166f31a93f02cd10d77d3b8d"
+        )
+        block.time = make_aware(datetime(2018, 1, 1))
+        block.bits = "1e0fffff"
+        block.nonce = 0
+        block.save()
+        block.validate()
+
+        self.assertFalse(block.is_valid)
+        self.assertEqual(
+            set(block.validity_errors),
+            {
+                "previous block does not point to this block",
+                "merkle root incorrect",
+                "previous block has no previous block",
+                "incorrect block hash",
+            },
+        )
+
+        previous_block.previous_block = Block.objects.create(
+            height=height - 2,
+            hash=hashlib.sha256(b"Previous Previous Validate Block").hexdigest(),
+        )
+        previous_block.next_block = block
+        previous_block.save()
+
+        block.validate()
+        self.assertFalse(block.is_valid)
+        self.assertEqual(
+            set(block.validity_errors),
+            {"merkle root incorrect", "incorrect block hash"},
+        )
+
+        tx_1 = Transaction.objects.create(
+            block=block,
+            tx_id="e6f089cda1edf1d767f1a4803ca121bdf633e018b43eef12c9d634e7b2999434",
+        )
+        tx_2 = Transaction.objects.create(
+            block=block,
+            tx_id="badd47983f391b83f97ba33a6ce918592d8545d3747e247f226a14f0eab69e0f",
+        )
+
+        block.validate()
+        self.assertFalse(block.is_valid)
+        self.assertEqual(
+            set(block.validity_errors),
+            {"incorrect block hash", "incorrect tx indexing"},
+        )
+
+        tx_1.index = 0
+        tx_1.save()
+        tx_2.index = 1
+        tx_2.save()
+
+        block.validate()
+        self.assertFalse(block.is_valid)
+        self.assertEqual(set(block.validity_errors), {"incorrect block hash"})
+
+        block.hash = "b7d80252fb4c16f641383fad06a4e325491d7e88b5c4d8e68465f53bf167c5d5"
+        block.save()
+        previous_block.hash = (
+            "f8290bbd3bc06b3d5c67a79ee5a0fa7fe22c749ed2bf3a1312cf910bcfd39bd0"
+        )
+        previous_block.save()
+
+        block.validate()
+        self.assertTrue(block.is_valid)

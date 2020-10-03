@@ -5,7 +5,7 @@
     {% if tx_input.previous_output %}
         {% if tx_input.previous_output.transaction.block %}
             <a href="{% url 'block' tx_input.previous_output.transaction.block.height %}" class="previous-output" data-toggle="tooltip" title="Output {{ tx_input.previous_output.index }} of Transaction {{ tx_input.previous_output.transaction.index }} found at Block height {{ tx_input.previous_output.transaction.block.height }}">
-                ({{ tx_input.previous_output.index }}:{{ tx_input.previous_output.transaction.index }}@{{ tx_input.previous_output.transaction.block.height }})
+                ({{ tx_input.previous_output.index }}:{{ tx_input.previous_output.transaction.tx_id|slice:":5"}}@{{ tx_input.previous_output.transaction.block.height }})
             </a>
         {% endif %}
         {{ tx_input.previous_output.display_value|floatformat:4|intcomma }}

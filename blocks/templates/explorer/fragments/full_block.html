@@ -1,4 +1,4 @@
-<tr class="{% if not block.is_valid %}warning{% endif %}">
+<tr class="{% if not block.is_valid %}warning {{ block.send_for_repair }}{% endif %}">
     <td class="height text-right"><a href="{% url 'block' block.height %}">{{ block.height }}</a>    </td>
     <td class="hash text-right">{{ block.hash|slice:":8" }}</td>
     <td class="age text-right">{% if block.time %}{{ block.time|timesince }}{% endif %}</td>

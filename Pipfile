@@ -18,9 +18,11 @@ redis = "*"
 asgi_redis = "*"
 hiredis = "*"
 django-nvd3 = "*"
-celery = "*"
+celery = "~=4.4.0"
 tenant-schemas-celery = "*"
 django-cacheops = "*"
+django-celery-beat = "*"
+flower = "*"
 
 [dev-packages]
 pytest-django = "*"

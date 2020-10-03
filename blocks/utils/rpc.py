@@ -60,7 +60,9 @@ def send_rpc(data, schema_name, rpc_port=None, retry=0):
 
     except ConnectionError:
         logger.error(
-            "rpc error sending {}: {}".format(data, "no connection with daemon")
+            "rpc error sending {}: {}\n{}".format(
+                data, "no connection with daemon", rpc_url
+            )
         )
         return False, "no connection with daemon"
 
@@ -88,3 +90,10 @@ def get_rpc_block(block_hash, schema_name):
 def get_block(height, schema_name):
     block_hash = get_block_hash(height, schema_name)
     return get_rpc_block(block_hash, schema_name)
+
+
+def get_raw_transaction(tx_id, schema_name):
+    rpc, msg = send_rpc(
+        {"method": "getrawtransaction", "params": [tx_id, 1]}, schema_name=schema_name,
+    )
+    return rpc
