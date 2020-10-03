@@ -217,10 +217,15 @@ def fix_adjoining_block(block_hash, height_diff):
         logger.error(f"No block found with hash {block_hash}")
         return
 
-    logger.info("fixing adjoining block for {}".format(block))
+    logger.info(
+        f"fixing adjoining block at height {block.height + height_diff} for {block}"
+    )
+
     adjoining_hash = get_block_hash(
         block.height + height_diff, schema_name=connection.schema_name
     )
+
+    logger.info(f"got block hash {adjoining_hash}")
 
     if not adjoining_hash:
         return
@@ -250,7 +255,7 @@ def fix_adjoining_block(block_hash, height_diff):
     adjoining_hash_block.height = block.height + height_diff
     adjoining_hash_block.save()
 
-    validate_block.delay(adjoining_hash_block.hash)
+    adjoining_hash_block.validate()
 
     if not adjoining_hash_block.is_valid:
         logger.warning(f"Block {adjoining_hash_block} is not valid. Sending for repair")
