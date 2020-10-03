@@ -55,7 +55,7 @@ def get_latest_blocks(chain):
         max_height = Info.objects.all().aggregate(Max("max_height"))["max_height__max"]
         next_height = Block.objects.all().aggregate(Max("height"))["height__max"] + 1
 
-        while next_height < max_height:
+        while next_height <= max_height:
             logger.info(f"Getting block at height {next_height}")
             get_block.delay(next_height)
             next_height += 1
