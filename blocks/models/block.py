@@ -469,8 +469,6 @@ class Block(models.Model):
         if self.next_block:
             if self.height:
                 if self.next_block.height != (self.height + 1):
-                    logger.info(f"next block height = {self.next_block.height}")
-                    logger.info(f"self.height + 1 = {self.height + 1}")
                     validation_errors.append("incorrect next height")
 
             # check the next block has this block as it's previous block

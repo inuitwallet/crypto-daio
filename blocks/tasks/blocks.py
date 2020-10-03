@@ -37,7 +37,9 @@ def get_block(height):
 
     parse_block.apply(kwargs={"block_hash": db_hash_block.hash})
     validate_block.apply(kwargs={"block_hash": db_hash_block.hash})
-    return
+
+    if not db_hash_block.is_valid:
+        repair_block.delay(db_hash_block.hash)
 
 
 @app.task
