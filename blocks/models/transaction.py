@@ -4,6 +4,7 @@ import logging
 import time
 from datetime import datetime
 
+
 from django.contrib.postgres.fields import ArrayField
 from django.core.cache import cache
 from django.db import connection, models
@@ -48,6 +49,7 @@ class Transaction(models.Model):
     validity_errors = ArrayField(
         base_field=models.CharField(max_length=150), blank=True, null=True
     )
+
 
     def __str__(self):
         return "{}:{}@{}".format(self.index, self.tx_id[:8], self.block)

@@ -5,6 +5,7 @@ import time
 from datetime import datetime
 from decimal import Decimal
 
+
 from django.contrib.postgres.fields import JSONField, ArrayField
 from django.core.cache import cache
 from django.db import connection, models
@@ -60,6 +61,7 @@ class Block(models.Model):
     validity_errors = ArrayField(
         base_field=models.CharField(max_length=150), blank=True, null=True
     )
+
 
     def __str__(self):
         return "{}:{}".format(self.height, self.hash[:8])

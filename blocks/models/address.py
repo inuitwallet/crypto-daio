@@ -7,3 +7,4 @@ from daio.models import Coin
 from .transaction import Transaction, TxInput, TxOutput
 
 logger = logging.getLogger(__name__)
+
