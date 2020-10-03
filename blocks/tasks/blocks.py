@@ -249,21 +249,25 @@ def fix_adjoining_block(block_hash, height_diff):
         adjoining_height_block.height = None
         adjoining_height_block.save()
 
+    logger.info(
+        f"setting {adjoining_hash_block} height to {block.height + height_diff}"
+    )
+    adjoining_hash_block.height = block.height + height_diff
+
     if height_diff == -1:
         block.previous_block = adjoining_hash_block
         adjoining_hash_block.next_block = block
     else:
         block.next_block = adjoining_hash_block
+        block.save()
         adjoining_hash_block.previous_block = block
 
     block.save()
+    adjoining_hash_block.save()
 
     logger.info(
         f"block {block} {'previous' if height_diff == -1 else 'next'} block is now {block.previous_block if height_diff == -1 else block.next_block}"
     )
-
-    adjoining_hash_block.height = block.height + height_diff
-    adjoining_hash_block.save()
 
     adjoining_hash_block.validate()
 
