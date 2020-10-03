@@ -158,7 +158,7 @@ def repair_block(block_hash):
                     )
 
     # run validate() once more to clear any existing validation errors
-    block.validate()
+    # block.validate()
 
 
 @app.task
