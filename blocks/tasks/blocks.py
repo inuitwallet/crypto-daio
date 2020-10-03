@@ -232,12 +232,18 @@ def fix_adjoining_block(block_hash, height_diff):
 
     adjoining_hash_block, _ = Block.objects.get_or_create(hash=adjoining_hash)
 
+    logger.info(f"got adjoining block {adjoining_hash_block}")
+
     try:
         adjoining_height_block = Block.objects.get(height=block.height + height_diff)
     except Block.DoesNotExist:
         adjoining_height_block = adjoining_hash_block
 
     if adjoining_hash_block != adjoining_height_block:
+        logger.warning(
+            f"Found a different block at height {block.height + height_diff}"
+        )
+        logger.info("Setting height to None")
         # the block with the previous height doesn't match the hash from this block
         # likely to be an orphan so remove it
         adjoining_height_block.height = None
@@ -251,6 +257,10 @@ def fix_adjoining_block(block_hash, height_diff):
         adjoining_hash_block.previous_block = block
 
     block.save()
+
+    logger.info(
+        f"block {block} {'previous' if height_diff == -1 else 'next'} block is now {block.previous_block if height_diff == -1 else block.next_block}"
+    )
 
     adjoining_hash_block.height = block.height + height_diff
     adjoining_hash_block.save()
