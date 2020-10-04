@@ -62,7 +62,6 @@ class Block(models.Model):
         base_field=models.CharField(max_length=150), blank=True, null=True
     )
 
-
     def __str__(self):
         return "{}:{}".format(self.height, self.hash[:8])
 
