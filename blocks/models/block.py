@@ -445,6 +445,7 @@ class Block(models.Model):
         else:
             if not self.previous_block.hash:
                 validation_errors.append("no previous block hash")
+
             # check that previous block height has height and is this height - 1
             if self.previous_block.height is None:
                 validation_errors.append("Previous block height is None")
@@ -453,14 +454,16 @@ class Block(models.Model):
                     if self.previous_block.height != (self.height - 1):
                         validation_errors.append("incorrect previous height")
 
-                if self.height > 2:
-                    if self.previous_block.previous_block is None:
-                        validation_errors.append("previous block has no previous block")
-                    else:
-                        if self.previous_block.previous_block.height is None:
+                    if self.height > 2:
+                        if self.previous_block.previous_block is None:
                             validation_errors.append(
-                                "previous blocks previous block height is None"
+                                "previous block has no previous block"
                             )
+                        else:
+                            if self.previous_block.previous_block.height is None:
+                                validation_errors.append(
+                                    "previous blocks previous block height is None"
+                                )
 
             # check the previous block next block is this block
             if self.previous_block.next_block != self:
