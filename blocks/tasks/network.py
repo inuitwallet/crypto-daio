@@ -57,7 +57,7 @@ def get_latest_blocks(chain):
 
         while next_height <= max_height:
             logger.info(f"Getting block at height {next_height}")
-            get_block.delay(next_height)
+            get_block.apply(kwargs={"block_hash": next_height})
             next_height += 1
 
         logger.info("Refreshing Blocks on front page")
