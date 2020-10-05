@@ -131,7 +131,7 @@ class Block(models.Model):
     def parse_rpc_block(self, rpc_block):
         # check if there is a different block at this height
         try:
-            existing_height_block = Block.objects.get(height=self.height)
+            existing_height_block = Block.objects.get(height=rpc_block.get("height"))
         except Block.DoesNotExist:
             existing_height_block = self
         except Block.MultipleObjectsReturned:
