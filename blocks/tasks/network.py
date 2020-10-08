@@ -29,9 +29,7 @@ def trigger_validation(chain):
 @app.task
 def validation(chain):
     with schema_context(chain):
-        blocks = (
-            Block.objects.exclude(height=None).filter(is_valid=False).order_by("height")
-        )
+        blocks = Block.objects.exclude(height=None).filter(is_valid=False)
         block_paginator = Paginator(blocks, 1000)
 
         for page_num in block_paginator.page_range:
