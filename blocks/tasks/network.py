@@ -11,7 +11,7 @@ from django.template.loader import render_to_string
 from django.utils.timezone import make_aware
 from tenant_schemas.utils import schema_context
 
-from blocks.models import Block, Info, Peer
+from blocks.models import Block, Info, Peer, Transaction
 from daio.celery import app
 from daio.models import Coin
 from .blocks import repair_block, get_block
@@ -32,19 +32,23 @@ def validation(chain):
         blocks = (
             Block.objects.exclude(height=None).filter(is_valid=False).order_by("height")
         )
-        paginator = Paginator(blocks, 1000)
+        block_paginator = Paginator(blocks, 1000)
 
-        for page_num in paginator.page_range:
-            for block in paginator.page(page_num):
+        for page_num in block_paginator.page_range:
+            for block in block_paginator.page(page_num):
 
                 repair_block.apply_async(
                     kwargs={"block_hash": block.hash}, queue="validation"
                 )
 
-                for tx in block.transactions.all():
-                    repair_transaction.apply_async(
-                        kwargs={"tx_id": tx.tx_id}, queue="validation"
-                    )
+        transactions = Transaction.objects.filter(is_valid=False)
+        tx_paginator = Paginator(transactions, 1000)
+
+        for page_num in tx_paginator.page_range:
+            for tx in tx_paginator.page(page_num):
+                repair_transaction.apply_async(
+                    kwargs={"tx_id": tx.tx_id}, queue="validation"
+                )
 
 
 @app.task
