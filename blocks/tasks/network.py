@@ -59,7 +59,9 @@ def get_latest_blocks(chain):
 
         while next_height <= max_height:
             logger.info(f"Getting block at height {next_height}")
-            get_block.apply_async(kwargs={"height": next_height}, queue="high_priority")
+            get_block.apply_async(
+                kwargs={"height": next_height}, queue="network_blocks"
+            )
             next_height += 1
 
         logger.info("Refreshing Blocks on front page")
