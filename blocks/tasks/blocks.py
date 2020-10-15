@@ -219,6 +219,11 @@ def fix_adjoining_block(block_hash, height_diff):
         logger.error(f"No block found with hash {block_hash}")
         return
 
+    if block.height is None:
+        logger.warning(f"block {block} has height None. Sending for repair")
+        repair_block.delay(block_hash=block.hash)
+        return
+
     logger.info(
         f"fixing adjoining block at height {block.height + height_diff} for {block}"
     )
