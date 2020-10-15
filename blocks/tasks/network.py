@@ -39,7 +39,7 @@ def validation(chain):
                     kwargs={"block_hash": block.hash}, queue="validation"
                 )
 
-        transactions = Transaction.objects.filter(is_valid=False)
+        transactions = Transaction.objects.exclude(block=None).filter(is_valid=False)
         tx_paginator = Paginator(transactions, 1000)
 
         for page_num in tx_paginator.page_range:
