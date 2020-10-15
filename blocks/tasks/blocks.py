@@ -264,19 +264,6 @@ def fix_adjoining_block(block_hash, height_diff):
         block.save()
         adjoining_hash_block.previous_block = block
 
-    # check if a block at this height already exists
-    try:
-        existing_height_block = Block.objects.get(height=block.height)
-    except Block.DoesNotExist:
-        existing_height_block = block
-
-    if existing_height_block != block:
-        # found an existing block. We should orphan it
-        existing_height_block.height = None
-        existing_height_block.next_block = None
-        existing_height_block.previous_block = None
-        existing_height_block.save()
-
     block.save()
     adjoining_hash_block.save()
 
