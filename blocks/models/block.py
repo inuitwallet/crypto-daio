@@ -508,9 +508,7 @@ class Block(models.Model):
                 }
             )
 
-        if sorted(custodians, key=lambda c: c["address"]) != sorted(
-            self.vote.get("custodians", []), key=lambda c: c["address"]
-        ):
+        if [c for c in custodians if c not in self.vote.get("custodians", [])]:
             validation_errors.append("custodian votes do not match")
 
         # park rate votes
@@ -518,6 +516,7 @@ class Block(models.Model):
 
         for park_rate_coin in self.parkratevote_set.all().distinct("coin"):
             coin_park_rates = {"unit": park_rate_coin.coin.unit_code, "rates": []}
+
             for park_rate_vote in self.parkratevote_set.filter(
                 coin=park_rate_coin.coin
             ):
@@ -531,9 +530,12 @@ class Block(models.Model):
             raw_rate_vote = next(
                 (r for r in park_rate_votes if r["unit"] == rate_vote["unit"]), {}
             )
-            if sorted(rate_vote.get("rates", []), key=lambda r: r["blocks"]) != sorted(
-                raw_rate_vote.get("rates", []), key=lambda r: r["blocks"]
-            ):
+
+            if [
+                r
+                for r in rate_vote.get("rates", [])
+                if r not in raw_rate_vote.get("rates", [])
+            ]:
                 validation_errors.append("park rate votes do not match")
 
         # motion votes
@@ -542,7 +544,7 @@ class Block(models.Model):
         for motion in self.motionvote_set.all():
             motions.append(motion.hash)
 
-        if sorted(set(motions)) != sorted(set(self.vote.get("motions", []))):
+        if [m for m in set(motions) if m not in set(self.vote.get("motions", []))]:
             validation_errors.append("motion votes do not match")
 
         # fee votes
@@ -551,7 +553,7 @@ class Block(models.Model):
         for fee_vote in self.feesvote_set.all():
             fees[fee_vote.coin.unit_code] = fee_vote.fee
 
-        if sorted(fees) != sorted(self.vote.get("fees", {})):
+        if [f for f in fees if f not in self.vote.get("fees", {})]:
             validation_errors.append("fee votes do not match")
 
         # check active park rates against raw
@@ -573,9 +575,12 @@ class Block(models.Model):
             raw_rate = next(
                 (r for r in active_park_rates if r["unit"] == park_rate["unit"]), {}
             )
-            if sorted(park_rate.get("rates", []), key=lambda r: r["blocks"]) != sorted(
-                raw_rate.get("rates", []), key=lambda r: r["blocks"]
-            ):
+
+            if [
+                p
+                for p in park_rate.get("rates", [])
+                if p not in raw_rate.get("rates", [])
+            ]:
                 validation_errors.append("active park rates do not match")
 
         if validation_errors:
