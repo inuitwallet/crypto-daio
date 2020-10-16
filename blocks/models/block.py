@@ -69,25 +69,6 @@ class Block(models.Model):
     def class_type(self):
         return "Block"
 
-    def save(self, *args, **kwargs):
-        try:
-            existing_height_block = Block.objects.get(height=self.height)
-        except Block.DoesNotExist:
-            existing_height_block = self
-        except Block.MultipleObjectsReturned:
-            # self.height is likely None
-            existing_height_block = self
-
-        if existing_height_block != self:
-            logger.warning(f"Found existing block {existing_height_block}.")
-            logger.info("Setting height to None and removing from chain")
-            existing_height_block.height = None
-            existing_height_block.previous_block = None
-            existing_height_block.next_block = None
-            existing_height_block.save()
-
-        super().save(*args, **kwargs)
-
     def send_for_repair(self):
         app.send_task(
             "blocks.tasks.blocks.validate_block",
