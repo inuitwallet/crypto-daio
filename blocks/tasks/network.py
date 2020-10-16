@@ -1,5 +1,6 @@
 import datetime
 import json
+import time
 
 from celery.utils.log import get_task_logger
 from channels import Group, Channel
@@ -67,6 +68,9 @@ def get_latest_blocks(chain):
         logger.info("Refreshing Blocks on front page")
         index = 0
         top_blocks = Block.objects.exclude(height=None).order_by("-height")[:50]
+
+        # pause for a while to allow the latest blocks to be created
+        time.sleep(5)
 
         for block in top_blocks:
             block.validate()
