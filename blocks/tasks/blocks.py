@@ -303,9 +303,24 @@ def fix_block_votes(block_hash):
         return False
 
     vote = rpc.get("vote", {})
-    block.parse_rpc_votes(vote)
+
     block.vote = vote
     block.save()
+
+    # remove existing votes to start clean
+    for custodian_vote in block.custodianvote_set.all():
+        custodian_vote.delete()
+
+    for motion_vote in block.motionvote_set.all():
+        motion_vote.delete()
+
+    for fee_vote in block.feesvote_set.all():
+        fee_vote.delete()
+
+    for parkrate_vote in block.parkratevote_set.all():
+        parkrate_vote.delete()
+
+    block.parse_rpc_votes(vote)
 
 
 @app.task
