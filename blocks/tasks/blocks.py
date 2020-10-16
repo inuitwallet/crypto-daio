@@ -117,6 +117,7 @@ def repair_block(block_hash):
         "no previous block",
         "no previous block hash",
         "previous blocks previous block height is None",
+        "previous block does not point to this block",
     }.intersection(set(block.validity_errors)):
         fix_adjoining_block.apply(kwargs={"block_hash": block.hash, "height_diff": -1})
 
