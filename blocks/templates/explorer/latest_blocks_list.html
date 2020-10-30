@@ -57,7 +57,7 @@ Latest Blocks
                                         {% for rate in park_rate.rates.all %}
                                             <tr>
                                                 <td>{{ rate.days }} days ({{ rate.years }} years)</td>
-                                                <td>{{ rate.rate }} %</td>
+                                                <td>{{ rate.apr }}%</td>
                                                 <td>{{ rate.overall_return }}</td>
                                             </tr>
                                         {% endfor %}

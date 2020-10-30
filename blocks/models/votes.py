@@ -52,6 +52,10 @@ class ParkRate(models.Model):
         ordering = ["blocks"]
 
     @property
+    def apr(self):
+        return round(self.rate * 100, 2)
+
+    @property
     def days(self):
         """
         Return the approximate number of days this block period covers
