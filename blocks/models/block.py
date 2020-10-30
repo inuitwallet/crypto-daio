@@ -129,7 +129,6 @@ class Block(models.Model):
         return serialized_block
 
     def parse_rpc_block(self, rpc_block):
-        # we can safely set this blocks height now
         self.height = rpc_block.get("height")
         logger.info(f"parsing block {self}")
         # parse the json and apply to the block we just fetched
@@ -216,6 +215,7 @@ class Block(models.Model):
 
     def parse_rpc_votes(self, votes):
         logger.info(f"Parsing rpc votes for block {self}")
+
         # custodian votes
         for custodian_vote in votes.get("custodians", []):
             custodian_address = custodian_vote.get("address")
@@ -271,6 +271,7 @@ class Block(models.Model):
 
         # fees votes
         fee_votes = votes.get("fees", {})
+
         for fee_vote in fee_votes:
             try:
                 coin = Coin.objects.get(
