@@ -493,6 +493,7 @@ class TxOutput(models.Model):
     @property
     def is_spent(self):
         try:
+            has_input = self.input
             return True
         except TxInput.DoesNotExist:
             return False

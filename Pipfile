@@ -33,6 +33,7 @@ pre-commit = "*"
 autopep8 = "*"
 coverage = "*"
 django-coverage-plugin = "*"
+pytest-helpers-namespace = "*"
 
 [requires]
 python_version = "3.8"
